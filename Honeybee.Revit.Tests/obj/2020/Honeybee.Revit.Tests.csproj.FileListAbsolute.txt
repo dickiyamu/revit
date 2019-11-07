@@ -1,0 +1,12 @@
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\Honeybee.Revit.Tests.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\Honeybee.Revit.Tests.pdb
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\nunit.framework.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\RevitTestFrameworkTypes.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\RTFRevit.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\nunit.framework.xml
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\2020\Honeybee.Revit.Tests.csproj.CoreCompileInputs.cache
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\2020\Honeybee.Revit.Tests.csproj.CopyComplete
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\2020\Honeybee.Revit.Tests.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\2020\Honeybee.Revit.Tests.pdb
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\2020\nunit.framework.pdb
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\2020\Honeybee.Revit.Tests.csprojAssemblyReference.cache

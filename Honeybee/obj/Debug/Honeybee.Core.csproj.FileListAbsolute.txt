@@ -1,0 +1,5 @@
+C:\Users\ksobon\source\repos\Honeybee\Honeybee\bin\Debug\Honeybee.Core.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee\bin\Debug\Honeybee.Core.pdb
+C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\Debug\Honeybee.Core.csproj.CoreCompileInputs.cache
+C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\Debug\Honeybee.Core.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\Debug\Honeybee.Core.pdb

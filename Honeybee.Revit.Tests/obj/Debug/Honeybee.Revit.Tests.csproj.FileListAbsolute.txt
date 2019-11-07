@@ -1,0 +1,12 @@
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\Honeybee.Revit.Tests.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\Honeybee.Revit.Tests.pdb
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\nunit.framework.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\RevitAPI.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\RevitAPIUI.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\RevitTestFrameworkTypes.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\RTFRevit.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\bin\Debug\nunit.framework.xml
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\Debug\Honeybee.Revit.Tests.csproj.CoreCompileInputs.cache
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\Debug\Honeybee.Revit.Tests.csproj.CopyComplete
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\Debug\Honeybee.Revit.Tests.dll
+C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit.Tests\obj\Debug\Honeybee.Revit.Tests.pdb
