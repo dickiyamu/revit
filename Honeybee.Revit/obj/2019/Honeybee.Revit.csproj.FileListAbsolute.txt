@@ -1,6 +1,0 @@
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\2019\Honeybee.Revit.csproj.CoreCompileInputs.cache
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\2019\Honeybee.Revit.addin
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\2019\Honeybee.Revit.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\2019\Honeybee.Revit.pdb
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\2019\Honeybee.Revit.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\2019\Honeybee.Revit.pdb

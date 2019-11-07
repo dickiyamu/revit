@@ -1,9 +1,0 @@
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\Debug\Honeybee.Revit.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\Debug\Honeybee.Revit.pdb
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\Debug\RevitAPI.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\Debug\RevitAPIUI.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\Debug\Honeybee.Revit.csproj.CoreCompileInputs.cache
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\Debug\Honeybee.Revit.csproj.CopyComplete
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\Debug\Honeybee.Revit.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\obj\Debug\Honeybee.Revit.pdb
-C:\Users\ksobon\source\repos\Honeybee\Honeybee.Revit\bin\Debug\Honeybee.Revit.addin

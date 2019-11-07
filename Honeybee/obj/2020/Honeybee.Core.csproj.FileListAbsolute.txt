@@ -1,9 +1,0 @@
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\bin\2020\Honeybee.Core.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\bin\2020\Honeybee.Core.pdb
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\2020\Honeybee.Core.csproj.CoreCompileInputs.cache
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\2020\Honeybee.Core.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\2020\Honeybee.Core.pdb
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\bin\2020\NLog.dll
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\bin\2020\NLog.xml
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\2020\Honeybee.Core.csprojAssemblyReference.cache
-C:\Users\ksobon\source\repos\Honeybee\Honeybee\obj\2020\Honeybee.Core.csproj.CopyComplete
