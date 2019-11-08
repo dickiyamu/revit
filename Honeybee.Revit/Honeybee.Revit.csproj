@@ -109,6 +109,7 @@
   <ItemGroup>
     <Compile Include="AppCommand.cs" />
     <Compile Include="CreateModel\CreateModelCommand.cs" />
+    <Compile Include="CreateModel\CreateModelModel.cs" />
     <Compile Include="CreateModel\CreateModelRequestHandler.cs" />
     <Compile Include="CreateModel\CreateModelView.xaml.cs">
       <DependentUpon>CreateModelView.xaml</DependentUpon>

@@ -26,6 +26,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 _logger.Info("Create Model started.");
 
+                var uiApp = commandData.Application;
+                var doc = uiApp.ActiveUIDocument.Document;
+
                 if (View != null)
                 {
                     if (View.WindowState == WindowState.Minimized) View.WindowState = WindowState.Normal;
@@ -34,7 +37,8 @@ namespace Honeybee.Revit.CreateModel
                     return Result.Succeeded;
                 }
 
-                var vm = new CreateModelViewModel();
+                var m  = new CreateModelModel(doc);
+                var vm = new CreateModelViewModel(m);
                 var v = new CreateModelView
                 {
                     DataContext = vm
