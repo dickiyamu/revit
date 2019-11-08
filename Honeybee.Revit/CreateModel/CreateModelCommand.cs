@@ -1,5 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
+using System.Windows;
+using System.Windows.Interop;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -14,6 +18,7 @@ namespace Honeybee.Revit.CreateModel
     public class CreateModelCommand : IExternalCommand
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private static CreateModelView View { get; set; }
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -21,7 +26,29 @@ namespace Honeybee.Revit.CreateModel
             {
                 _logger.Info("Create Model started.");
 
-                //TODO: Reference UI.
+                if (View != null)
+                {
+                    if (View.WindowState == WindowState.Minimized) View.WindowState = WindowState.Normal;
+                    View.Activate();
+
+                    return Result.Succeeded;
+                }
+
+                var vm = new CreateModelViewModel();
+                var v = new CreateModelView
+                {
+                    DataContext = vm
+                };
+
+                View = v;
+                View.Closing += OnViewClosing;
+
+                var unused = new WindowInteropHelper(v)
+                {
+                    Owner = Process.GetCurrentProcess().MainWindowHandle
+                };
+
+                v.Show();
 
                 _logger.Info("Create Model ended.");
 
@@ -35,24 +62,27 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="panel"></param>
         public static void CreateButton(RibbonPanel panel)
         {
-            //TODO: Create button icon.
-            //var assembly = Assembly.GetExecutingAssembly();
-            //var unused = (PushButton)panel.AddItem(
-            //    new PushButtonData(
-            //        "CreateModelCommand",
-            //        "Create Model",
-            //        assembly.Location,
-            //        MethodBase.GetCurrentMethod().DeclaringType?.FullName)
-            //    {
-            //        ToolTip = "Description...",
-            //        LargeImage = ImageUtils.LoadImage(assembly, typeof(AppCommand).Namespace, "_32x32.createModel.png")
-            //    });
+            var assembly = Assembly.GetExecutingAssembly();
+            var unused = (PushButton)panel.AddItem(
+                new PushButtonData(
+                    "CreateModelCommand",
+                    "Create Model",
+                    assembly.Location,
+                    MethodBase.GetCurrentMethod().DeclaringType?.FullName)
+                {
+                    ToolTip = "Description...",
+                    LargeImage = ImageUtils.LoadImage(assembly, typeof(AppCommand).Namespace, "_32x32.createModel.png")
+                });
+        }
+
+        private static void OnViewClosing(object sender, CancelEventArgs e)
+        {
+            View = null;
+            if (sender is CreateModelView view) view.Closing -= OnViewClosing;
+
+            _logger.Info("Create Model ended.");
         }
     }
 }

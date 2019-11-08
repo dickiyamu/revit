@@ -9,6 +9,9 @@ namespace Honeybee.Revit
     {
         private static Logger _logger;
 
+        public static CreateModelRequestHandler CreateModelHandler { get; set; }
+        public static ExternalEvent CreateModelEvent { get; set; }
+
         public Result OnStartup(UIControlledApplication app)
         {
             // (Konrad) Initiate Nlog logger.
@@ -19,6 +22,9 @@ namespace Honeybee.Revit
             var panel = app.CreateRibbonPanel("Honeybee", "Honeybee");
 
             CreateModelCommand.CreateButton(panel);
+
+            CreateModelHandler = new CreateModelRequestHandler();
+            CreateModelEvent = ExternalEvent.Create(CreateModelHandler);
 
             return Result.Succeeded;
         }
