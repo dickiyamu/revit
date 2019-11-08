@@ -74,6 +74,7 @@
     <Compile Include="ImageUtils.cs" />
     <Compile Include="NlogUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WPF\DataGridExtension.cs" />
     <Compile Include="WPF\StatusBarManager.cs" />
   </ItemGroup>
   <ItemGroup>

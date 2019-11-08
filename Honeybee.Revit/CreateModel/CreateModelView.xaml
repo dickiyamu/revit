@@ -5,13 +5,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:wpf="clr-namespace:Honeybee.Core.WPF;assembly=Honeybee.Core"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         BorderThickness="0,5,0,0"
         BorderBrush="#F5B34C"
         Icon="../Resources/honeybee.ico"
-        Title="Honeybee - Create Model" 
-        Height="450" 
+        Title="Honeybee - Create Model"
+        SizeToContent="Height"
         Width="800">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -19,12 +20,142 @@
                                    CommandParameter="{Binding ElementName=Win}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
+    <Window.Resources>
+        <Style TargetType="{x:Type wpf:DataGridExtension}">
+            <Setter Property="Background"
+                    Value="White" />
+            <Setter Property="AutoGenerateColumns"
+                    Value="False" />
+            <Setter Property="HorizontalGridLinesBrush"
+                    Value="LightGray" />
+            <Setter Property="VerticalGridLinesBrush"
+                    Value="LightGray" />
+            <Setter Property="HeadersVisibility"
+                    Value="Column" />
+            <Setter Property="VerticalAlignment"
+                    Value="Stretch" />
+            <Setter Property="BorderBrush"
+                    Value="LightGray" />
+        </Style>
+        <Style x:Key="CenterGridHeaderStyle"
+               TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center" />
+        </Style>
+        <Style x:Key="ContentDataGridCentering"
+               TargetType="{x:Type DataGridCell}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground"
+                    Value="Black" />
+            <Setter Property="BorderBrush"
+                    Value="LightGray" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Style.Triggers>
+                <Trigger Property="IsSelected"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#7BC6CD" />
+                    <Setter Property="BorderBrush"
+                            Value="#7BC6CD" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <ContextMenu x:Key="RowMenu"
+                     DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+            <MenuItem Header="Zoom In" CommandParameter="{Binding}"
+                      Command="{Binding DataContext.ZoomIn, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}}" />
+        </ContextMenu>
+        <Style x:Key="DefaultRowStyle" TargetType="{x:Type DataGridRow}">
+            <Setter Property="ContextMenu" Value="{StaticResource RowMenu}" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="40" />
             <RowDefinition Height="25" />
         </Grid.RowDefinitions>
+        <wpf:DataGridExtension ItemsSource="{Binding SpatialObjects, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                               CellStyle="{StaticResource ContentDataGridCentering}"
+                               RowStyle="{StaticResource DefaultRowStyle}"
+                               VerticalScrollBarVisibility="Auto"
+                               HorizontalScrollBarVisibility="Hidden"
+                               CanUserAddRows="False"
+                               CanUserResizeColumns="False"
+                               CanUserSortColumns="False"
+                               IsReadOnly="False"
+                               SelectionMode="Extended"
+                               SelectionUnit="FullRow"
+                               MaxHeight="400"
+                               Margin="10,10,10,0">
+            <wpf:DataGridExtension.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander IsExpanded="True" Background="LightGray">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                    <GroupStyle.Panel>
+                        <ItemsPanelTemplate>
+                            <DataGridRowsPresenter />
+                        </ItemsPanelTemplate>
+                    </GroupStyle.Panel>
+                </GroupStyle>
+            </wpf:DataGridExtension.GroupStyle>
+            <wpf:DataGridExtension.Columns>
+                <DataGridTextColumn Header="Room/Space Name"
+                                    Binding="{Binding Name}"
+                                    Width="*"
+                                    IsReadOnly="True">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                            <Setter Property="TextBlock.Padding" Value="4,2" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Level"
+                                    Binding="{Binding Level.Name}"
+                                    Width="300"
+                                    IsReadOnly="True">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style>
+                            <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                            <Setter Property="TextBlock.Padding" Value="4,2" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </wpf:DataGridExtension.Columns>
+        </wpf:DataGridExtension>
         <Button Command="{Binding Cancel, Mode=OneWay}"
                 CommandParameter="{Binding ElementName=Win}"
                 Content="Cancel"
