@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
+using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
 using NLog;
 
@@ -30,7 +32,7 @@ namespace Honeybee.Revit.CreateModel
                 .Cast<SpatialElement>()
                 .Where(x => (x is Room || x is Space) && x.Area > 0)
                 .Select(x => new SpatialObjectWrapper(x))
-                .OrderByDescending(x => x.Level.Elevation)
+                .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
             return objects;

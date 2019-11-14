@@ -1,12 +1,20 @@
-﻿using Autodesk.Revit.DB;
+﻿using System.ComponentModel;
+using Autodesk.Revit.DB;
 
 namespace Honeybee.Revit.CreateModel.Wrappers
 {
-    public class SpatialObjectWrapper
+    public class SpatialObjectWrapper : INotifyPropertyChanged
     {
         public string Name { get; set; }
         public SpatialObjectType ObjectType { get; set; }
         public LevelWrapper Level { get; set; }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set { _isSelected = value; RaisePropertyChanged(nameof(IsSelected)); }
+        }
 
         public SpatialObjectWrapper(Element e)
         {
@@ -15,6 +23,12 @@ namespace Honeybee.Revit.CreateModel.Wrappers
                 ? SpatialObjectType.Room 
                 : SpatialObjectType.Space;
             Level = new LevelWrapper(e.Document.GetElement(e.LevelId) as Level);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
