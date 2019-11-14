@@ -27,7 +27,7 @@ namespace Honeybee.Revit.CreateModel
                 _logger.Info("Create Model started.");
 
                 var uiApp = commandData.Application;
-                var doc = uiApp.ActiveUIDocument.Document;
+                var uiDoc = uiApp.ActiveUIDocument;
 
                 if (View != null)
                 {
@@ -37,7 +37,7 @@ namespace Honeybee.Revit.CreateModel
                     return Result.Succeeded;
                 }
 
-                var m  = new CreateModelModel(doc);
+                var m  = new CreateModelModel(uiDoc);
                 var vm = new CreateModelViewModel(m);
                 var v = new CreateModelView
                 {

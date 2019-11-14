@@ -244,6 +244,14 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     FlowDirection="RightToLeft">
+                            <b:ImageButton Command="{Binding PickSpatialObjects, Mode=OneWay}"
+                                           MainImage="../Resources/24x24/pick.png"
+                                           HoverImage="../Resources/24x24/pickHover.png"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           Width="24"
+                                           Height="24" />
                             <b:ImageButton Command="{Binding ClearFilters, Mode=OneWay}"
                                            MainImage="../Resources/24x24/delete.png"
                                            HoverImage="../Resources/24x24/deleteHover.png"
@@ -251,7 +259,8 @@
                                            HorizontalAlignment="Center"
                                            Cursor="Hand"
                                            Width="24"
-                                           Height="24" />
+                                           Height="24" 
+                                           Margin="5,0,5,0"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>

@@ -155,7 +155,10 @@
   <ItemGroup>
     <Resource Include="Resources\honeybee.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\24x24\pick.png" />
+    <Resource Include="Resources\24x24\pickHover.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\24x24\delete.png" />
     <Resource Include="Resources\24x24\deleteHover.png" />

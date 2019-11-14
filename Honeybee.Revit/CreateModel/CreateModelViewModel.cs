@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -22,6 +21,7 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand<Window> WindowLoaded { get; set; }
         public RelayCommand ClearFilters { get; set; }
         public RelayCommand FilterChanged { get; set; }
+        public RelayCommand PickSpatialObjects { get; set; }
 
         private ListCollectionView _spatialObjects = new ListCollectionView(new List<SpatialObjectWrapper>());
         public ListCollectionView SpatialObjects
@@ -95,6 +95,15 @@ namespace Honeybee.Revit.CreateModel
             WindowLoaded = new RelayCommand<Window>(OnWindowLoaded);
             ClearFilters = new RelayCommand(OnClearFilters);
             FilterChanged = new RelayCommand(OnFilterChanged);
+            PickSpatialObjects = new RelayCommand(OnPickSpatialObjects);
+        }
+
+        private void OnPickSpatialObjects()
+        {
+            var selected = Model.SelectRoomsSpaces();
+            if (!selected.Any()) return;
+
+            SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>().ForEach(x => x.IsSelected = selected.Contains(x));
         }
 
         public bool FilterDataGrid(object obj)

@@ -5,7 +5,7 @@ namespace Honeybee.Revit.CreateModel.Wrappers
 {
     public class SpatialObjectWrapper : INotifyPropertyChanged
     {
-        public string Name { get; set; }
+        public string Name { get; }
         public SpatialObjectType ObjectType { get; set; }
         public LevelWrapper Level { get; set; }
 
@@ -23,6 +23,16 @@ namespace Honeybee.Revit.CreateModel.Wrappers
                 ? SpatialObjectType.Room 
                 : SpatialObjectType.Space;
             Level = new LevelWrapper(e.Document.GetElement(e.LevelId) as Level);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SpatialObjectWrapper item && Name.Equals(item.Name);
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
