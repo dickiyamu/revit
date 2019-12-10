@@ -3,6 +3,7 @@ using RTF.Framework;
 
 namespace Honeybee.Revit.Tests.CreateModel
 {
+    [TestFixture]
     public class CreateModelCommand : RevitTestBase
     {
         [Test]

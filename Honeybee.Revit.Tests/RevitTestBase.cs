@@ -20,8 +20,14 @@ namespace Honeybee.Revit.Tests
             if (_assemblyResolver == null)
             {
                 _assemblyResolver = new AssemblyResolver();
-                _assemblyResolver.Setup(
-                    $@"C:\Users\{Environment.UserName}\AppData\Roaming\Autodesk\Revit\Addins\2019\Honeybee.Revit");
+#if Build2020
+                const int year = 2020;
+#elif Build2019
+                const int year = 2019;
+#else
+                const int year = 2018;
+#endif
+                _assemblyResolver.Setup($@"C:\Users\{Environment.UserName}\AppData\Roaming\Autodesk\Revit\Addins\{year}\Honeybee.Revit");
             }
 
             UiApp = RTF.Applications.RevitTestExecutive.CommandData.Application;

@@ -34,7 +34,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '2020|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\2020\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Build2020</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -43,7 +43,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '2019|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\2019\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;Build2019</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UnitTests|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\UnitTests\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '2018|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\2018\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;Build2018</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -61,6 +79,9 @@
     </Reference>
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.4.1.0, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.6.8\lib\net45\NLog.dll</HintPath>
@@ -84,6 +105,16 @@
     </Reference>
     <Reference Include="RevitAPIUI" Condition="$(Configuration.Contains('2020'))">
       <HintPath>..\packages\Revit.2020.Assemblies.1.0.0\lib\RevitAPIUI.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2018'))">
+      <HintPath>..\packages\Revit-2018.1-x64.Base.1.0.0\lib\net46\RevitAPI.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI" Condition="$(Configuration.Contains('2018'))">
+      <HintPath>..\packages\Revit-2018.1-x64.Base.1.0.0\lib\net46\RevitAPIUI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
@@ -124,12 +155,30 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Schemas\ConstructionSet.cs" />
+    <Compile Include="Schemas\Converters\ConstructionSetConverter.cs" />
+    <Compile Include="Schemas\Enumerations\BuildingPrograms.cs" />
+    <Compile Include="Schemas\Enumerations\ClimateZones.cs" />
+    <Compile Include="Schemas\Enumerations\ConstructionTypes.cs" />
+    <Compile Include="Schemas\Enumerations\RoomPrograms.cs" />
+    <Compile Include="Schemas\Enumerations\Vintages.cs" />
+    <Compile Include="Schemas\ProgramType.cs" />
+    <Compile Include="Schemas\Room2D.cs" />
+    <Compile Include="Schemas\Room2DEnergyPropertiesAbridged.cs" />
+    <Compile Include="Schemas\Room2DPropertiesAbridged.cs" />
+    <Compile Include="AppSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Honeybee.Revit.addin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Resources\Schema\1980_2004_registry.json" />
+    <EmbeddedResource Include="Resources\Schema\2004_registry.json" />
+    <EmbeddedResource Include="Resources\Schema\2007_registry.json" />
+    <EmbeddedResource Include="Resources\Schema\2010_registry.json" />
+    <EmbeddedResource Include="Resources\Schema\2013_registry.json" />
+    <EmbeddedResource Include="Resources\Schema\pre_1980_registry.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Honeybee\Honeybee.Core.csproj">
@@ -163,11 +212,32 @@
     <Resource Include="Resources\24x24\delete.png" />
     <Resource Include="Resources\24x24\deleteHover.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\set.png" />
+    <Resource Include="Resources\24x24\setHover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\reset.png" />
+    <Resource Include="Resources\24x24\resetHover.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo Configuration: $(Configuration)
+if $(Configuration) == 2018 goto Build2018
 if $(Configuration) == 2019 goto Build2019
 if $(Configuration) == 2020 goto Build2020
+
+:Build2018
+if not exist "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit" mkdir "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetPath)" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)Honeybee.Revit.addin" "%25AppData%25\Autodesk\Revit\Addins\2018"
+xcopy /Q/Y "$(TargetDir)Honeybee.Core.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)Nlog.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+goto exit
 
 :Build2019
 if not exist "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit" mkdir "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
