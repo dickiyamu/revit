@@ -155,13 +155,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Schemas\BoundaryCondition.cs" />
     <Compile Include="Schemas\ConstructionSet.cs" />
     <Compile Include="Schemas\Converters\ConstructionSetConverter.cs" />
+    <Compile Include="Schemas\Converters\ListOfPoint2DConverter.cs" />
+    <Compile Include="Schemas\Converters\ProgramTypeConverter.cs" />
     <Compile Include="Schemas\Enumerations\BuildingPrograms.cs" />
     <Compile Include="Schemas\Enumerations\ClimateZones.cs" />
     <Compile Include="Schemas\Enumerations\ConstructionTypes.cs" />
     <Compile Include="Schemas\Enumerations\RoomPrograms.cs" />
     <Compile Include="Schemas\Enumerations\Vintages.cs" />
+    <Compile Include="Schemas\Point2D.cs" />
     <Compile Include="Schemas\ProgramType.cs" />
     <Compile Include="Schemas\Room2D.cs" />
     <Compile Include="Schemas\Room2DEnergyPropertiesAbridged.cs" />

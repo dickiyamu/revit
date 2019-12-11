@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
+using Honeybee.Revit.Schemas;
+using Newtonsoft.Json;
 using NLog;
 
 namespace Honeybee.Revit.CreateModel
@@ -21,6 +25,29 @@ namespace Honeybee.Revit.CreateModel
         {
             Doc = uiDoc.Document;
             UiDoc = uiDoc;
+        }
+
+        public void SerializeRoom2D(List<Room2D> rooms)
+        {
+            var json = JsonConvert.SerializeObject(rooms);
+            if (string.IsNullOrWhiteSpace(json)) return;
+
+            // TODO: This should produce a dialog for users to save the JSON. For now.
+            const string filePath = @"C:\Users\ksobon\Desktop\Honebee.json";
+            var dir = Path.GetDirectoryName(filePath);
+            if (string.IsNullOrWhiteSpace(dir)) return;
+
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+
+            try
+            {
+                File.WriteAllText(filePath, json);
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         /// <summary>

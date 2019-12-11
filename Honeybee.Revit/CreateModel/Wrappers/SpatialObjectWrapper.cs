@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
+using Autodesk.Revit.DB.Mechanical;
 using Honeybee.Revit.Schemas;
 
 namespace Honeybee.Revit.CreateModel.Wrappers
@@ -10,11 +12,11 @@ namespace Honeybee.Revit.CreateModel.Wrappers
         public SpatialObjectType ObjectType { get; set; }
         public LevelWrapper Level { get; set; }
 
-        private ConstructionSet _constructionSet = new ConstructionSet();
-        public ConstructionSet ConstructionSet
+        private Room2D _room2D;
+        public Room2D Room2D
         {
-            get { return _constructionSet; }
-            set { _constructionSet = value; RaisePropertyChanged(nameof(ConstructionSet)); }
+            get { return _room2D; }
+            set { _room2D = value; RaisePropertyChanged(nameof(Room2D)); }
         }
 
         private bool _isConstructionSetOverriden;
@@ -22,13 +24,6 @@ namespace Honeybee.Revit.CreateModel.Wrappers
         {
             get { return _isConstructionSetOverriden; }
             set { _isConstructionSetOverriden = value; RaisePropertyChanged(nameof(IsConstructionSetOverriden)); }
-        }
-
-        private ProgramType _programType = new ProgramType();
-        public ProgramType ProgramType
-        {
-            get { return _programType; }
-            set { _programType = value; RaisePropertyChanged(nameof(ProgramType)); }
         }
 
         private bool _isProgramTypeOverriden;
@@ -48,10 +43,16 @@ namespace Honeybee.Revit.CreateModel.Wrappers
         public SpatialObjectWrapper(Element e)
         {
             Name = e.Name;
+
             ObjectType = e.Category.Id.IntegerValue == BuiltInCategory.OST_Rooms.GetHashCode() 
                 ? SpatialObjectType.Room 
                 : SpatialObjectType.Space;
+
             Level = new LevelWrapper(e.Document.GetElement(e.LevelId) as Level);
+
+            Room2D = ObjectType == SpatialObjectType.Room 
+                ? new Room2D(e as Room) 
+                : new Room2D(e as Space);
         }
 
         public override bool Equals(object obj)

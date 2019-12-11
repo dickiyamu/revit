@@ -466,7 +466,7 @@
                                                         HorizontalAlignment="Stretch"
                                                         Width="270">
                                                 <Label
-                                                    Content="{Binding ConstructionSet.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                    Content="{Binding Room2D.Properties.Energy.ConstructionSet.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 <b:ImageButton x:Name="ConstructionSetAddButton"
                                                                Command="{Binding DataContext.OpenPopup, Mode=OneWay, ElementName=Win}"
                                                                CommandParameter="{Binding ElementName=ConstructionSetPopup}"
@@ -521,7 +521,7 @@
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch"
                                                         Width="270">
                                                 <Label
-                                                    Content="{Binding ProgramType.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                    Content="{Binding Room2D.Properties.Energy.ProgramType.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 <b:ImageButton x:Name="ProgramTypeOverrideButton"
                                                                Command="{Binding DataContext.OpenPopup, Mode=OneWay, ElementName=Win}"
                                                                CommandParameter="{Binding ElementName=ProgramTypePopup}"

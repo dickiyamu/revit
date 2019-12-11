@@ -3,10 +3,13 @@ using System.ComponentModel;
 using System.Linq;
 using Honeybee.Core;
 using Honeybee.Core.Extensions;
+using Honeybee.Revit.Schemas.Converters;
 using Honeybee.Revit.Schemas.Enumerations;
+using Newtonsoft.Json;
 
 namespace Honeybee.Revit.Schemas
 {
+    [JsonConverter(typeof(ProgramTypeConverter))]
     public class ProgramType : INotifyPropertyChanged
     {
         private Vintages _vintage = Vintages.Vintage2013;

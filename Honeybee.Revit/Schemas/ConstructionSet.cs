@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel;
+using Honeybee.Revit.Schemas.Converters;
 using Honeybee.Revit.Schemas.Enumerations;
+using Newtonsoft.Json;
 
 namespace Honeybee.Revit.Schemas
 {
+    [JsonConverter(typeof(ConstructionSetConverter))]
     public class ConstructionSet : INotifyPropertyChanged
     {
         private Vintages _vintage = Vintages.Vintage2013;

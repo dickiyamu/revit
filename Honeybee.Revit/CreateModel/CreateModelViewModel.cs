@@ -158,9 +158,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 if (!so.IsSelected) continue;
 
-                so.ConstructionSet.Vintage = BldgConstructionSet.Vintage;
-                so.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
-                so.ConstructionSet.ConstructionType = BldgConstructionSet.ConstructionType;
+                so.Room2D.Properties.Energy.ConstructionSet.Vintage = BldgConstructionSet.Vintage;
+                so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
+                so.Room2D.Properties.Energy.ConstructionSet.ConstructionType = BldgConstructionSet.ConstructionType;
                 so.IsConstructionSetOverriden = false;
             }
         }
@@ -171,9 +171,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 if (!so.IsSelected) continue;
 
-                so.ProgramType.Vintage = BldgProgramType.Vintage;
-                so.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
-                so.ProgramType.RoomProgram = BldgProgramType.RoomProgram;
+                so.Room2D.Properties.Energy.ProgramType.Vintage = BldgProgramType.Vintage;
+                so.Room2D.Properties.Energy.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
+                so.Room2D.Properties.Energy.ProgramType.RoomProgram = BldgProgramType.RoomProgram;
                 so.IsProgramTypeOverriden = false;
             }
         }
@@ -186,9 +186,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 if (!so.IsSelected) continue;
 
-                so.ConstructionSet.Vintage = ConstructionSetTemp.Vintage;
-                so.ConstructionSet.ClimateZone = ConstructionSetTemp.ClimateZone;
-                so.ConstructionSet.ConstructionType = ConstructionSetTemp.ConstructionType;
+                so.Room2D.Properties.Energy.ConstructionSet.Vintage = ConstructionSetTemp.Vintage;
+                so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = ConstructionSetTemp.ClimateZone;
+                so.Room2D.Properties.Energy.ConstructionSet.ConstructionType = ConstructionSetTemp.ConstructionType;
                 so.IsConstructionSetOverriden = true;
             }
 
@@ -203,9 +203,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 if (!so.IsSelected) continue;
 
-                so.ProgramType.Vintage = ProgramTypeTemp.Vintage;
-                so.ProgramType.BuildingProgram = ProgramTypeTemp.BuildingProgram;
-                so.ProgramType.RoomProgram = ProgramTypeTemp.RoomProgram;
+                so.Room2D.Properties.Energy.ProgramType.Vintage = ProgramTypeTemp.Vintage;
+                so.Room2D.Properties.Energy.ProgramType.BuildingProgram = ProgramTypeTemp.BuildingProgram;
+                so.Room2D.Properties.Energy.ProgramType.RoomProgram = ProgramTypeTemp.RoomProgram;
                 so.IsProgramTypeOverriden = true;
             }
             
@@ -220,9 +220,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 if (so.IsConstructionSetOverriden) continue;
 
-                so.ConstructionSet.Vintage = BldgConstructionSet.Vintage;
-                so.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
-                so.ConstructionSet.ConstructionType = BldgConstructionSet.ConstructionType;
+                so.Room2D.Properties.Energy.ConstructionSet.Vintage = BldgConstructionSet.Vintage;
+                so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
+                so.Room2D.Properties.Energy.ConstructionSet.ConstructionType = BldgConstructionSet.ConstructionType;
             }
         }
 
@@ -234,9 +234,9 @@ namespace Honeybee.Revit.CreateModel
             {
                 if (so.IsProgramTypeOverriden) continue;
 
-                so.ProgramType.Vintage = BldgProgramType.Vintage;
-                so.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
-                so.ProgramType.RoomProgram = BldgProgramType.RoomProgram;
+                so.Room2D.Properties.Energy.ProgramType.Vintage = BldgProgramType.Vintage;
+                so.Room2D.Properties.Energy.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
+                so.Room2D.Properties.Energy.ProgramType.RoomProgram = BldgProgramType.RoomProgram;
             }
         }
 
@@ -270,8 +270,14 @@ namespace Honeybee.Revit.CreateModel
             win.Close();
         }
 
-        private static void OnOk(Window win)
+        private void OnOk(Window win)
         {
+            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+                .Where(x => x.IsSelected)
+                .Select(x => x.Room2D)
+                .ToList();
+            if (selected.Any()) Model.SerializeRoom2D(selected);
+
             win.Close();
         }
 

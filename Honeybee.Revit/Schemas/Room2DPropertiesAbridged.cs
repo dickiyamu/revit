@@ -11,6 +11,6 @@ namespace Honeybee.Revit.Schemas
         }
 
         [JsonProperty("energy")]
-        public Room2DEnergyPropertiesAbridged Energy { get; set; }
+        public Room2DEnergyPropertiesAbridged Energy { get; set; } = new Room2DEnergyPropertiesAbridged();
     }
 }
