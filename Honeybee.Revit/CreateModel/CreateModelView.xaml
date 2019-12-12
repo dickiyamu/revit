@@ -17,7 +17,7 @@
         Icon="../Resources/honeybee.ico"
         Title="Honeybee - Create Model"
         SizeToContent="Height"
-        Width="1000"
+        Width="1100"
         d:DesignHeight="350">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -30,6 +30,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary
                     Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/ImageButtonStyle.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/ImageToggleButtonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="{x:Type wpf:DataGridExtension}">
                 <Setter Property="Background"
@@ -563,6 +565,22 @@
                                                         Value="Collapsed" />
                                             </Trigger>
                                         </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Conditioned?"
+                                                    Width="80"
+                                                    HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <b:ImageToggleButton IsChecked="{Binding Room2D.IsConditioned}"
+                                                             MainImage="../Resources/24x24/conditioned.png"
+                                                             HoverImage="../Resources/24x24/unconditioned.png"
+                                                             VerticalAlignment="Center"
+                                                             HorizontalAlignment="Center"
+                                                             Cursor="Hand"
+                                                             Width="22"
+                                                             Height="22" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Autodesk.Revit.DB;
 using Newtonsoft.Json;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Room2D
+    public class Room2D : INotifyPropertyChanged
     {
+        private bool _isConditioned = true;
+
         [JsonProperty("type")]
         public string Type
         {
@@ -35,6 +38,13 @@ namespace Honeybee.Revit.Schemas
 
         [JsonProperty("boundary_conditions")]
         public List<BoundaryCondition> BoundaryConditions { get; set; }
+
+        [JsonProperty("is_conditioned")]
+        public bool IsConditioned
+        {
+            get { return _isConditioned; }
+            set { _isConditioned = value; RaisePropertyChanged(nameof(IsConditioned)); }
+        }
 
         [JsonConstructor]
         public Room2D()
@@ -100,6 +110,12 @@ namespace Honeybee.Revit.Schemas
             }
 
             return curves;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

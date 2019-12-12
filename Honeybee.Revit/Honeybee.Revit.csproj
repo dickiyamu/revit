@@ -224,7 +224,10 @@
     <Resource Include="Resources\24x24\reset.png" />
     <Resource Include="Resources\24x24\resetHover.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\24x24\conditioned.png" />
+    <Resource Include="Resources\24x24\unconditioned.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo Configuration: $(Configuration)
