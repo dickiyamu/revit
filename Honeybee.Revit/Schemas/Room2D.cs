@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Architecture;
-using Autodesk.Revit.DB.Mechanical;
 using Newtonsoft.Json;
 
 namespace Honeybee.Revit.Schemas
@@ -27,6 +24,9 @@ namespace Honeybee.Revit.Schemas
         [JsonProperty("floor_boundary")]
         public List<Point2D> FloorBoundary { get; set; } = new List<Point2D>();
 
+        [JsonProperty("floor_holes")]
+        public List<List<Point2D>> FloorHoles { get; set; } = new List<List<Point2D>>();
+
         [JsonProperty("floor_height")]
         public double FloorHeight { get; set; }
 
@@ -41,7 +41,7 @@ namespace Honeybee.Revit.Schemas
         {
         }
 
-        public Room2D(Room e)
+        public Room2D(SpatialElement e)
         {
             Name = e.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
             DisplayName = e.Name;
@@ -56,19 +56,40 @@ namespace Honeybee.Revit.Schemas
 
             // (Konrad) We are only dealing with placed Rooms so there should always be at least one boundary list.
             // (Konrad) Also, Revit forces all Boundary Loops to be closed. That means that start point will be other line's end point.
-            foreach (var bs in e.GetBoundarySegments(bOptions).First())
+            var boundarySegments = e.GetBoundarySegments(bOptions);
+            for (var i = 0; i < boundarySegments.Count; i++)
+            {
+                if (i == 0)
+                {
+                    // (Konrad) First loop of segments goes into FloorBoundaries.
+                    var outerBoundary = boundarySegments[i];
+                    FloorBoundary.AddRange(GetPoints(outerBoundary));
+                }
+                else
+                {
+                    // (Konrad) All subsequent loops are FloorHoles.
+                    var holeBoundary = boundarySegments[i];
+                    FloorHoles.Add(GetPoints(holeBoundary));
+                }
+            }
+        }
+
+        private static List<Point2D> GetPoints(IEnumerable<BoundarySegment> segments)
+        {
+            var curves = new List<Point2D>();
+            foreach (var bs in segments)
             {
                 var curve = bs.GetCurve();
                 switch (curve)
                 {
                     case Line line:
-                        FloorBoundary.Add(new Point2D(line.GetEndPoint(0)));
+                        curves.Add(new Point2D(line.GetEndPoint(0)));
                         break;
                     case Arc arc:
-                        FloorBoundary.Add(new Point2D(arc.Evaluate(0, true)));
-                        FloorBoundary.Add(new Point2D(arc.Evaluate(0.25, true)));
-                        FloorBoundary.Add(new Point2D(arc.Evaluate(0.5, true)));
-                        FloorBoundary.Add(new Point2D(arc.Evaluate(0.75, true)));
+                        curves.Add(new Point2D(arc.Evaluate(0, true)));
+                        curves.Add(new Point2D(arc.Evaluate(0.25, true)));
+                        curves.Add(new Point2D(arc.Evaluate(0.5, true)));
+                        curves.Add(new Point2D(arc.Evaluate(0.75, true)));
                         break;
                     case CylindricalHelix helix:
                     case Ellipse ellipse:
@@ -77,16 +98,8 @@ namespace Honeybee.Revit.Schemas
                         break;
                 }
             }
-        }
 
-        public Room2D(Space e)
-        {
-            Name = e.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
-            DisplayName = e.Name;
-
-            if (!(e.Document.GetElement(e.LevelId) is Level level)) return;
-
-            FloorHeight = level.Elevation;
+            return curves;
         }
     }
 }
