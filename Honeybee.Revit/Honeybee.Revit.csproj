@@ -165,6 +165,7 @@
     <Compile Include="Schemas\Enumerations\ConstructionTypes.cs" />
     <Compile Include="Schemas\Enumerations\RoomPrograms.cs" />
     <Compile Include="Schemas\Enumerations\Vintages.cs" />
+    <Compile Include="Schemas\HvacTypes.cs" />
     <Compile Include="Schemas\Point2D.cs" />
     <Compile Include="Schemas\ProgramType.cs" />
     <Compile Include="Schemas\Room2D.cs" />

@@ -10,6 +10,7 @@
         xmlns:b="clr-namespace:Honeybee.Core.WPF.Buttons;assembly=Honeybee.Core"
         xmlns:wrappers="clr-namespace:Honeybee.Revit.CreateModel.Wrappers"
         xmlns:enums="clr-namespace:Honeybee.Revit.Schemas.Enumerations"
+        xmlns:schemas="clr-namespace:Honeybee.Revit.Schemas"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         BorderThickness="0,5,0,0"
@@ -17,7 +18,7 @@
         Icon="../Resources/honeybee.ico"
         Title="Honeybee - Create Model"
         SizeToContent="Height"
-        Width="1100"
+        Width="1200"
         d:DesignHeight="350">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -92,6 +93,9 @@
             </Style>
             <createModel:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
             <createModel:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
+            <createModel:HvacToBoolConverter x:Key="HvacToBoolConverter" />
+            <createModel:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+            <createModel:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <ObjectDataProvider x:Key="VintagesDataProvider"
                                 ObjectType="{x:Type enums:Vintages}"
                                 MethodName="GetAll" />
@@ -100,6 +104,9 @@
                                 MethodName="GetAll" />
             <ObjectDataProvider x:Key="ConstructionTypesDataProvider"
                                 ObjectType="{x:Type enums:ConstructionTypes}"
+                                MethodName="GetAll" />
+            <ObjectDataProvider x:Key="HvacTypesDataProvider"
+                                ObjectType="{x:Type schemas:HvacTypes}"
                                 MethodName="GetAll" />
         </ResourceDictionary>
     </Window.Resources>
@@ -569,18 +576,28 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Conditioned?"
-                                                    Width="80"
+                                                    Width="155"
                                                     HeaderStyle="{StaticResource CenterGridHeaderStyle}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <b:ImageToggleButton IsChecked="{Binding Room2D.IsConditioned}"
-                                                             MainImage="../Resources/24x24/conditioned.png"
-                                                             HoverImage="../Resources/24x24/unconditioned.png"
-                                                             VerticalAlignment="Center"
-                                                             HorizontalAlignment="Center"
-                                                             Cursor="Hand"
-                                                             Width="22"
-                                                             Height="22" />
+                                        <Grid>
+                                            <CheckBox x:Name="HvacCheckbox"
+                                                      IsChecked="{Binding Room2D.Properties.Energy.Conditioned, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      Visibility="{Binding Room2D.Properties.Energy.Conditioned, Converter={StaticResource BoolToVisibilityInverseConverter}}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalContentAlignment="Center"
+                                                      HorizontalContentAlignment="Center"
+                                                      Padding="0" />
+                                            <ComboBox
+                                                ItemsSource="{Binding Source={StaticResource HvacTypesDataProvider}}"
+                                                Visibility="{Binding Room2D.Properties.Energy.Conditioned, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                SelectionChanged="Selector_OnSelectionChanged"
+                                                DisplayMemberPath="Name"
+                                                SelectedValue="{Binding Room2D.Properties.Energy.Hvac}"
+                                                Height="24"
+                                                Margin="5" />
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

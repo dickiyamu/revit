@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Newtonsoft.Json;
+using NLog.LayoutRenderers;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -13,6 +14,8 @@ namespace Honeybee.Revit.Schemas
 
         private ProgramType _programType = new ProgramType();
         private ConstructionSet _constructionSet = new ConstructionSet();
+        private HvacTypes _hvac;
+        private bool _conditioned;
 
         [JsonProperty("program_type")]
         public ProgramType ProgramType
@@ -26,6 +29,20 @@ namespace Honeybee.Revit.Schemas
         {
             get { return _constructionSet; }
             set { _constructionSet = value; RaisePropertyChanged(nameof(ConstructionSet)); }
+        }
+
+        [JsonIgnore]
+        public bool Conditioned
+        {
+            get { return _conditioned; }
+            set { _conditioned = value; RaisePropertyChanged(nameof(Conditioned)); }
+        }
+
+        [JsonProperty("hvac")]
+        public HvacTypes Hvac
+        {
+            get { return _hvac; }
+            set { _hvac = value; RaisePropertyChanged(nameof(Hvac)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
