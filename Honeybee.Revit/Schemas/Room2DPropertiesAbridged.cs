@@ -1,16 +1,23 @@
-﻿using Newtonsoft.Json;
+﻿using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Room2DPropertiesAbridged
+    public class Room2DPropertiesAbridged : ISchema<DF.Room2DPropertiesAbridged>
     {
-        [JsonProperty("type")]
         public string Type
         {
             get { return GetType().Name; }
         }
 
-        [JsonProperty("energy")]
         public Room2DEnergyPropertiesAbridged Energy { get; set; } = new Room2DEnergyPropertiesAbridged();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public DF.Room2DPropertiesAbridged ToDragonfly()
+        {
+            return new DF.Room2DPropertiesAbridged(Type, Energy.ToDragonfly());
+        }
     }
 }
