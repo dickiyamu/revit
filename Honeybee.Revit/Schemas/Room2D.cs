@@ -75,7 +75,7 @@ namespace Honeybee.Revit.Schemas
                 Properties.ToDragonfly(),
                 DisplayName,
                 Type,
-                new List<List<List<double>>>(),
+                FloorHoles.ToDragonfly(),
                 IsGroundContact,
                 IsTopExposed,
                 BoundaryConditions,

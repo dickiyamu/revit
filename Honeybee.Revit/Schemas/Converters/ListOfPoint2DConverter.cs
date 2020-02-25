@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Documents;
 using Newtonsoft.Json;
 
 namespace Honeybee.Revit.Schemas.Converters

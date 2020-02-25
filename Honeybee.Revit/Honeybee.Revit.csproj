@@ -179,6 +179,7 @@
     <Compile Include="Schemas\ISchema.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Honeybee.Revit.addin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -234,6 +235,7 @@
     <Resource Include="Resources\24x24\conditioned.png" />
     <Resource Include="Resources\24x24\unconditioned.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo Configuration: $(Configuration)
