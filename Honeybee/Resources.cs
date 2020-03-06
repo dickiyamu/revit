@@ -24,5 +24,24 @@ namespace Honeybee.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Returns a binary array of an embedded resource.
+        /// </summary>
+        /// <param name="assembly">Assembly to get the resource from.</param>
+        /// <param name="fileName">Name of the resource.</param>
+        /// <returns>Binary Array of a resource.</returns>
+        public static byte[] StreamBinaryEmbeddedResource(Assembly assembly, string fileName)
+        {
+            using (var stream = assembly.GetManifestResourceStream(fileName))
+            {
+                if (stream == null) return new byte[] { };
+
+                var buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, (int)stream.Length);
+                stream.Dispose();
+                return buffer;
+            }
+        }
     }
 }

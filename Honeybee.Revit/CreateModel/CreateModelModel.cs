@@ -27,6 +27,13 @@ namespace Honeybee.Revit.CreateModel
             UiDoc = uiDoc;
         }
 
+        public void ShowBoundaryConditions(SpatialObjectWrapper so)
+        {
+            AppCommand.CreateModelHandler.Arg1 = so;
+            AppCommand.CreateModelHandler.Request.Make(RequestId.ShowBoundaryConditions);
+            AppCommand.CreateModelEvent.Raise();
+        }
+
         public void SerializeRoom2D(List<Room2D> rooms)
         {
             var json = JsonConvert.SerializeObject(rooms);

@@ -18,7 +18,7 @@
         Icon="../Resources/honeybee.ico"
         Title="Honeybee - Create Model"
         SizeToContent="Height"
-        Width="1200"
+        Width="1400"
         d:DesignHeight="350">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -598,6 +598,24 @@
                                                 Height="24"
                                                 Margin="5" />
                                         </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Boundary"
+                                                    Width="75"
+                                                    HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <b:ImageToggleButton Command="{Binding DataContext.ShowBoundaryConditions, Mode=OneWay, ElementName=Win}"
+                                                             CommandParameter="{Binding }"
+                                                             MainImage="../Resources/24x24/set.png"
+                                                             HoverImage="../Resources/24x24/setHover.png"
+                                                             VerticalAlignment="Center"
+                                                             HorizontalAlignment="Center"
+                                                             Cursor="Hand"
+                                                             Width="22"
+                                                             Height="22"
+                                                             Margin="5,0,0,0" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

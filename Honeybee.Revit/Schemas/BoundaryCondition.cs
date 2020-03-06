@@ -24,4 +24,20 @@
             get { return GetType().Name; }
         }
     }
+
+    public class Adiabatic : BoundaryCondition
+    {
+        public override string Type
+        {
+            get { return GetType().Name; }
+        }
+    }
+
+    public class Surface : BoundaryCondition
+    {
+        public override string Type
+        {
+            get { return GetType().Name; }
+        }
+    }
 }

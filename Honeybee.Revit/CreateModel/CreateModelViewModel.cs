@@ -37,6 +37,7 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand<Popup> CloseBuildingProgramTypePopup { get; set; }
         public RelayCommand ResetConstructionSet { get; set; }
         public RelayCommand ResetProgramType { get; set; }
+        public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
 
         private ListCollectionView _spatialObjects = new ListCollectionView(new List<SpatialObjectWrapper>());
         public ListCollectionView SpatialObjects
@@ -148,9 +149,15 @@ namespace Honeybee.Revit.CreateModel
             CloseBuildingProgramTypePopup = new RelayCommand<Popup>(OnCloseBuildingProgramTypePopup);
             ResetConstructionSet = new RelayCommand(OnResetConstructionSet);
             ResetProgramType = new RelayCommand(OnResetProgramType);
+            ShowBoundaryConditions = new RelayCommand<SpatialObjectWrapper>(OnShowBoundaryConditions);
         }
-        
+
         #region Event Handlers
+
+        private void OnShowBoundaryConditions(SpatialObjectWrapper so)
+        {
+            Model.ShowBoundaryConditions(so);
+        }
 
         private void OnResetConstructionSet()
         {

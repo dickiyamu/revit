@@ -1,16 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Autodesk.Revit.DB;
+using NLog;
 using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
     public class Room2D : ISchema<DF.Room2D>, INotifyPropertyChanged
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public string Type
         {
             get { return GetType().Name; }
         }
+
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public Room2DPropertiesAbridged Properties { get; set; } = new Room2DPropertiesAbridged();
@@ -28,6 +34,8 @@ namespace Honeybee.Revit.Schemas
         public List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> WindowParameters { get; set; }
         public List<DF.AnyOf<DF.ExtrudedBorder, DF.Overhang, DF.LouversByDistance, DF.LouversByCount>> ShadingParameters { get; set; }
 
+        internal List<Curve> FloorBoundarySegments { get; set; } = new List<Curve>(); // list of Revit Curves of the outer boundary.
+
         public Room2D(SpatialElement e)
         {
             Name = e.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
@@ -35,6 +43,8 @@ namespace Honeybee.Revit.Schemas
 
             if (e.Document.GetElement(e.LevelId) is Level level)
                 FloorHeight = level.Elevation;
+
+            FloorToCeilingHeight = GetCeilingHeight(e);
 
             var bOptions = new SpatialElementBoundaryOptions
             {
@@ -51,6 +61,11 @@ namespace Honeybee.Revit.Schemas
                     // (Konrad) First loop of segments goes into FloorBoundaries.
                     var outerBoundary = boundarySegments[i];
                     FloorBoundary.AddRange(GetPoints(outerBoundary));
+
+                    foreach (var bs in outerBoundary)
+                    {
+                        FloorBoundarySegments.Add(bs.GetCurve());
+                    }
                 }
                 else
                 {
@@ -58,6 +73,44 @@ namespace Honeybee.Revit.Schemas
                     var holeBoundary = boundarySegments[i];
                     FloorHoles.Add(GetPoints(holeBoundary));
                 }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="se"></param>
+        /// <returns></returns>
+        private static double GetCeilingHeight(SpatialElement se)
+        {
+            try
+            {
+                var view = new FilteredElementCollector(se.Document)
+                    .OfClass(typeof(View3D))
+                    .Cast<View3D>()
+                    .FirstOrDefault(x => !x.IsTemplate);
+                if (view == null) return 0d;
+
+                var basePt = se.GetLocationPoint();
+                if (basePt == XYZ.Zero) return 0d;
+
+                var direction = new XYZ(0, 0, 1);
+                var filter = new ElementClassFilter(typeof(Ceiling));
+                var refIntersector = new ReferenceIntersector(filter, FindReferenceTarget.Face, view);
+                var refWithContext = refIntersector.FindNearest(basePt, direction);
+                if (refWithContext == null) return 0d;
+
+                var reference = refWithContext.GetReference();
+                var intersection = reference.GlobalPoint;
+                var line = Line.CreateBound(basePt, intersection);
+                var height = line.Length;
+
+                return height;
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(e);
+                return 0d;
             }
         }
 
