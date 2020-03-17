@@ -32,6 +32,9 @@ namespace Honeybee.Revit.CreateModel
                     case RequestId.ShowBoundaryConditions:
                         ShowBoundaryConditions(app);
                         break;
+                    case RequestId.WriteJournalComment:
+                        WriteJournal(app);
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -46,6 +49,13 @@ namespace Honeybee.Revit.CreateModel
         public string GetName()
         {
             return "Create Model External Event";
+        }
+
+        private void WriteJournal(UIApplication app)
+        {
+            if (!(Arg1 is string comment)) return;
+
+            app.Application.WriteJournalComment(comment, true);
         }
 
         private void ShowBoundaryConditions(UIApplication app)
@@ -192,7 +202,8 @@ namespace Honeybee.Revit.CreateModel
     public enum RequestId
     {
         None,
-        ShowBoundaryConditions
+        ShowBoundaryConditions,
+        WriteJournalComment
     }
 
     public class CreateModelRequest

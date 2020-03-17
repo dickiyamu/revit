@@ -48,7 +48,7 @@ namespace Honeybee.Revit.Schemas
 
             var bOptions = new SpatialElementBoundaryOptions
             {
-                SpatialElementBoundaryLocation = SpatialElementBoundaryLocation.Finish
+                SpatialElementBoundaryLocation = SpatialElementBoundaryLocation.CoreCenter
             };
 
             // (Konrad) We are only dealing with placed Rooms so there should always be at least one boundary list.
@@ -89,16 +89,36 @@ namespace Honeybee.Revit.Schemas
                     .OfClass(typeof(View3D))
                     .Cast<View3D>()
                     .FirstOrDefault(x => !x.IsTemplate);
-                if (view == null) return 0d;
+                if (view == null)
+                    return se.GetUnboundHeight();
 
                 var basePt = se.GetLocationPoint();
-                if (basePt == XYZ.Zero) return 0d;
+                if (basePt == null)
+                    return se.GetUnboundHeight();
 
                 var direction = new XYZ(0, 0, 1);
                 var filter = new ElementClassFilter(typeof(Ceiling));
                 var refIntersector = new ReferenceIntersector(filter, FindReferenceTarget.Face, view);
                 var refWithContext = refIntersector.FindNearest(basePt, direction);
-                if (refWithContext == null) return 0d;
+                if (refWithContext == null)
+                {
+                    // (Konrad) There is no Ceiling. What about a Floor (exposed ceiling)?
+                    basePt += new XYZ(0, 0, 0.1); // floor/bottom of room intersect let's move point up
+                    filter = new ElementClassFilter(typeof(Floor));
+                    refIntersector = new ReferenceIntersector(filter, FindReferenceTarget.Face, view);
+                    refWithContext = refIntersector.FindNearest(basePt, direction);
+                }
+
+                if (refWithContext == null)
+                {
+                    // (Konrad) There is no Floor. What about Roof (exposed ceiling on top floor)?
+                    filter = new ElementClassFilter(typeof(RoofBase));
+                    refIntersector = new ReferenceIntersector(filter, FindReferenceTarget.Face, view);
+                    refWithContext = refIntersector.FindNearest(basePt, direction);
+                }
+
+                if (refWithContext == null)
+                    return se.GetUnboundHeight();
 
                 var reference = refWithContext.GetReference();
                 var intersection = reference.GlobalPoint;

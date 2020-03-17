@@ -156,6 +156,7 @@ namespace Honeybee.Revit.CreateModel
 
         private void OnShowBoundaryConditions(SpatialObjectWrapper so)
         {
+            Model.WriteJournalComment($"Showing Boundary Conditions for: {so.Name}.");
             Model.ShowBoundaryConditions(so);
         }
 
@@ -257,6 +258,7 @@ namespace Honeybee.Revit.CreateModel
             var selected = Model.SelectRoomsSpaces();
             if (!selected.Any()) return;
 
+            Model.WriteJournalComment($"Selected Rooms/Spaces: {string.Join(":::", selected.Select(x => x.Name))}.");
             SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>().ForEach(x => x.IsSelected = selected.Contains(x));
         }
 
@@ -285,6 +287,7 @@ namespace Honeybee.Revit.CreateModel
                 .ToList();
             if (selected.Any()) Model.SerializeRoom2D(selected);
 
+            Model.WriteJournalComment("Closing Honeybee...");
             win.Close();
         }
 

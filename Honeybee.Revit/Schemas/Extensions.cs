@@ -35,20 +35,44 @@ namespace Honeybee.Revit.Schemas
         /// <returns></returns>
         public static XYZ GetLocationPoint(this SpatialElement se)
         {
-            var result = XYZ.Zero;
+            XYZ result;
             if (se.Category.Id.IntegerValue == BuiltInCategory.OST_Rooms.GetHashCode())
             {
-                if (!(se is Room room)) return result;
-                if (!(room.Location is LocationPoint loc)) return result;
+                if (!(se is Room room)) return null;
+                if (!(room.Location is LocationPoint loc)) return null;
 
                 result = loc.Point;
             }
             else
             {
-                if (!(se is Space space)) return result;
-                if (!(space.Location is LocationPoint loc)) return result;
+                if (!(se is Space space)) return null;
+                if (!(space.Location is LocationPoint loc)) return null;
 
                 result = loc.Point;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="se"></param>
+        /// <returns></returns>
+        public static double GetUnboundHeight(this SpatialElement se)
+        {
+            var result = 0d;
+            if (se.Category.Id.IntegerValue == BuiltInCategory.OST_Rooms.GetHashCode())
+            {
+                if (!(se is Room room)) return result;
+
+                result = room.UnboundedHeight;
+            }
+            else
+            {
+                if (!(se is Space space)) return result;
+
+                result = space.UnboundedHeight;
             }
 
             return result;

@@ -27,6 +27,13 @@ namespace Honeybee.Revit.CreateModel
             UiDoc = uiDoc;
         }
 
+        public void WriteJournalComment(string comment)
+        {
+            AppCommand.CreateModelHandler.Arg1 = comment;
+            AppCommand.CreateModelHandler.Request.Make(RequestId.WriteJournalComment);
+            AppCommand.CreateModelEvent.Raise();
+        }
+
         public void ShowBoundaryConditions(SpatialObjectWrapper so)
         {
             AppCommand.CreateModelHandler.Arg1 = so;
