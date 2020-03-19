@@ -20,21 +20,21 @@ namespace Honeybee.Revit.Schemas
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public Room2DPropertiesAbridged Properties { get; set; } = new Room2DPropertiesAbridged();
-        public List<Point2D> FloorBoundary { get; set; } = new List<Point2D>();
-        public List<List<Point2D>> FloorHoles { get; set; } = new List<List<Point2D>>();
+        public List<Point2D> FloorBoundary { get; set; }
+        public List<List<Point2D>> FloorHoles { get; set; }
         public double FloorHeight { get; set; }
         public double FloorToCeilingHeight { get; set; }
 
-        //[JsonProperty("boundary_conditions")]
-        //public List<BoundaryCondition> BoundaryConditions { get; set; }
+
+        public List<BoundaryCondition> BoundaryConditions { get; set; }
 
         public bool IsGroundContact { get; set; }
         public bool IsTopExposed { get; set; }
-        public List<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>> BoundaryConditions { get; set; }
+        //public List<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>> BoundaryConditions { get; set; }
         public List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> WindowParameters { get; set; }
         public List<DF.AnyOf<DF.ExtrudedBorder, DF.Overhang, DF.LouversByDistance, DF.LouversByCount>> ShadingParameters { get; set; }
 
-        internal List<Curve> FloorBoundarySegments { get; set; } = new List<Curve>(); // list of Revit Curves of the outer boundary.
+        internal List<Curve> FloorBoundarySegments { get; set; }
 
         public Room2D(SpatialElement e)
         {
@@ -45,42 +45,86 @@ namespace Honeybee.Revit.Schemas
                 FloorHeight = level.Elevation;
 
             FloorToCeilingHeight = GetCeilingHeight(e);
+            FloorBoundary = GetBoundary(e);
+            FloorHoles = GetHoles(e);
+            FloorBoundarySegments = GetBoundarySegments(e);
+        }
 
+        /// <summary>
+        /// Converts Revit Room2D object into Dragonfly Schema compatible object.
+        /// </summary>
+        /// <returns>Dragonfly Schema Room2D.</returns>
+        public DF.Room2D ToDragonfly()
+        {
+            return new DF.Room2D(
+                Name,
+                FloorBoundary.ToDragonfly(),
+                FloorHeight,
+                FloorToCeilingHeight,
+                Properties.ToDragonfly(),
+                DisplayName,
+                Type,
+                FloorHoles.ToDragonfly(),
+                IsGroundContact,
+                IsTopExposed,
+                BoundaryConditions.Select(x => x.ToDragonfly()).ToList(),
+                WindowParameters,
+                ShadingParameters);
+        }
+
+        #region Utilities
+
+        private static List<List<Point2D>> GetHoles(SpatialElement se)
+        {
+            var holes = new List<List<Point2D>>();
             var bOptions = new SpatialElementBoundaryOptions
             {
                 SpatialElementBoundaryLocation = SpatialElementBoundaryLocation.CoreCenter
             };
 
-            // (Konrad) We are only dealing with placed Rooms so there should always be at least one boundary list.
-            // (Konrad) Also, Revit forces all Boundary Loops to be closed. That means that start point will be other line's end point.
-            var boundarySegments = e.GetBoundarySegments(bOptions);
-            for (var i = 0; i < boundarySegments.Count; i++)
+            var boundarySegments = se.GetBoundarySegments(bOptions);
+            for (var i = 1; i < boundarySegments.Count; i++)
             {
-                if (i == 0)
-                {
-                    // (Konrad) First loop of segments goes into FloorBoundaries.
-                    var outerBoundary = boundarySegments[i];
-                    FloorBoundary.AddRange(GetPoints(outerBoundary));
-
-                    foreach (var bs in outerBoundary)
-                    {
-                        FloorBoundarySegments.Add(bs.GetCurve());
-                    }
-                }
-                else
-                {
-                    // (Konrad) All subsequent loops are FloorHoles.
-                    var holeBoundary = boundarySegments[i];
-                    FloorHoles.Add(GetPoints(holeBoundary));
-                }
+                // (Konrad) All loops starting from index 1 are floor holes.
+                var holeBoundary = boundarySegments[i];
+                holes.Add(GetPoints(holeBoundary));
             }
+
+            return holes;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="se"></param>
-        /// <returns></returns>
+        private static List<Curve> GetBoundarySegments(SpatialElement se)
+        {
+            var segments = new List<Curve>();
+            var bOptions = new SpatialElementBoundaryOptions
+            {
+                SpatialElementBoundaryLocation = SpatialElementBoundaryLocation.CoreCenter
+            };
+
+            var outerBoundary = se.GetBoundarySegments(bOptions).FirstOrDefault();
+            if (outerBoundary == null) return segments;
+
+            segments.AddRange(outerBoundary.Select(bs => bs.GetCurve()));
+
+            return segments;
+        }
+
+        private static List<Point2D> GetBoundary(SpatialElement se)
+        {
+            var boundary = new List<Point2D>();
+            var bOptions = new SpatialElementBoundaryOptions
+            {
+                SpatialElementBoundaryLocation = SpatialElementBoundaryLocation.CoreCenter
+            };
+
+            var outerBoundary = se.GetBoundarySegments(bOptions).FirstOrDefault();
+            if (outerBoundary == null) return boundary;
+
+            boundary.AddRange(GetPoints(outerBoundary));
+
+            return boundary;
+        }
+
         private static double GetCeilingHeight(SpatialElement se)
         {
             try
@@ -134,28 +178,6 @@ namespace Honeybee.Revit.Schemas
             }
         }
 
-        /// <summary>
-        /// Converts Revit Room2D object into Dragonfly Schema compatible object.
-        /// </summary>
-        /// <returns>Dragonfly Schema Room2D.</returns>
-        public DF.Room2D ToDragonfly()
-        {
-            return new DF.Room2D(
-                Name,
-                FloorBoundary.ToDragonfly(),
-                FloorHeight,
-                FloorToCeilingHeight,
-                Properties.ToDragonfly(),
-                DisplayName,
-                Type,
-                FloorHoles.ToDragonfly(),
-                IsGroundContact,
-                IsTopExposed,
-                BoundaryConditions,
-                WindowParameters,
-                ShadingParameters);
-        }
-
         private static List<Point2D> GetPoints(IEnumerable<BoundarySegment> segments)
         {
             var curves = new List<Point2D>();
@@ -183,6 +205,8 @@ namespace Honeybee.Revit.Schemas
 
             return curves;
         }
+
+        #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged(string propertyName)

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region Properties
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +14,10 @@ using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
 using Newtonsoft.Json;
 using NLog;
+using DF = DragonflySchema;
+using Surface = Honeybee.Revit.Schemas.Surface;
+
+#endregion
 
 namespace Honeybee.Revit.CreateModel
 {
@@ -25,6 +31,39 @@ namespace Honeybee.Revit.CreateModel
         {
             Doc = uiDoc.Document;
             UiDoc = uiDoc;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public List<SpatialObjectWrapper> GetSpatialObjects()
+        {
+            var objects = new FilteredElementCollector(Doc)
+                .OfClass(typeof(SpatialElement))
+                .WhereElementIsNotElementType()
+                .Cast<SpatialElement>()
+                .Where(x => (x is Room || x is Space) && x.Area > 0)
+                .Select(x => new SpatialObjectWrapper(x))
+                .OrderBy(x => x.Level.Elevation)
+                .ToList();
+
+            foreach (var so in objects)
+            {
+                var bcs = new List<BoundaryCondition>();
+                foreach (var curve in so.Room2D.FloorBoundarySegments)
+                {
+                    var sc = new Surface(objects.Where(x => !Equals(x, so)), curve);
+                    if (sc.BoundaryConditionObjects.Item1 != null && sc.BoundaryConditionObjects.Item2 != null)
+                        bcs.Add(sc);
+                    else
+                        bcs.Add(null);
+                }
+
+                so.Room2D.BoundaryConditions = bcs;
+            }
+
+            return objects;
         }
 
         public void WriteJournalComment(string comment)
@@ -62,24 +101,6 @@ namespace Honeybee.Revit.CreateModel
             {
                 // ignore
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public List<SpatialObjectWrapper> GetSpatialObjects()
-        {
-            var objects = new FilteredElementCollector(Doc)
-                .OfClass(typeof(SpatialElement))
-                .WhereElementIsNotElementType()
-                .Cast<SpatialElement>()
-                .Where(x => (x is Room || x is Space) && x.Area > 0)
-                .Select(x => new SpatialObjectWrapper(x))
-                .OrderBy(x => x.Level.Elevation)
-                .ToList();
-
-            return objects;
         }
 
         public List<SpatialObjectWrapper> SelectRoomsSpaces()
