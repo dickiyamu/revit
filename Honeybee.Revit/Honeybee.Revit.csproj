@@ -160,6 +160,7 @@
     </Compile>
     <Compile Include="Schemas\BoundaryCondition.cs" />
     <Compile Include="Schemas\ConstructionSet.cs" />
+    <Compile Include="Schemas\Converters\BoundaryConditionsConverter.cs" />
     <Compile Include="Schemas\Converters\ConstructionSetConverter.cs" />
     <Compile Include="Schemas\Converters\ListOfPoint2DConverter.cs" />
     <Compile Include="Schemas\Converters\ProgramTypeConverter.cs" />

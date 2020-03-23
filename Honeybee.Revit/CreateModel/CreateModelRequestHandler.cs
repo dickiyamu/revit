@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region References
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +11,10 @@ using Autodesk.Revit.UI;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
 using NLog;
+using FamilyUtils = Honeybee.Core.FamilyUtils;
+using Surface = Honeybee.Revit.Schemas.Surface;
+
+#endregion
 
 namespace Honeybee.Revit.CreateModel
 {
@@ -75,6 +81,8 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
+        #region Utilities
+
         private static void Cleanup(Document doc)
         {
             try
@@ -117,33 +125,50 @@ namespace Honeybee.Revit.CreateModel
                     .Cast<Family>()
                     .FirstOrDefault(x => x.FamilyCategory.Id.IntegerValue == gaId && x.Name == famName);
 
-                FamilySymbol fs = null;
+                //FamilySymbol fs = null;
                 if (loadedFam == null)
                 {
                     var resourcePath = GetFamilyFromResource(famName);
-                    if (string.IsNullOrWhiteSpace(resourcePath) ||
-                        !doc.LoadFamilySymbol(resourcePath, "Outdoors", out fs)) return;
+                    loadedFam = doc.LoadFamily(doc, new FamilyUtils.FamilyLoadProcessor());
+                    if (string.IsNullOrWhiteSpace(resourcePath) || loadedFam == null) return; 
+
+                    //if (string.IsNullOrWhiteSpace(resourcePath) || !doc.LoadFamily(doc, new FamilyUtils.FamilyLoadProcessor(true))
+                    //    !doc.LoadFamilySymbol(resourcePath, "Surface", out fs)) return;
                 }
-                else
-                {
-                    var symbols = loadedFam.GetFamilySymbolIds();
-                    foreach (var id in symbols)
-                    {
-                        if (!(doc.GetElement(id) is FamilySymbol familySymbol) ||
-                            familySymbol.Name != "Outdoors") continue;
+                //else
+                //{
+                //    var symbols = loadedFam.GetFamilySymbolIds();
+                //    foreach (var id in symbols)
+                //    {
+                //        if (!(doc.GetElement(id) is FamilySymbol familySymbol) ||
+                //            familySymbol.Name != "Surface") continue;
 
-                        fs = familySymbol;
-                        break;
-                    }
+                //        fs = familySymbol;
+                //        break;
+                //    }
+                //}
+
+                //if (fs == null) return;
+                //if (!fs.IsActive) fs.Activate();
+
+                var symbols = new Dictionary<string, FamilySymbol>();
+                foreach (var id in loadedFam.GetFamilySymbolIds())
+                {
+                    if (!(doc.GetElement(id) is FamilySymbol familySymbol)) continue;
+                    symbols.Add(familySymbol.Name, familySymbol);
                 }
 
-                if (fs == null) return;
-                if (!fs.IsActive) fs.Activate();
-
-                foreach (var curve in so.Room2D.FloorBoundarySegments)
+                for (var i = 0; i < so.Room2D.FloorBoundarySegments.Count; i++)
                 {
+                    var curve = so.Room2D.FloorBoundarySegments[i];
+                    var bCondition = so.Room2D.BoundaryConditions[i];
+                    var fs = bCondition == null ? symbols["Outdoors"] : symbols["Surface"];
                     var loc = curve.Evaluate(0.5, true);
-                    doc.Create.NewFamilyInstance(loc, fs, doc.ActiveView);
+                    var fi = doc.Create.NewFamilyInstance(loc, fs, doc.ActiveView);
+
+                    fi?.LookupParameter("AdjacentRoom")
+                        ?.Set((bCondition as Surface)
+                            ?.BoundaryConditionObjects.Item2);
                 }
             }
             catch (Exception e)
@@ -178,7 +203,7 @@ namespace Honeybee.Revit.CreateModel
         private static string GetFamilyFromResource(string resourceName)
         {
             var contents = Resources.StreamBinaryEmbeddedResource(Assembly.GetExecutingAssembly(),
-                $"Honeybee.Honeybee.Revit.CreateModel.R20.{resourceName}.rfa");
+                $"Honeybee.Revit.CreateModel.R20.{resourceName}.rfa");
             if (!contents.Any()) return string.Empty;
 
             var filePath = Path.Combine(Path.GetTempPath(), $"{resourceName}.rfa");
@@ -197,6 +222,8 @@ namespace Honeybee.Revit.CreateModel
 
             return filePath;
         }
+
+        #endregion
     }
 
     public enum RequestId

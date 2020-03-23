@@ -7,11 +7,11 @@ using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public abstract class BoundaryCondition : ISchema<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>>
+    public abstract class BoundaryCondition : ISchema<object>
     {
         public abstract string Type { get; }
 
-        public abstract DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface> ToDragonfly();
+        public abstract object ToDragonfly();
     }
 
     public class Outdoors : BoundaryCondition
@@ -21,7 +21,7 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface> ToDragonfly()
+        public override object ToDragonfly()
         {
             throw new NotImplementedException();
         }
@@ -38,7 +38,7 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface> ToDragonfly()
+        public override object ToDragonfly()
         {
             throw new NotImplementedException();
         }
@@ -51,7 +51,7 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface> ToDragonfly()
+        public override object ToDragonfly()
         {
             throw new NotImplementedException();
         }
@@ -64,32 +64,36 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public Tuple<Curve, Room2D> BoundaryConditionObjects { get; set; }
+        public Tuple<int, string> BoundaryConditionObjects { get; set; }
 
-        public Surface(IEnumerable<SpatialObjectWrapper> objects, Curve curve)
+        public Surface Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve)
         {
-            Curve adjacentCurve = null;
-            Room2D adjacentRoom = null;
+            var adjacentRoomName = string.Empty;
+            var adjacentCurveIndex = -1;
             foreach (var so in objects)
             {
-                if (adjacentCurve != null && adjacentRoom != null) break;
+                if (adjacentCurveIndex != -1 && adjacentRoomName != null) break;
 
-                foreach (var c in so.Room2D.FloorBoundarySegments)
+                for (var i = 0; i < so.Room2D.FloorBoundarySegments.Count; i++)
                 {
+                    var c = so.Room2D.FloorBoundarySegments[i];
                     if (!c.OverlapsWith(curve)) continue;
 
-                    adjacentCurve = c;
-                    adjacentRoom = so.Room2D;
+                    adjacentCurveIndex = i;
+                    adjacentRoomName = so.Room2D.Name;
                     break;
                 }
             }
 
-            BoundaryConditionObjects = new Tuple<Curve, Room2D>(adjacentCurve, adjacentRoom);
+            if (adjacentCurveIndex == -1 || string.IsNullOrWhiteSpace(adjacentRoomName)) return null;
+
+            BoundaryConditionObjects = new Tuple<int, string>(adjacentCurveIndex, adjacentRoomName);
+            return this;
         }
 
-        public override DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface> ToDragonfly()
+        public override object ToDragonfly()
         {
-            throw new NotImplementedException();
+            return new DF.Surface(BoundaryConditionObjects.ToDragonfly(), Type);
         }
     }
 }

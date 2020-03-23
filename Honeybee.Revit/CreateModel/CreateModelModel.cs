@@ -9,12 +9,15 @@ using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using DragonflySchema;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
+using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
 using NLog;
 using DF = DragonflySchema;
+using Room2D = Honeybee.Revit.Schemas.Room2D;
 using Surface = Honeybee.Revit.Schemas.Surface;
 
 #endregion
@@ -48,20 +51,7 @@ namespace Honeybee.Revit.CreateModel
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
-            foreach (var so in objects)
-            {
-                var bcs = new List<BoundaryCondition>();
-                foreach (var curve in so.Room2D.FloorBoundarySegments)
-                {
-                    var sc = new Surface(objects.Where(x => !Equals(x, so)), curve);
-                    if (sc.BoundaryConditionObjects.Item1 != null && sc.BoundaryConditionObjects.Item2 != null)
-                        bcs.Add(sc);
-                    else
-                        bcs.Add(null);
-                }
-
-                so.Room2D.BoundaryConditions = bcs;
-            }
+            AssignBoundaryConditions(objects);
 
             return objects;
         }
@@ -82,24 +72,27 @@ namespace Honeybee.Revit.CreateModel
 
         public void SerializeRoom2D(List<Room2D> rooms)
         {
-            var json = JsonConvert.SerializeObject(rooms);
-            if (string.IsNullOrWhiteSpace(json)) return;
-
-            // TODO: This should produce a dialog for users to save the JSON. For now.
-            const string filePath = @"C:\Users\ksobon\Desktop\Honebee.json";
-            var dir = Path.GetDirectoryName(filePath);
-            if (string.IsNullOrWhiteSpace(dir)) return;
-
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
-
             try
             {
+                var dfObjects = rooms.Select(x => x.ToDragonfly());
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new BoundaryConditionsConverter());
+                var json = JsonConvert.SerializeObject(dfObjects, Formatting.Indented, settings);
+                if (string.IsNullOrWhiteSpace(json)) return;
+
+                // TODO: This should produce a dialog for users to save the JSON. For now.
+                const string filePath = @"C:\Users\ksobon\Desktop\Honebee.json";
+                var dir = Path.GetDirectoryName(filePath);
+                if (string.IsNullOrWhiteSpace(dir)) return;
+
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+
                 File.WriteAllText(filePath, json);
             }
-            catch
+            catch(Exception e)
             {
-                // ignore
+                _logger.Fatal(e);
             }
         }
 
@@ -122,6 +115,24 @@ namespace Honeybee.Revit.CreateModel
                 return result;
             }
         }
+
+        #region Utilities
+
+        private static void AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
+        {
+            foreach (var so in objects)
+            {
+                var bcs = new List<BoundaryCondition>();
+                foreach (var curve in so.Room2D.FloorBoundarySegments)
+                {
+                    bcs.Add(new Surface().Init(objects.Where(x => !Equals(x, so)), curve));
+                }
+
+                so.Room2D.BoundaryConditions = bcs;
+            }
+        }
+
+        #endregion
     }
 
     public class FilterRoomsSpaces : ISelectionFilter

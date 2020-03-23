@@ -24,13 +24,10 @@ namespace Honeybee.Revit.Schemas
         public List<List<Point2D>> FloorHoles { get; set; }
         public double FloorHeight { get; set; }
         public double FloorToCeilingHeight { get; set; }
-
-
-        public List<BoundaryCondition> BoundaryConditions { get; set; }
-
         public bool IsGroundContact { get; set; }
         public bool IsTopExposed { get; set; }
-        //public List<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>> BoundaryConditions { get; set; }
+
+        public List<BoundaryCondition> BoundaryConditions { get; set; }
         public List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> WindowParameters { get; set; }
         public List<DF.AnyOf<DF.ExtrudedBorder, DF.Overhang, DF.LouversByDistance, DF.LouversByCount>> ShadingParameters { get; set; }
 
@@ -67,7 +64,7 @@ namespace Honeybee.Revit.Schemas
                 FloorHoles.ToDragonfly(),
                 IsGroundContact,
                 IsTopExposed,
-                BoundaryConditions.Select(x => x.ToDragonfly()).ToList(),
+                BoundaryConditions.ToDragonfly(),
                 WindowParameters,
                 ShadingParameters);
         }

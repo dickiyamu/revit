@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region References
+
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
@@ -9,6 +11,8 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Honeybee.Core;
 using NLog;
+
+#endregion
 
 namespace Honeybee.Revit.CreateModel
 {
@@ -37,7 +41,7 @@ namespace Honeybee.Revit.CreateModel
                     return Result.Succeeded;
                 }
 
-                var m  = new CreateModelModel(uiDoc);
+                var m = new CreateModelModel(uiDoc);
                 var vm = new CreateModelViewModel(m);
                 var v = new CreateModelView
                 {
