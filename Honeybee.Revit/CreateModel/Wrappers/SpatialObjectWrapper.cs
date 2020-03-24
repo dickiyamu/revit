@@ -8,6 +8,7 @@ namespace Honeybee.Revit.CreateModel.Wrappers
 {
     public class SpatialObjectWrapper : INotifyPropertyChanged
     {
+        internal Element Self { get; set; }
         public string Name { get; }
         public SpatialObjectType ObjectType { get; set; }
         public LevelWrapper Level { get; set; }
@@ -42,6 +43,7 @@ namespace Honeybee.Revit.CreateModel.Wrappers
 
         public SpatialObjectWrapper(Element e)
         {
+            Self = e;
             Name = e.Name;
 
             ObjectType = e.Category.Id.IntegerValue == BuiltInCategory.OST_Rooms.GetHashCode() 

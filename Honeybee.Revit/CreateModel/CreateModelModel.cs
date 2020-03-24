@@ -118,14 +118,14 @@ namespace Honeybee.Revit.CreateModel
 
         #region Utilities
 
-        private static void AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
+        private void AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
         {
             foreach (var so in objects)
             {
                 var bcs = new List<BoundaryCondition>();
                 foreach (var curve in so.Room2D.FloorBoundarySegments)
                 {
-                    bcs.Add(new Surface().Init(objects.Where(x => !Equals(x, so)), curve));
+                    bcs.Add(BoundaryCondition.Init(objects.Where(x => !Equals(x, so)), curve, so));
                 }
 
                 so.Room2D.BoundaryConditions = bcs;

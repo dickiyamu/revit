@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
@@ -12,6 +13,55 @@ namespace Honeybee.Revit.Schemas
         public abstract string Type { get; }
 
         public abstract object ToDragonfly();
+
+        public static BoundaryCondition Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow)
+        {
+            var adjacentRoomName = string.Empty;
+            var adjacentCurveIndex = -1;
+            foreach (var so in objects)
+            {
+                if (adjacentCurveIndex != -1 && adjacentRoomName != null) break;
+
+                for (var i = 0; i < so.Room2D.FloorBoundarySegments.Count; i++)
+                {
+                    var c = so.Room2D.FloorBoundarySegments[i];
+                    if (!c.OverlapsWith(curve)) continue;
+
+                    adjacentCurveIndex = i;
+                    adjacentRoomName = so.Room2D.Name;
+                    break;
+                }
+            }
+
+            if (adjacentCurveIndex != -1 && !string.IsNullOrWhiteSpace(adjacentRoomName))
+            {
+                // (Konrad) We found a matching Surface Boundary Condition.
+                var bConditionObj = new Tuple<int, string>(adjacentCurveIndex, adjacentRoomName);
+                return new Surface(bConditionObj);
+            }
+
+            // (Konrad) We can try assigning Adiabatic and Outdoors.
+            var direction = curve is Line
+                ? curve.ComputeDerivatives(0, true).BasisX.Normalize()
+                : (curve.GetEndPoint(1) - curve.GetEndPoint(0)).Normalize();
+            var perpendicular = XYZ.BasisZ.CrossProduct(direction).Multiply(2);
+
+            var start = curve.GetEndPoint(0);
+            var end = curve.GetEndPoint(1);
+            var midPoint = new XYZ((start.X + end.X) / 2, (start.Y + end.Y) / 2, start.Z + 1);
+            var outPt = midPoint + perpendicular;
+            var doc = sow.Self.Document;
+            var phases = doc.Phases;
+            var room = phases.Cast<Phase>().Select(x => doc.GetRoomAtPoint(outPt, x)).FirstOrDefault(x => x != null);
+            if (room != null && room.Id != sow.Self.Id) return new Adiabatic();
+
+            var inPt = midPoint + perpendicular.Negate();
+            room = phases.Cast<Phase>().Select(x => doc.GetRoomAtPoint(inPt, x)).FirstOrDefault(x => x != null);
+            if (room != null && room.Id != sow.Self.Id) return new Adiabatic();
+
+            // (Konrad) We can't find the Room adjacent to this Curve.
+            return new Outdoors();
+        }
     }
 
     public class Outdoors : BoundaryCondition
@@ -53,7 +103,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            throw new NotImplementedException();
+            return new DF.Adiabatic();
         }
     }
 
@@ -66,29 +116,9 @@ namespace Honeybee.Revit.Schemas
 
         public Tuple<int, string> BoundaryConditionObjects { get; set; }
 
-        public Surface Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve)
+        public Surface(Tuple<int, string> bConObj)
         {
-            var adjacentRoomName = string.Empty;
-            var adjacentCurveIndex = -1;
-            foreach (var so in objects)
-            {
-                if (adjacentCurveIndex != -1 && adjacentRoomName != null) break;
-
-                for (var i = 0; i < so.Room2D.FloorBoundarySegments.Count; i++)
-                {
-                    var c = so.Room2D.FloorBoundarySegments[i];
-                    if (!c.OverlapsWith(curve)) continue;
-
-                    adjacentCurveIndex = i;
-                    adjacentRoomName = so.Room2D.Name;
-                    break;
-                }
-            }
-
-            if (adjacentCurveIndex == -1 || string.IsNullOrWhiteSpace(adjacentRoomName)) return null;
-
-            BoundaryConditionObjects = new Tuple<int, string>(adjacentCurveIndex, adjacentRoomName);
-            return this;
+            BoundaryConditionObjects = bConObj;
         }
 
         public override object ToDragonfly()

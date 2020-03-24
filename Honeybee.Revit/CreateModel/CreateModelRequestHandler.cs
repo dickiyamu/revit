@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
+using Honeybee.Revit.Schemas;
 using NLog;
 using FamilyUtils = Honeybee.Core.FamilyUtils;
 using Surface = Honeybee.Revit.Schemas.Surface;
@@ -125,31 +127,12 @@ namespace Honeybee.Revit.CreateModel
                     .Cast<Family>()
                     .FirstOrDefault(x => x.FamilyCategory.Id.IntegerValue == gaId && x.Name == famName);
 
-                //FamilySymbol fs = null;
                 if (loadedFam == null)
                 {
                     var resourcePath = GetFamilyFromResource(famName);
                     loadedFam = doc.LoadFamily(doc, new FamilyUtils.FamilyLoadProcessor());
-                    if (string.IsNullOrWhiteSpace(resourcePath) || loadedFam == null) return; 
-
-                    //if (string.IsNullOrWhiteSpace(resourcePath) || !doc.LoadFamily(doc, new FamilyUtils.FamilyLoadProcessor(true))
-                    //    !doc.LoadFamilySymbol(resourcePath, "Surface", out fs)) return;
+                    if (string.IsNullOrWhiteSpace(resourcePath) || loadedFam == null) return;
                 }
-                //else
-                //{
-                //    var symbols = loadedFam.GetFamilySymbolIds();
-                //    foreach (var id in symbols)
-                //    {
-                //        if (!(doc.GetElement(id) is FamilySymbol familySymbol) ||
-                //            familySymbol.Name != "Surface") continue;
-
-                //        fs = familySymbol;
-                //        break;
-                //    }
-                //}
-
-                //if (fs == null) return;
-                //if (!fs.IsActive) fs.Activate();
 
                 var symbols = new Dictionary<string, FamilySymbol>();
                 foreach (var id in loadedFam.GetFamilySymbolIds())
@@ -162,7 +145,25 @@ namespace Honeybee.Revit.CreateModel
                 {
                     var curve = so.Room2D.FloorBoundarySegments[i];
                     var bCondition = so.Room2D.BoundaryConditions[i];
-                    var fs = bCondition == null ? symbols["Outdoors"] : symbols["Surface"];
+                    FamilySymbol fs;
+                    switch (bCondition)
+                    {
+                        case Surface unused:
+                            fs = symbols["Surface"];
+                            break;
+                        case Outdoors unused:
+                            fs = symbols["Outdoors"];
+                            break;
+                        case Adiabatic unused:
+                            fs = symbols["Adiabatic"];
+                            break;
+                        case Ground unused:
+                            fs = symbols["Ground"];
+                            break;
+                        default:
+                            fs = symbols["Outdoors"];
+                            break;
+                    }
                     var loc = curve.Evaluate(0.5, true);
                     var fi = doc.Create.NewFamilyInstance(loc, fs, doc.ActiveView);
 
