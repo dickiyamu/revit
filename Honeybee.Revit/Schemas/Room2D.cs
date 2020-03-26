@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Honeybee.Revit.CreateModel;
 using NLog;
 using DF = DragonflySchema;
 
@@ -26,12 +27,12 @@ namespace Honeybee.Revit.Schemas
         public double FloorToCeilingHeight { get; set; }
         public bool IsGroundContact { get; set; }
         public bool IsTopExposed { get; set; }
-
         public List<BoundaryCondition> BoundaryConditions { get; set; }
         public List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> WindowParameters { get; set; }
         public List<DF.AnyOf<DF.ExtrudedBorder, DF.Overhang, DF.LouversByDistance, DF.LouversByCount>> ShadingParameters { get; set; }
 
         internal List<Curve> FloorBoundarySegments { get; set; }
+        internal List<AnnotationWrapper> Annotations { get; set; } = new List<AnnotationWrapper>();
 
         public Room2D(SpatialElement e)
         {

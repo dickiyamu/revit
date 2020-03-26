@@ -1,6 +1,6 @@
 ﻿#region References
 
-using System.Collections.Generic;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
 using Honeybee.Core.Extensions;
 using Honeybee.Core.WPF;
 using Honeybee.Revit.CreateModel.Wrappers;
@@ -39,12 +40,15 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ResetProgramType { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
 
-        private ListCollectionView _spatialObjects = new ListCollectionView(new List<SpatialObjectWrapper>());
-        public ListCollectionView SpatialObjects
-        {
-            get { return _spatialObjects; }
-            set { _spatialObjects = value; RaisePropertyChanged(() => SpatialObjects); }
-        }
+        public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
+        public ListCollectionView SpatialObjects { get; set; }
+
+        //private ListCollectionView _spatialObjects = new ListCollectionView(new List<SpatialObjectWrapper>());
+        //public ListCollectionView SpatialObjects
+        //{
+        //    get { return _spatialObjects; }
+        //    set { _spatialObjects = value; RaisePropertyChanged(() => SpatialObjects); }
+        //}
 
         private FilterType _filterType = FilterType.None;
         public FilterType FilterType
@@ -126,13 +130,13 @@ namespace Honeybee.Revit.CreateModel
         public CreateModelViewModel(CreateModelModel model)
         {
             Model = model;
-            var so = Model.GetSpatialObjects();
 
+            var so = Model.GetSpatialObjects();
             Levels = so.Select(x => x.Level).Distinct().ToObservableCollection();
-            SpatialObjects = new ListCollectionView(so);
+            SpatialObjectsModels = so.ToObservableCollection();
+            SpatialObjects = new ListCollectionView(SpatialObjectsModels);
             SpatialObjects.GroupDescriptions.Clear();
             SpatialObjects.GroupDescriptions.Add(new PropertyGroupDescription("Level", new LevelToNameConverter()));
-
             SpatialObjects.Filter = FilterDataGrid;
 
             Cancel = new RelayCommand<Window>(OnCancel);
@@ -296,10 +300,36 @@ namespace Honeybee.Revit.CreateModel
             Process.Start("");
         }
 
-        private static void OnWindowLoaded(Window win)
+        private void OnWindowLoaded(Window win)
         {
             StatusBarManager.ProgressBar = ((CreateModelView)win).ProgressBar;
             StatusBarManager.StatusLabel = ((CreateModelView)win).StatusLabel;
+
+            Messenger.Default.Register<SurfaceAdjacentRoomChanged>(this, OnAnnotationChangedMessage);
+            Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreatedMessage);
+        }
+
+        private void OnAnnotationsCreatedMessage(AnnotationsCreated msg)
+        {
+            var index = SpatialObjectsModels.IndexOf(msg.SpatialObject);
+            if (index == -1) return;
+
+            SpatialObjectsModels[index] = msg.SpatialObject;
+        }
+
+        private void OnAnnotationChangedMessage(SurfaceAdjacentRoomChanged msg)
+        {
+            var found = SpatialObjectsModels.FirstOrDefault(x =>
+                x.Room2D.Annotations.FirstOrDefault(y => y.UniqueId == msg.Annotation.UniqueId) != null);
+            if (found == null) return;
+
+            var index = found.Room2D.Annotations.IndexOf(msg.Annotation);
+            if (!(found.Room2D.BoundaryConditions[index] is Surface bc)) return;
+
+            var newBc = new Tuple<int, string>(bc.BoundaryConditionObjects.Item1, msg.Annotation.AdjacentRoom);
+            bc.BoundaryConditionObjects = newBc;
+
+            found.Room2D.Annotations[index] = msg.Annotation;
         }
 
         #endregion

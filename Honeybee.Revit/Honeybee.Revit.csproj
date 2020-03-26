@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppCommand.cs" />
+    <Compile Include="CreateModel\AnnotationUpdater.cs" />
     <Compile Include="CreateModel\Converters.cs" />
     <Compile Include="CreateModel\CreateModelCommand.cs" />
     <Compile Include="CreateModel\CreateModelModel.cs" />
@@ -150,6 +151,7 @@
       <DependentUpon>CreateModelView.xaml</DependentUpon>
     </Compile>
     <Compile Include="CreateModel\CreateModelViewModel.cs" />
+    <Compile Include="CreateModel\Messages.cs" />
     <Compile Include="CreateModel\Wrappers\LevelWrapper.cs" />
     <Compile Include="CreateModel\Wrappers\SpatialObjectWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

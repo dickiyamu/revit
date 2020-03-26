@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using GalaSoft.MvvmLight.Messaging;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
@@ -81,6 +81,9 @@ namespace Honeybee.Revit.CreateModel
 
                 trans.Commit();
             }
+
+            if (!UpdaterRegistry.IsUpdaterRegistered(AppCommand.AnnotationUpdater.GetUpdaterId()))
+                AppCommand.AnnotationUpdater.Register(doc);
         }
 
         #region Utilities
@@ -145,32 +148,56 @@ namespace Honeybee.Revit.CreateModel
                 {
                     var curve = so.Room2D.FloorBoundarySegments[i];
                     var bCondition = so.Room2D.BoundaryConditions[i];
+                    var annotation = so.Room2D.Annotations.Count == so.Room2D.FloorBoundarySegments.Count 
+                        ? so.Room2D.Annotations[i] 
+                        : null;
+
                     FamilySymbol fs;
-                    switch (bCondition)
+                    string adjacentRoom;
+                    if (annotation != null)
                     {
-                        case Surface unused:
-                            fs = symbols["Surface"];
-                            break;
-                        case Outdoors unused:
-                            fs = symbols["Outdoors"];
-                            break;
-                        case Adiabatic unused:
-                            fs = symbols["Adiabatic"];
-                            break;
-                        case Ground unused:
-                            fs = symbols["Ground"];
-                            break;
-                        default:
-                            fs = symbols["Outdoors"];
-                            break;
+                        fs = doc.GetElement(annotation.FamilySymbolId) as FamilySymbol;
+                        adjacentRoom = annotation.AdjacentRoom;
                     }
+                    else
+                    {
+                        switch (bCondition)
+                        {
+                            case Surface unused:
+                                fs = symbols["Surface"];
+                                break;
+                            case Outdoors unused:
+                                fs = symbols["Outdoors"];
+                                break;
+                            case Adiabatic unused:
+                                fs = symbols["Adiabatic"];
+                                break;
+                            case Ground unused:
+                                fs = symbols["Ground"];
+                                break;
+                            default:
+                                fs = symbols["Outdoors"];
+                                break;
+                        }
+
+                        adjacentRoom = (bCondition as Surface)?.BoundaryConditionObjects.Item2;
+                    }
+
                     var loc = curve.Evaluate(0.5, true);
                     var fi = doc.Create.NewFamilyInstance(loc, fs, doc.ActiveView);
+                    fi?.LookupParameter("AdjacentRoom")?.Set(adjacentRoom);
 
-                    fi?.LookupParameter("AdjacentRoom")
-                        ?.Set((bCondition as Surface)
-                            ?.BoundaryConditionObjects.Item2);
+                    if (so.Room2D.Annotations.Count != so.Room2D.FloorBoundarySegments.Count)
+                    {
+                        so.Room2D.Annotations.Add(new AnnotationWrapper(fi) {AdjacentRoom = adjacentRoom});
+                    }
+                    else
+                    {
+                        so.Room2D.Annotations[i] = new AnnotationWrapper(fi) {AdjacentRoom = adjacentRoom};
+                    }
                 }
+
+                Messenger.Default.Send(new AnnotationsCreated(so));
             }
             catch (Exception e)
             {

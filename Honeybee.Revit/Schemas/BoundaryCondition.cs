@@ -11,7 +11,6 @@ namespace Honeybee.Revit.Schemas
     public abstract class BoundaryCondition : ISchema<object>
     {
         public abstract string Type { get; }
-
         public abstract object ToDragonfly();
 
         public static BoundaryCondition Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow)
@@ -115,6 +114,10 @@ namespace Honeybee.Revit.Schemas
         }
 
         public Tuple<int, string> BoundaryConditionObjects { get; set; }
+
+        public Surface()
+        {
+        }
 
         public Surface(Tuple<int, string> bConObj)
         {
