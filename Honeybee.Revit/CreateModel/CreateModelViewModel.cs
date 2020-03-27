@@ -3,6 +3,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls.Primitives;
@@ -42,6 +43,21 @@ namespace Honeybee.Revit.CreateModel
 
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
+
+        private bool _isExpanded = true;
+        // ReSharper disable once UnusedMember.Global
+        public bool IsExpanded
+        {
+            get
+            {
+                if (_isExpanded)
+                {
+                    _isExpanded = false;
+                    return true;
+                }
+                return false;
+            }
+        }
 
         private FilterType _filterType = FilterType.None;
         public FilterType FilterType

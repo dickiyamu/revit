@@ -409,7 +409,8 @@
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                    <Expander IsExpanded="True" Background="LightGray">
+                                                    <Expander IsExpanded="{Binding DataContext.IsExpanded, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type wpf:DataGridExtension}}, Mode=OneTime}" 
+                                                              Background="LightGray">
                                                         <Expander.Header>
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="{Binding Name}" />
@@ -692,7 +693,6 @@
                             </StackPanel>
                         </Grid>
                     </StackPanel>
-
                 </Grid>
             </GroupBox>
         </StackPanel>
