@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Honeybee.Revit.CreateModel;
+using Honeybee.Revit.CreateModel.Wrappers;
 using NLog;
 using DF = DragonflySchema;
 

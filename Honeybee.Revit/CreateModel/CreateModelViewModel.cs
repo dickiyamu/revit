@@ -43,13 +43,6 @@ namespace Honeybee.Revit.CreateModel
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
 
-        //private ListCollectionView _spatialObjects = new ListCollectionView(new List<SpatialObjectWrapper>());
-        //public ListCollectionView SpatialObjects
-        //{
-        //    get { return _spatialObjects; }
-        //    set { _spatialObjects = value; RaisePropertyChanged(() => SpatialObjects); }
-        //}
-
         private FilterType _filterType = FilterType.None;
         public FilterType FilterType
         {
@@ -305,11 +298,16 @@ namespace Honeybee.Revit.CreateModel
             StatusBarManager.ProgressBar = ((CreateModelView)win).ProgressBar;
             StatusBarManager.StatusLabel = ((CreateModelView)win).StatusLabel;
 
-            Messenger.Default.Register<SurfaceAdjacentRoomChanged>(this, OnAnnotationChangedMessage);
-            Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreatedMessage);
+            Messenger.Default.Register<SurfaceAdjacentRoomChanged>(this, OnSurfaceAdjacentRoomChanged);
+            Messenger.Default.Register<TypeChanged>(this, OnTypeChanged);
+            Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreated);
         }
 
-        private void OnAnnotationsCreatedMessage(AnnotationsCreated msg)
+        #endregion
+
+        #region Message Handlers
+
+        private void OnAnnotationsCreated(AnnotationsCreated msg)
         {
             var index = SpatialObjectsModels.IndexOf(msg.SpatialObject);
             if (index == -1) return;
@@ -317,8 +315,9 @@ namespace Honeybee.Revit.CreateModel
             SpatialObjectsModels[index] = msg.SpatialObject;
         }
 
-        private void OnAnnotationChangedMessage(SurfaceAdjacentRoomChanged msg)
+        private void OnSurfaceAdjacentRoomChanged(SurfaceAdjacentRoomChanged msg)
         {
+            // (Konrad) Find the Object Wrapper with matching Id.
             var found = SpatialObjectsModels.FirstOrDefault(x =>
                 x.Room2D.Annotations.FirstOrDefault(y => y.UniqueId == msg.Annotation.UniqueId) != null);
             if (found == null) return;
@@ -326,9 +325,46 @@ namespace Honeybee.Revit.CreateModel
             var index = found.Room2D.Annotations.IndexOf(msg.Annotation);
             if (!(found.Room2D.BoundaryConditions[index] is Surface bc)) return;
 
+            // (Konrad) We only need to update the BoundaryCondition Adjacent Room properties.
             var newBc = new Tuple<int, string>(bc.BoundaryConditionObjects.Item1, msg.Annotation.AdjacentRoom);
             bc.BoundaryConditionObjects = newBc;
 
+            // (Konrad) Replace Annotation with new one.
+            found.Room2D.Annotations[index] = msg.Annotation;
+        }
+
+        private void OnTypeChanged(TypeChanged msg)
+        {
+            // (Konrad) Find the Object Wrapper with matching Id.
+            var found = SpatialObjectsModels.FirstOrDefault(x =>
+                x.Room2D.Annotations.FirstOrDefault(y => y.UniqueId == msg.Annotation.UniqueId) != null);
+            if (found == null) return;
+
+            var index = found.Room2D.Annotations.IndexOf(msg.Annotation);
+
+            // (Konrad) Type changed so we need a new Boundary Condition.
+            BoundaryCondition newBc;
+            switch (msg.Annotation.FamilySymbolName)
+            {
+                case "Ground":
+                    newBc = new Ground();
+                    break;
+                case "Surface":
+                    newBc = new Surface(new Tuple<int, string>(-1, string.Empty));
+                    break;
+                case "Outdoors":
+                    newBc = new Outdoors();
+                    break;
+                case "Adiabatic":
+                    newBc = new Adiabatic();
+                    break;
+                default:
+                    newBc = new Outdoors();
+                    break;
+            }
+
+            // (Konrad) Update Boundary Condition and Annotation references.
+            found.Room2D.BoundaryConditions[index] = newBc;
             found.Room2D.Annotations[index] = msg.Annotation;
         }
 

@@ -152,6 +152,7 @@
     </Compile>
     <Compile Include="CreateModel\CreateModelViewModel.cs" />
     <Compile Include="CreateModel\Messages.cs" />
+    <Compile Include="CreateModel\Wrappers\AnnotationWrapper.cs" />
     <Compile Include="CreateModel\Wrappers\LevelWrapper.cs" />
     <Compile Include="CreateModel\Wrappers\SpatialObjectWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using GalaSoft.MvvmLight.Messaging;
+using Honeybee.Revit.CreateModel.Wrappers;
 using NLog;
 
 namespace Honeybee.Revit.CreateModel
@@ -55,15 +56,18 @@ namespace Honeybee.Revit.CreateModel
             if (annotation == null) return;
 
             
-            var paramId = annotation.LookupParameter("AdjacentRoom")?.Id;
-            if (paramId == null) return;
+            var ar = annotation.LookupParameter("AdjacentRoom")?.Id;
+            var type = annotation.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM)?.Id;
+            if (ar == null || type == null) return;
+
+            UpdaterRegistry.AddTrigger(_updaterId, catFilter, Element.GetChangeTypeParameter(ar));
+            UpdaterRegistry.AddTrigger(_updaterId, catFilter, Element.GetChangeTypeParameter(type));
 
             ParameterIds = new Dictionary<string, ElementId>
             {
-                { "AdjacentRoom", paramId}
+                { "AdjacentRoom", ar},
+                { "Type", type}
             };
-
-            UpdaterRegistry.AddTrigger(_updaterId, catFilter, Element.GetChangeTypeParameter(paramId));
         }
 
         //public void Unregister(Document doc)
@@ -85,15 +89,17 @@ namespace Honeybee.Revit.CreateModel
         {
             foreach (var id in data.GetModifiedElementIds())
             {
-                foreach (var pId in ParameterIds)
+                foreach (var pId in ParameterIds.Where(pId => data.IsChangeTriggered(id, Element.GetChangeTypeParameter(pId.Value))))
                 {
-                    if (!data.IsChangeTriggered(id, Element.GetChangeTypeParameter(pId.Value))) continue;
                     if (!(data.GetDocument().GetElement(id) is FamilyInstance fi)) continue;
 
                     switch (pId.Key)
                     {
                         case "AdjacentRoom":
                             Messenger.Default.Send(new SurfaceAdjacentRoomChanged(new AnnotationWrapper(fi)));
+                            break;
+                        case "Type":
+                            Messenger.Default.Send(new TypeChanged(new AnnotationWrapper(fi)));
                             break;
                         default:
                             break;
