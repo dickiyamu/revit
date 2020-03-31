@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Autodesk.Revit.DB;
-using Honeybee.Revit.CreateModel;
 using Honeybee.Revit.CreateModel.Wrappers;
 using NLog;
 using DF = DragonflySchema;
@@ -32,6 +31,7 @@ namespace Honeybee.Revit.Schemas
         public List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> WindowParameters { get; set; }
         public List<DF.AnyOf<DF.ExtrudedBorder, DF.Overhang, DF.LouversByDistance, DF.LouversByCount>> ShadingParameters { get; set; }
 
+        internal Level Level { get; set; }
         internal List<Curve> FloorBoundarySegments { get; set; }
         internal List<AnnotationWrapper> Annotations { get; set; } = new List<AnnotationWrapper>();
 
@@ -41,7 +41,10 @@ namespace Honeybee.Revit.Schemas
             DisplayName = e.Name;
 
             if (e.Document.GetElement(e.LevelId) is Level level)
+            {
                 FloorHeight = level.Elevation;
+                Level = level;
+            } 
 
             FloorToCeilingHeight = GetCeilingHeight(e);
             FloorBoundary = GetBoundary(e);
@@ -67,8 +70,8 @@ namespace Honeybee.Revit.Schemas
                 IsGroundContact,
                 IsTopExposed,
                 BoundaryConditions.ToDragonfly(),
-                WindowParameters,
-                ShadingParameters);
+                null,
+                null);
         }
 
         #region Utilities

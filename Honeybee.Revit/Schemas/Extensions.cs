@@ -44,6 +44,9 @@ namespace Honeybee.Revit.Schemas
                     case Surface s:
                         boundaryConditions.Add(bc.ToDragonfly() as DF.Surface);
                         break;
+                    default:
+                        boundaryConditions.Add(null);
+                        break;
                 }
             }
 

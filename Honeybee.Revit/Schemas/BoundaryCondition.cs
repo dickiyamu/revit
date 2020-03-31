@@ -70,14 +70,14 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override object ToDragonfly()
-        {
-            throw new NotImplementedException();
-        }
-
         public bool SunExposure { get; set; }
         public bool WindExposure { get; set; }
         public string ViewFactor { get; set; } = "autocalculate";
+
+        public override object ToDragonfly()
+        {
+            return new DF.Outdoors();
+        }
     }
 
     public class Ground : BoundaryCondition
@@ -89,7 +89,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            throw new NotImplementedException();
+            return new DF.Ground();
         }
     }
 
@@ -114,10 +114,6 @@ namespace Honeybee.Revit.Schemas
         }
 
         public Tuple<int, string> BoundaryConditionObjects { get; set; }
-
-        public Surface()
-        {
-        }
 
         public Surface(Tuple<int, string> bConObj)
         {

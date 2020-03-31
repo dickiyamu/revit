@@ -6,7 +6,6 @@ using System.Windows.Data;
 using System.Windows.Markup;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
-using Honeybee.Revit.Schemas;
 
 namespace Honeybee.Revit.CreateModel
 {
@@ -30,19 +29,6 @@ namespace Honeybee.Revit.CreateModel
         {
             var v = value != null && (bool)value;
             return v ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class HvacToBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value is HvacTypes;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

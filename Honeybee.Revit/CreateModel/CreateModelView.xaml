@@ -19,7 +19,7 @@
         Title="Honeybee - Create Model"
         SizeToContent="Height"
         Width="1400"
-        d:DesignHeight="350">
+        d:DesignHeight="450">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding WindowLoaded}"
@@ -34,6 +34,10 @@
                 <ResourceDictionary
                     Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/ImageToggleButtonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <createModel:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
+            <createModel:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
+            <createModel:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <createModel:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
             <Style TargetType="{x:Type wpf:DataGridExtension}">
                 <Setter Property="Background"
                         Value="White" />
@@ -90,12 +94,8 @@
             <Style x:Key="DefaultRowStyle" TargetType="{x:Type DataGridRow}">
                 <Setter Property="IsSelected" Value="{Binding IsSelected}" />
                 <Setter Property="ContextMenu" Value="{StaticResource RowMenu}" />
+                <Setter Property="DetailsVisibility" Value="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"/>
             </Style>
-            <createModel:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
-            <createModel:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
-            <createModel:HvacToBoolConverter x:Key="HvacToBoolConverter" />
-            <createModel:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
-            <createModel:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <ObjectDataProvider x:Key="VintagesDataProvider"
                                 ObjectType="{x:Type enums:Vintages}"
                                 MethodName="GetAll" />
@@ -430,6 +430,72 @@
                                 </GroupStyle.Panel>
                             </GroupStyle>
                         </wpf:DataGridExtension.GroupStyle>
+                        <wpf:DataGridExtension.RowDetailsTemplate>
+                            <DataTemplate>
+                                <DockPanel Background="White">
+                                    <Grid Margin="10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <!-- Name -->
+                                        <TextBlock Grid.Row="0" 
+                                                   Grid.Column="0" 
+                                                   Text="Name: " 
+                                                   FontWeight="Bold" />
+                                        <TextBlock Grid.Row="0" 
+                                                   Grid.Column="1" 
+                                                   Text="{Binding Room2D.Name}" />
+                                        <!-- Floor Height -->
+                                        <TextBlock Grid.Row="1" 
+                                                   Grid.Column="0" 
+                                                   Text="Floor Height: " 
+                                                   FontWeight="Bold" />
+                                        <TextBlock Grid.Row="1" 
+                                                   Grid.Column="1" 
+                                                   Text="{Binding Room2D.FloorHeight, StringFormat={}{0:#,0.0}}" />
+                                        <!-- Floor to Ceiling Height -->
+                                        <TextBlock Grid.Row="2" 
+                                                   Grid.Column="0" 
+                                                   Text="Floor to Ceiling Height: " 
+                                                   FontWeight="Bold" />
+                                        <TextBox Grid.Row="2" 
+                                                 Grid.Column="1" 
+                                                 Text="{Binding Room2D.FloorToCeilingHeight, StringFormat={}{0:#,0.0}}" 
+                                                 VerticalContentAlignment="Center" 
+                                                 VerticalAlignment="Center"
+                                                 HorizontalAlignment="Left"
+                                                 HorizontalContentAlignment="Left"
+                                                 Width="100" />
+                                        <!-- Is Ground Contact -->
+                                        <TextBlock Grid.Row="3" 
+                                                   Grid.Column="0" 
+                                                   Text="Is Ground Contact: " 
+                                                   FontWeight="Bold" />
+                                        <CheckBox Grid.Row="3" 
+                                                  Grid.Column="1" 
+                                                  IsChecked="{Binding Room2D.IsGroundContact}" 
+                                                  VerticalContentAlignment="Center"/>
+                                        <!-- Is Top Exposed -->
+                                        <TextBlock Grid.Row="4" 
+                                                   Grid.Column="0" 
+                                                   Text="Is Top Exposed: " 
+                                                   FontWeight="Bold" />
+                                        <CheckBox Grid.Row="4" 
+                                                  Grid.Column="1" 
+                                                  IsChecked="{Binding Room2D.IsTopExposed}" 
+                                                  VerticalContentAlignment="Center"/>
+                                    </Grid>
+                                </DockPanel>
+                            </DataTemplate>
+                        </wpf:DataGridExtension.RowDetailsTemplate>
                         <wpf:DataGridExtension.Columns>
                             <DataGridTemplateColumn Header="Select" Width="45">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -441,17 +507,65 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Room/Space Name"
-                                                Binding="{Binding Name}"
-                                                Width="*"
-                                                IsReadOnly="True">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style>
-                                        <Setter Property="TextBlock.TextAlignment" Value="Left" />
-                                        <Setter Property="TextBlock.Padding" Value="4,2" />
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Room/Space Name"
+                                                    Width="*"
+                                                    IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid x:Name="RoomNameGrid"
+                                              HorizontalAlignment="Stretch"
+                                              Background="Transparent">
+                                            <StackPanel Orientation="Horizontal"
+                                                        HorizontalAlignment="Stretch">
+                                                <Label Content="{Binding Name}" />
+                                                <b:ImageButton x:Name="ShowDetailsButton"
+                                                               Command="{Binding DataContext.ShowDetails, Mode=OneWay, ElementName=Win}"
+                                                               CommandParameter="{Binding }"
+                                                               MainImage="../Resources/24x24/showDetails.png"
+                                                               HoverImage="../Resources/24x24/showDetailsHover.png"
+                                                               VerticalAlignment="Center"
+                                                               VerticalContentAlignment="Center"
+                                                               HorizontalAlignment="Center"
+                                                               Visibility="Collapsed"
+                                                               Cursor="Hand"
+                                                               Width="22"
+                                                               Height="22"
+                                                               Margin="5,0,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <DataTemplate.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsExpanded}" Value="True"/>
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsExpanded}" Value="True"/>
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsExpanded}" Value="False"/>
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsExpanded}" Value="False"/>
+                                                    <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Collapsed" />
+                                            </MultiDataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Level"
                                                 Binding="{Binding Level.Name}"
                                                 Width="150"
@@ -607,16 +721,17 @@
                                                     HeaderStyle="{StaticResource CenterGridHeaderStyle}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <b:ImageToggleButton Command="{Binding DataContext.ShowBoundaryConditions, Mode=OneWay, ElementName=Win}"
-                                                             CommandParameter="{Binding }"
-                                                             MainImage="../Resources/24x24/set.png"
-                                                             HoverImage="../Resources/24x24/setHover.png"
-                                                             VerticalAlignment="Center"
-                                                             HorizontalAlignment="Center"
-                                                             Cursor="Hand"
-                                                             Width="22"
-                                                             Height="22"
-                                                             Margin="5,0,0,0" />
+                                        <b:ImageButton
+                                            Command="{Binding DataContext.ShowBoundaryConditions, Mode=OneWay, ElementName=Win}"
+                                            CommandParameter="{Binding }"
+                                            MainImage="../Resources/24x24/show.png"
+                                            HoverImage="../Resources/24x24/showHover.png"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            Cursor="Hand"
+                                            Width="22"
+                                            Height="22"
+                                            Margin="5,0,0,0" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

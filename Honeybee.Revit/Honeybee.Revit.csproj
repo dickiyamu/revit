@@ -83,8 +83,8 @@
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.4.1.0, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.6.8\lib\net45\NLog.dll</HintPath>
@@ -162,6 +162,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Schemas\BoundaryCondition.cs" />
+    <Compile Include="Schemas\Building.cs" />
+    <Compile Include="Schemas\BuildingPropertiesAbridged.cs" />
     <Compile Include="Schemas\ConstructionSet.cs" />
     <Compile Include="Schemas\Converters\BoundaryConditionsConverter.cs" />
     <Compile Include="Schemas\Converters\ConstructionSetConverter.cs" />
@@ -181,6 +183,8 @@
     <Compile Include="Schemas\Room2DPropertiesAbridged.cs" />
     <Compile Include="AppSettings.cs" />
     <Compile Include="Schemas\ISchema.cs" />
+    <Compile Include="Schemas\Story.cs" />
+    <Compile Include="Schemas\StoryPropertiesAbridged.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -234,12 +238,15 @@
     <Resource Include="Resources\24x24\resetHover.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\24x24\conditioned.png" />
-    <Resource Include="Resources\24x24\unconditioned.png" />
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
     <EmbeddedResource Include="Resources\32x32\createModel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\show.png" />
+    <Resource Include="Resources\24x24\showDetails.png" />
+    <Resource Include="Resources\24x24\showDetailsHover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\showHover.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -258,6 +265,7 @@ xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Ad
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 goto exit
 
 :Build2019
@@ -270,6 +278,7 @@ xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Ad
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 goto exit
 
 :Build2020
@@ -282,6 +291,7 @@ xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Ad
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 goto exit
 
 :exit</PostBuildEvent>

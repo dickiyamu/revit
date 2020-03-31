@@ -13,6 +13,13 @@ namespace Honeybee.Revit.CreateModel.Wrappers
         public SpatialObjectType ObjectType { get; set; }
         public LevelWrapper Level { get; set; }
 
+        private bool _isExpanded;
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+            set { _isExpanded = value; RaisePropertyChanged(nameof(IsExpanded)); }
+        }
+
         private Room2D _room2D;
         public Room2D Room2D
         {

@@ -40,6 +40,7 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ResetConstructionSet { get; set; }
         public RelayCommand ResetProgramType { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
+        public RelayCommand<SpatialObjectWrapper> ShowDetails { get; set; }
 
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
@@ -163,6 +164,12 @@ namespace Honeybee.Revit.CreateModel
             ResetConstructionSet = new RelayCommand(OnResetConstructionSet);
             ResetProgramType = new RelayCommand(OnResetProgramType);
             ShowBoundaryConditions = new RelayCommand<SpatialObjectWrapper>(OnShowBoundaryConditions);
+            ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
+        }
+
+        private void OnShowDetails(SpatialObjectWrapper so)
+        {
+            so.IsExpanded = !so.IsExpanded;
         }
 
         #region Event Handlers

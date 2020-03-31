@@ -16,9 +16,11 @@ using Honeybee.Revit.Schemas;
 using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
 using NLog;
-using DF = DragonflySchema;
+using Building = Honeybee.Revit.Schemas.Building;
+using BuildingPropertiesAbridged = Honeybee.Revit.Schemas.BuildingPropertiesAbridged;
 using Room2D = Honeybee.Revit.Schemas.Room2D;
-using Surface = Honeybee.Revit.Schemas.Surface;
+using Story = Honeybee.Revit.Schemas.Story;
+using StoryPropertiesAbridged = Honeybee.Revit.Schemas.StoryPropertiesAbridged;
 
 #endregion
 
@@ -74,10 +76,15 @@ namespace Honeybee.Revit.CreateModel
         {
             try
             {
-                var dfObjects = rooms.Select(x => x.ToDragonfly());
+                var stories = rooms.GroupBy(x => x.Level.Name)
+                    .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged())).ToList();
+                var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
+
+                var dfBuilding = building.ToDragonfly();
+                //var dfObjects = rooms.Select(x => x.ToDragonfly());
                 var settings = new JsonSerializerSettings();
                 settings.Converters.Add(new BoundaryConditionsConverter());
-                var json = JsonConvert.SerializeObject(dfObjects, Formatting.Indented, settings);
+                var json = JsonConvert.SerializeObject(dfBuilding, Formatting.Indented, new AnyOfJsonConverter());
                 if (string.IsNullOrWhiteSpace(json)) return;
 
                 // TODO: This should produce a dialog for users to save the JSON. For now.
