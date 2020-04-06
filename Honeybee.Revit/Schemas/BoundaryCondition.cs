@@ -4,16 +4,15 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
-using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public abstract class BoundaryCondition : ISchema<object>
+    public abstract class BoundaryConditionBase : ISchema<object>
     {
         public abstract string Type { get; }
         public abstract object ToDragonfly();
 
-        public static BoundaryCondition Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow)
+        public static BoundaryConditionBase Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow)
         {
             var adjacentRoomName = string.Empty;
             var adjacentCurveIndex = -1;
@@ -21,9 +20,10 @@ namespace Honeybee.Revit.Schemas
             {
                 if (adjacentCurveIndex != -1 && adjacentRoomName != null) break;
 
-                for (var i = 0; i < so.Room2D.FloorBoundarySegments.Count; i++)
+                var boundarySegments = so.Room2D.FloorBoundary.GetCurves();
+                for (var i = 0; i < boundarySegments.Count; i++)
                 {
-                    var c = so.Room2D.FloorBoundarySegments[i];
+                    var c = boundarySegments[i];
                     if (!c.OverlapsWith(curve)) continue;
 
                     adjacentCurveIndex = i;
@@ -60,69 +60,6 @@ namespace Honeybee.Revit.Schemas
 
             // (Konrad) We can't find the Room adjacent to this Curve.
             return new Outdoors();
-        }
-    }
-
-    public class Outdoors : BoundaryCondition
-    {
-        public override string Type
-        {
-            get { return GetType().Name; }
-        }
-
-        public bool SunExposure { get; set; }
-        public bool WindExposure { get; set; }
-        public string ViewFactor { get; set; } = "autocalculate";
-
-        public override object ToDragonfly()
-        {
-            return new DF.Outdoors();
-        }
-    }
-
-    public class Ground : BoundaryCondition
-    {
-        public override string Type
-        {
-            get { return GetType().Name; }
-        }
-
-        public override object ToDragonfly()
-        {
-            return new DF.Ground();
-        }
-    }
-
-    public class Adiabatic : BoundaryCondition
-    {
-        public override string Type
-        {
-            get { return GetType().Name; }
-        }
-
-        public override object ToDragonfly()
-        {
-            return new DF.Adiabatic();
-        }
-    }
-
-    public class Surface : BoundaryCondition
-    {
-        public override string Type
-        {
-            get { return GetType().Name; }
-        }
-
-        public Tuple<int, string> BoundaryConditionObjects { get; set; }
-
-        public Surface(Tuple<int, string> bConObj)
-        {
-            BoundaryConditionObjects = bConObj;
-        }
-
-        public override object ToDragonfly()
-        {
-            return new DF.Surface(BoundaryConditionObjects.ToDragonfly(), Type);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Honeybee.Revit.Schemas.Converters
 {
@@ -13,12 +14,13 @@ namespace Honeybee.Revit.Schemas.Converters
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
+            var arr = JArray.Load(reader).ToObject<List<double>>();
+            return new Point2D(arr[0], arr[1]);
         }
 
         public override bool CanRead
         {
-            get { return false; }
+            get { return true; }
         }
 
         public override bool CanConvert(Type objectType)

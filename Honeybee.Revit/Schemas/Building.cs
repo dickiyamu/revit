@@ -1,24 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Building : ISchema<DF.Building>
+    public class Building : IBaseObject, ISchema<DF.Building>
     {
+        [JsonProperty("type")]
         public string Type
         {
             get { return GetType().Name; }
         }
 
-        public string Name { get; set; }
-        public string DisplayName { get; set; } = string.Empty;
+        [JsonProperty("name")]
+        public string Name { get; set; } = $"Building_{Guid.NewGuid()}";
+
+        [JsonProperty("display_name")]
+        public string DisplayName { get; set; }
+
+        [JsonProperty("unique_stories")]
         public List<Story> UniqueStories { get; set; }
+
+        [JsonProperty("properties")]
         public BuildingPropertiesAbridged Properties { get; set; }
 
-        public Building(string name, List<Story> stories, BuildingPropertiesAbridged properties)
+        public Building(string displayName, List<Story> stories, BuildingPropertiesAbridged properties)
         {
-            Name = name;
+            DisplayName = displayName;
             UniqueStories = stories;
             Properties = properties;
         }

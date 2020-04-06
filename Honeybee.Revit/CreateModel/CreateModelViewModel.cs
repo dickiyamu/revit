@@ -3,7 +3,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls.Primitives;
@@ -135,6 +134,13 @@ namespace Honeybee.Revit.CreateModel
             set { _bldgProgramType = value; RaisePropertyChanged(() => BldgProgramType); }
         }
 
+        private Model _energyModel;
+        public Model EnergyModel
+        {
+            get { return _energyModel; }
+            set { _energyModel = value; RaisePropertyChanged(() => EnergyModel); }
+        }
+
         #endregion
 
         public CreateModelViewModel(CreateModelModel model)
@@ -167,7 +173,7 @@ namespace Honeybee.Revit.CreateModel
             ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
         }
 
-        private void OnShowDetails(SpatialObjectWrapper so)
+        private static void OnShowDetails(SpatialObjectWrapper so)
         {
             so.IsExpanded = !so.IsExpanded;
         }
@@ -366,7 +372,7 @@ namespace Honeybee.Revit.CreateModel
             var index = found.Room2D.Annotations.IndexOf(msg.Annotation);
 
             // (Konrad) Type changed so we need a new Boundary Condition.
-            BoundaryCondition newBc;
+            BoundaryConditionBase newBc;
             switch (msg.Annotation.FamilySymbolName)
             {
                 case "Ground":

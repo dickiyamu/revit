@@ -144,17 +144,24 @@ namespace Honeybee.Revit.CreateModel
                     symbols.Add(familySymbol.Name, familySymbol);
                 }
 
-                for (var i = 0; i < so.Room2D.FloorBoundarySegments.Count; i++)
+                var floorBoundaries = so.Room2D.FloorBoundary.GetCurves();
+                var floorHoles = so.Room2D.FloorHoles.SelectMany(x => x.GetCurves());
+                var combinedSegments = new List<Curve>();
+                combinedSegments.AddRange(floorBoundaries);
+                combinedSegments.AddRange(floorHoles);
+
+                var hasAnnotations = so.Room2D.Annotations.Count == so.Room2D.BoundaryConditions.Count;
+                for (var i = 0; i < combinedSegments.Count; i++)
                 {
-                    var curve = so.Room2D.FloorBoundarySegments[i];
+                    var curve = combinedSegments[i];
                     var bCondition = so.Room2D.BoundaryConditions[i];
-                    var annotation = so.Room2D.Annotations.Count == so.Room2D.FloorBoundarySegments.Count 
-                        ? so.Room2D.Annotations[i] 
+                    var annotation = hasAnnotations 
+                        ? so.Room2D.Annotations[i]
                         : null;
 
                     FamilySymbol fs;
                     string adjacentRoom;
-                    if (annotation != null)
+                    if (hasAnnotations)
                     {
                         fs = doc.GetElement(annotation.FamilySymbolId) as FamilySymbol;
                         adjacentRoom = annotation.AdjacentRoom;
@@ -187,7 +194,7 @@ namespace Honeybee.Revit.CreateModel
                     var fi = doc.Create.NewFamilyInstance(loc, fs, doc.ActiveView);
                     fi?.LookupParameter("AdjacentRoom")?.Set(adjacentRoom);
 
-                    if (so.Room2D.Annotations.Count != so.Room2D.FloorBoundarySegments.Count)
+                    if (so.Room2D.Annotations.Count != combinedSegments.Count)
                     {
                         so.Room2D.Annotations.Add(new AnnotationWrapper(fi) {AdjacentRoom = adjacentRoom});
                     }
@@ -214,7 +221,7 @@ namespace Honeybee.Revit.CreateModel
 
                 var curves = new List<CurveLoop>();
                 var loop = new CurveLoop();
-                foreach (var curve in so.Room2D.FloorBoundarySegments)
+                foreach (var curve in so.Room2D.FloorBoundary.GetCurves())
                 {
                     loop.Append(curve);
                 }

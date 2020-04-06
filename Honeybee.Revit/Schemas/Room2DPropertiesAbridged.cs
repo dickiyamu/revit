@@ -17,7 +17,7 @@ namespace Honeybee.Revit.Schemas
         /// <returns></returns>
         public DF.Room2DPropertiesAbridged ToDragonfly()
         {
-            return new DF.Room2DPropertiesAbridged(Type, Energy.ToDragonfly());
+            return new DF.Room2DPropertiesAbridged(Type, null);
         }
     }
 }

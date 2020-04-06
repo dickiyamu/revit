@@ -52,11 +52,6 @@ namespace Honeybee.Revit.Schemas
         /// <returns></returns>
         public DF.Room2DEnergyPropertiesAbridged ToDragonfly()
         {
-            var t = Type;
-            var set = ConstructionSet.Name;
-            var pt = ProgramType.Name;
-            var hvac = Hvac?.Name;
-
             return new DF.Room2DEnergyPropertiesAbridged(Type, ConstructionSet.Name, ProgramType.Name, Hvac?.Name);
         }
     }

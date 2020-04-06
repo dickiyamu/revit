@@ -1,26 +1,40 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Story : ISchema<DF.Story>
+    public class Story : IBaseObject, ISchema<DF.Story>
     {
+        [JsonProperty("type")]
         public string Type
         {
             get { return GetType().Name; }
         }
 
-        public string Name { get; set; }
-        public string DisplayName { get; set; } = string.Empty;
+        [JsonProperty("name")]
+        public string Name { get; set; } = $"Story_{Guid.NewGuid()}";
+
+        [JsonProperty("display_name")]
+        public string DisplayName { get; set; }
+
+        [JsonProperty("floor_to_floor_height")]
         public double FloorToFloorHeight { get; set; }
-        public int Multiplier { get; set; }
+
+        [JsonProperty("multiplier")]
+        public int Multiplier { get; set; } = 1;
+
+        [JsonProperty("room_2ds")]
         public List<Room2D> Room2Ds { get; set; }
+
+        [JsonProperty("properties")]
         public StoryPropertiesAbridged Properties { get; set; }
 
-        public Story(string name, List<Room2D> rooms, StoryPropertiesAbridged properties)
+        public Story(string displayName, List<Room2D> rooms, StoryPropertiesAbridged properties)
         {
-            Name = name;
+            DisplayName = displayName;
             Room2Ds = rooms;
             Properties = properties;
         }

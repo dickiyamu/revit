@@ -125,6 +125,9 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.PowerShell.5.ReferenceAssemblies.1.1.0\lib\net4\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -161,13 +164,20 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Schemas\Adiabatic.cs" />
     <Compile Include="Schemas\BoundaryCondition.cs" />
     <Compile Include="Schemas\Building.cs" />
+    <Compile Include="Schemas\BuildingEnergyPropertiesAbridged.cs" />
     <Compile Include="Schemas\BuildingPropertiesAbridged.cs" />
+    <Compile Include="Schemas\ConstructionBase.cs" />
     <Compile Include="Schemas\ConstructionSet.cs" />
-    <Compile Include="Schemas\Converters\BoundaryConditionsConverter.cs" />
+    <Compile Include="Schemas\ConstructionSetAbridged.cs" />
+    <Compile Include="Schemas\Converters\BoundaryConditionBaseConverter.cs" />
+    <Compile Include="Schemas\Converters\BoundaryConditionObjectsConverter.cs" />
+    <Compile Include="Schemas\Converters\ConstructionBaseConverter.cs" />
     <Compile Include="Schemas\Converters\ConstructionSetConverter.cs" />
     <Compile Include="Schemas\Converters\ListOfPoint2DConverter.cs" />
+    <Compile Include="Schemas\Converters\MaterialBaseConverter.cs" />
     <Compile Include="Schemas\Converters\ProgramTypeConverter.cs" />
     <Compile Include="Schemas\Enumerations\BuildingPrograms.cs" />
     <Compile Include="Schemas\Enumerations\ClimateZones.cs" />
@@ -175,7 +185,15 @@
     <Compile Include="Schemas\Enumerations\RoomPrograms.cs" />
     <Compile Include="Schemas\Enumerations\Vintages.cs" />
     <Compile Include="Schemas\Extensions.cs" />
+    <Compile Include="Schemas\Ground.cs" />
     <Compile Include="Schemas\HvacTypes.cs" />
+    <Compile Include="Schemas\IBaseObject.cs" />
+    <Compile Include="Schemas\MaterialBase.cs" />
+    <Compile Include="Schemas\Model.cs" />
+    <Compile Include="Schemas\ModelEnergyProperties.cs" />
+    <Compile Include="Schemas\ModelProperties.cs" />
+    <Compile Include="Schemas\OpaqueConstructionAbridged.cs" />
+    <Compile Include="Schemas\Outdoors.cs" />
     <Compile Include="Schemas\Point2D.cs" />
     <Compile Include="Schemas\ProgramType.cs" />
     <Compile Include="Schemas\Room2D.cs" />
@@ -183,8 +201,12 @@
     <Compile Include="Schemas\Room2DPropertiesAbridged.cs" />
     <Compile Include="AppSettings.cs" />
     <Compile Include="Schemas\ISchema.cs" />
+    <Compile Include="Schemas\ShadeConstruction.cs" />
     <Compile Include="Schemas\Story.cs" />
+    <Compile Include="Schemas\StoryEnergyPropertiesAbridged.cs" />
     <Compile Include="Schemas\StoryPropertiesAbridged.cs" />
+    <Compile Include="Schemas\Surface.cs" />
+    <Compile Include="Schemas\WindowConstructionAbridged.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

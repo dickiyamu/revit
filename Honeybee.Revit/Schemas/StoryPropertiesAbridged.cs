@@ -9,9 +9,11 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
+        public StoryEnergyPropertiesAbridged Energy { get; set; } = new StoryEnergyPropertiesAbridged();
+
         public DF.StoryPropertiesAbridged ToDragonfly()
         {
-            return new DF.StoryPropertiesAbridged(Type);
+            return new DF.StoryPropertiesAbridged(Type, null);
         }
     }
 }

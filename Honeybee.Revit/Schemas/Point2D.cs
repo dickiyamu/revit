@@ -20,5 +20,11 @@ namespace Honeybee.Revit.Schemas
             X = pt.X;
             Y = pt.Y;
         }
+
+        public Point2D(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
     }
 }
