@@ -4,7 +4,7 @@ using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class ModelEnergyProperties : ISchema<DF.ModelEnergyProperties>
+    public class ModelEnergyProperties : ISchema<DF.ModelEnergyProperties, object>
     {
         public string Type
         {
@@ -36,6 +36,11 @@ namespace Honeybee.Revit.Schemas
                 Constructions.ToDragonfly(),
                 Materials.ToDragonfly()
             );
+        }
+
+        public object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

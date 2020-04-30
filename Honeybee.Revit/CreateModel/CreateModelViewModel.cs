@@ -40,6 +40,8 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ResetProgramType { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowDetails { get; set; }
+        public RelayCommand<Window> ExportHoneybee { get; set; }
+        public RelayCommand<Window> ExportDragonfly { get; set; }
 
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
@@ -171,6 +173,30 @@ namespace Honeybee.Revit.CreateModel
             ResetProgramType = new RelayCommand(OnResetProgramType);
             ShowBoundaryConditions = new RelayCommand<SpatialObjectWrapper>(OnShowBoundaryConditions);
             ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
+            ExportHoneybee = new RelayCommand<Window>(OnExportHoneybee);
+            ExportDragonfly = new RelayCommand<Window>(OnExportDragonfly);
+        }
+
+        private void OnExportDragonfly(Window win)
+        {
+            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+                .Where(x => x.IsSelected)
+                .Select(x => x.Room2D)
+                .ToList();
+            if (selected.Any()) Model.SerializeRoom2D(selected, true);
+
+            win.Close();
+        }
+
+        private void OnExportHoneybee(Window win)
+        {
+            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+                .Where(x => x.IsSelected)
+                .Select(x => x.Room2D)
+                .ToList();
+            if (selected.Any()) Model.SerializeRoom2D(selected, false);
+
+            win.Close();
         }
 
         private static void OnShowDetails(SpatialObjectWrapper so)
@@ -313,7 +339,6 @@ namespace Honeybee.Revit.CreateModel
                 .ToList();
             if (selected.Any()) Model.SerializeRoom2D(selected);
 
-            //Model.WriteJournalComment("Closing Honeybee...");
             win.Close();
         }
 

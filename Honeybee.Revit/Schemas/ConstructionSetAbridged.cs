@@ -34,5 +34,10 @@ namespace Honeybee.Revit.Schemas
                 DisplayName
             );
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

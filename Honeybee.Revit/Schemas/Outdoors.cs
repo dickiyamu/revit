@@ -31,5 +31,10 @@ namespace Honeybee.Revit.Schemas
 
             return new HB.Outdoors(SunExposure, WindExposure, new HB.AnyOf<HB.Autocalculate, double>(obj));
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

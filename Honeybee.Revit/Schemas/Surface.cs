@@ -31,5 +31,10 @@ namespace Honeybee.Revit.Schemas
         {
             return new HB.Surface(BoundaryConditionObjects.ToDragonfly());
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

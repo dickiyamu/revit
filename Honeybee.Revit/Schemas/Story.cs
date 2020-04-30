@@ -6,7 +6,7 @@ using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Story : IBaseObject, ISchema<DF.Story>
+    public class Story : IBaseObject, ISchema<DF.Story, object>
     {
         [JsonProperty("type")]
         public string Type
@@ -53,6 +53,11 @@ namespace Honeybee.Revit.Schemas
                 DisplayName,
                 null // user data
             );
+        }
+
+        public object ToHoneybee()
+        {
+            throw new NotImplementedException();
         }
     }
 }

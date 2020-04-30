@@ -7,10 +7,11 @@ using Honeybee.Revit.CreateModel.Wrappers;
 
 namespace Honeybee.Revit.Schemas
 {
-    public abstract class BoundaryConditionBase : ISchema<object>
+    public abstract class BoundaryConditionBase : ISchema<object, object>
     {
         public abstract string Type { get; }
         public abstract object ToDragonfly();
+        public abstract object ToHoneybee();
 
         public static BoundaryConditionBase Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow, bool allowAdiabatic)
         {

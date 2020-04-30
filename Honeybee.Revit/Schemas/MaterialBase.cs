@@ -6,10 +6,11 @@ using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public abstract class MaterialBase : IBaseObject, ISchema<object>
+    public abstract class MaterialBase : IBaseObject, ISchema<object, object>
     {
         public abstract string Type { get; }
         public abstract object ToDragonfly();
+        public abstract object ToHoneybee();
         public abstract string Identifier { get; set; }
         public abstract string DisplayName { get; set; }
     }
@@ -37,6 +38,11 @@ namespace Honeybee.Revit.Schemas
             return new HB.EnergyMaterial(Identifier, Thickness, Conductivity, Density, SpecificHeat, Roughness,
                 ThermalAbsorptance, SolarAbsorptance, VisibleAbsorptance, DisplayName);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class EnergyMaterialNoMass : MaterialBase
@@ -59,6 +65,11 @@ namespace Honeybee.Revit.Schemas
         {
             return new HB.EnergyMaterialNoMass(Identifier, RValue, Roughness, ThermalAbsorptance, SolarAbsorptance,
                 VisibleAbsorptance, DisplayName);
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -111,6 +122,11 @@ namespace Honeybee.Revit.Schemas
                 TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier, RightOpeningMultiplier,
                 DisplayName);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class EnergyWindowMaterialGas : MaterialBase
@@ -128,6 +144,11 @@ namespace Honeybee.Revit.Schemas
         public override object ToDragonfly()
         {
             return new HB.EnergyWindowMaterialGas(Identifier, Thickness, GasType, DisplayName);
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -165,6 +186,11 @@ namespace Honeybee.Revit.Schemas
                 SpecificHeatCoeffB, SpecificHeatCoeffC, DisplayName
             );
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class EnergyWindowMaterialGasMixture : MaterialBase
@@ -183,6 +209,11 @@ namespace Honeybee.Revit.Schemas
         public override object ToDragonfly()
         {
             return new HB.EnergyWindowMaterialGasMixture(Identifier, GasTypes, GasFractions, Thickness, DisplayName);
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -215,6 +246,11 @@ namespace Honeybee.Revit.Schemas
                 SolarReflectanceBack, VisibleTransmittance, VisibleReflectance, VisibleReflectanceBack,
                 InfraredTransmittance, Emissivity, EmissivityBack, Conductivity, DirtCorrection, SolarDiffusing,
                 DisplayName);
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -249,6 +285,11 @@ namespace Honeybee.Revit.Schemas
                 DistanceToGlass, TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier,
                 RightOpeningMultiplier, AirflowPermeability, DisplayName);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class EnergyWindowMaterialSimpleGlazSys : MaterialBase
@@ -267,6 +308,11 @@ namespace Honeybee.Revit.Schemas
         public override object ToDragonfly()
         {
             return new HB.EnergyWindowMaterialSimpleGlazSys(Identifier, UFactor, Shgc, Vt, DisplayName);
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
         }
     }
 }

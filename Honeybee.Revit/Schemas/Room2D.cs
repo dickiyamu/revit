@@ -11,14 +11,14 @@ using Honeybee.Revit.CreateModel.Wrappers;
 using Newtonsoft.Json;
 using NLog;
 using DF = DragonflySchema;
-
+using HB = HoneybeeSchema;
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
 #endregion
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Room2D : IBaseObject, ISchema<DF.Room2D>
+    public class Room2D : IBaseObject, ISchema<DF.Room2D, HB.Room>
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -460,6 +460,20 @@ namespace Honeybee.Revit.Schemas
                 BoundaryConditions.ToDragonfly(),
                 WindowParameters.ToDragonfly(),
                 null, // shading params
+                DisplayName,
+                null // user data
+            );
+        }
+
+        public HB.Room ToHoneybee()
+        {
+            return new HB.Room(
+                Identifier,
+                null, // faces
+                null, // room properties
+                null, // indoor shades
+                null, // outdoor shades
+                1,
                 DisplayName,
                 null // user data
             );

@@ -4,10 +4,11 @@ using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public abstract class WindowParameterBase : ISchema<object>
+    public abstract class WindowParameterBase : ISchema<object, object>
     {
         public abstract string Type { get; }
         public abstract object ToDragonfly();
+        public abstract object ToHoneybee();
     }
 
     public class SingleWindow : WindowParameterBase
@@ -31,6 +32,11 @@ namespace Honeybee.Revit.Schemas
         {
             return new DF.SingleWindow(Width, Height, SillHeight);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class SimpleWindowRatio : WindowParameterBase
@@ -47,6 +53,11 @@ namespace Honeybee.Revit.Schemas
         public override object ToDragonfly()
         {
             return new DF.SimpleWindowRatio(WindowRatio);
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -77,6 +88,11 @@ namespace Honeybee.Revit.Schemas
         {
             return new DF.RepeatingWindowRatio(WindowRatio, WindowHeight, SillHeight, HorizontalSeparation, VerticalSeparation);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class RectangularWindows : WindowParameterBase
@@ -100,6 +116,11 @@ namespace Honeybee.Revit.Schemas
         {
             return new DF.RectangularWindows(Origins.ToDragonfly(), Widths, Heights);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class DetailedWindows : WindowParameterBase
@@ -116,6 +137,11 @@ namespace Honeybee.Revit.Schemas
         public override object ToDragonfly()
         {
             return new DF.DetailedWindows(Polygons.ToDragonfly());
+        }
+
+        public override object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -306,6 +306,7 @@ xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Ad
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)HoneybeeSchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2018\Honeybee.Revit"
 goto exit
 
@@ -319,6 +320,7 @@ xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Ad
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)HoneybeeSchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee.Revit"
 goto exit
 
@@ -332,6 +334,7 @@ xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Ad
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
+xcopy /Q/Y "$(TargetDir)HoneybeeSchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2020\Honeybee.Revit"
 goto exit
 

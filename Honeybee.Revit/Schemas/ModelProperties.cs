@@ -2,7 +2,7 @@
 
 namespace Honeybee.Revit.Schemas
 {
-    public class ModelProperties : ISchema<DF.ModelProperties>
+    public class ModelProperties : ISchema<DF.ModelProperties, object>
     {
         public string Type
         {
@@ -14,6 +14,11 @@ namespace Honeybee.Revit.Schemas
         public DF.ModelProperties ToDragonfly()
         {
             return new DF.ModelProperties();
+        }
+
+        public object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

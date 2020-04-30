@@ -15,6 +15,7 @@ using Honeybee.Revit.Schemas;
 using Newtonsoft.Json;
 using NLog;
 using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 using Surface = Honeybee.Revit.Schemas.Surface;
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
@@ -161,13 +162,6 @@ namespace Honeybee.Revit.CreateModel
         //    return result;
         //}
 
-        //public void WriteJournalComment(string comment)
-        //{
-        //    AppCommand.CreateModelHandler.Arg1 = comment;
-        //    AppCommand.CreateModelHandler.Request.Make(RequestId.WriteJournalComment);
-        //    AppCommand.CreateModelEvent.Raise();
-        //}
-
         public void ShowBoundaryConditions(SpatialObjectWrapper so)
         {
             AppCommand.CreateModelHandler.Arg1 = so;
@@ -175,34 +169,51 @@ namespace Honeybee.Revit.CreateModel
             AppCommand.CreateModelEvent.Raise();
         }
 
-        public void SerializeRoom2D(List<Room2D> rooms)
+        public void SerializeRoom2D(List<Room2D> rooms, bool dragonfly = true)
         {
             try
             {
-                var stories = rooms
-                    .GroupBy(x => x.Level.Name)
-                    .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
-                    .ToList();
-
-                var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
-                var model = new Model("Model 1", new List<Building> { building }, new ModelProperties())
+                if (dragonfly)
                 {
-                    Units = DF.Model.UnitsEnum.Feet,
-                    Tolerance = 0.0001d
-                };
-                var dfModel = model.ToDragonfly();
-                //var dfRooms = rooms.Select(x => x.ToDragonfly());
-                var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
-                if (string.IsNullOrWhiteSpace(json)) return;
+                    var stories = rooms
+                        .GroupBy(x => x.Level.Name)
+                        .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
+                        .ToList();
 
-                const string filePath = @"C:\Users\ksobon\Desktop\Honebee.json";
-                var dir = Path.GetDirectoryName(filePath);
-                if (string.IsNullOrWhiteSpace(dir)) return;
+                    var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
+                    var model = new Model("Model 1", new List<Building> { building }, new ModelProperties())
+                    {
+                        Units = DF.Model.UnitsEnum.Feet,
+                        Tolerance = 0.0001d
+                    };
+                    var dfModel = model.ToDragonfly();
+                    var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
+                    if (string.IsNullOrWhiteSpace(json)) return;
 
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+                    const string filePath = @"C:\Users\ksobon\Desktop\Dragonfly.json";
+                    var dir = Path.GetDirectoryName(filePath);
+                    if (string.IsNullOrWhiteSpace(dir)) return;
 
-                File.WriteAllText(filePath, json);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+
+                    File.WriteAllText(filePath, json);
+                }
+                else
+                {
+                    var hbModel = rooms.Select(x => x.ToHoneybee());
+                    var json = JsonConvert.SerializeObject(hbModel, Formatting.Indented, new HB.AnyOfJsonConverter());
+                    if (string.IsNullOrWhiteSpace(json)) return;
+
+                    const string filePath = @"C:\Users\ksobon\Desktop\Honeybee.json";
+                    var dir = Path.GetDirectoryName(filePath);
+                    if (string.IsNullOrWhiteSpace(dir)) return;
+
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+
+                    File.WriteAllText(filePath, json);
+                }
             }
             catch(Exception e)
             {

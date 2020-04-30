@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
 using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Room2DEnergyPropertiesAbridged : ISchema<DF.Room2DEnergyPropertiesAbridged>, INotifyPropertyChanged
+    public class Room2DEnergyPropertiesAbridged : ISchema<DF.Room2DEnergyPropertiesAbridged, HB.RoomEnergyPropertiesAbridged>, INotifyPropertyChanged
     {
         public string Type
         {
@@ -53,6 +54,11 @@ namespace Honeybee.Revit.Schemas
         public DF.Room2DEnergyPropertiesAbridged ToDragonfly()
         {
             return new DF.Room2DEnergyPropertiesAbridged(ConstructionSet.Name, ProgramType.Name, Hvac?.Name);
+        }
+
+        public HB.RoomEnergyPropertiesAbridged ToHoneybee()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

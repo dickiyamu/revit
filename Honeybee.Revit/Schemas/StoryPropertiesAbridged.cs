@@ -2,7 +2,7 @@
 
 namespace Honeybee.Revit.Schemas
 {
-    public class StoryPropertiesAbridged : ISchema<DF.StoryPropertiesAbridged>
+    public class StoryPropertiesAbridged : ISchema<DF.StoryPropertiesAbridged, object>
     {
         public string Type
         {
@@ -14,6 +14,11 @@ namespace Honeybee.Revit.Schemas
         public DF.StoryPropertiesAbridged ToDragonfly()
         {
             return new DF.StoryPropertiesAbridged();
+        }
+
+        public object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

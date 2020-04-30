@@ -15,5 +15,10 @@ namespace Honeybee.Revit.Schemas
         {
             return new HB.Ground();
         }
+
+        public override object ToHoneybee()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

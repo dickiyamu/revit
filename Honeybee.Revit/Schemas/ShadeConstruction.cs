@@ -31,5 +31,10 @@ namespace Honeybee.Revit.Schemas
         {
             return new HB.ShadeConstruction(Identifier, SolarReflectance, VisibleReflectance, IsSpecular, DisplayName);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

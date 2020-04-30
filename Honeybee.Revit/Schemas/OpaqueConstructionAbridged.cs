@@ -19,5 +19,10 @@ namespace Honeybee.Revit.Schemas
         {
             return new HB.OpaqueConstructionAbridged(Identifier, Layers, DisplayName);
         }
+
+        public override object ToHoneybee()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
