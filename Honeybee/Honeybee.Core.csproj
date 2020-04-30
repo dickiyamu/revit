@@ -133,6 +133,7 @@
     <Compile Include="NlogUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
+    <Compile Include="WPF\Buttons\DropDownButton.cs" />
     <Compile Include="WPF\Buttons\ImageButton.cs" />
     <Compile Include="WPF\Buttons\ImageToggleButton.cs" />
     <Compile Include="WPF\DataGridExtension.cs" />
@@ -145,6 +146,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Page Include="Resources\Styles\DropDownButtonStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\ImageButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

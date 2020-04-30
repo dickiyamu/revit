@@ -285,6 +285,10 @@
   <ItemGroup>
     <Resource Include="Resources\24x24\showHover.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\export.png" />
+    <Resource Include="Resources\24x24\exportHover.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo Configuration: $(Configuration)

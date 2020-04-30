@@ -33,6 +33,8 @@
                     Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/ImageButtonStyle.xaml" />
                 <ResourceDictionary
                     Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/ImageToggleButtonStyle.xaml" />
+                <ResourceDictionary
+                    Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/DropDownButtonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <createModel:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
             <createModel:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
@@ -113,6 +115,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
+            <RowDefinition Height="32" />
             <RowDefinition Height="40" />
             <RowDefinition Height="25" />
         </Grid.RowDefinitions>
@@ -379,6 +382,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="24" />
                         <RowDefinition Height="24" />
                     </Grid.RowDefinitions>
                     <wpf:DataGridExtension
@@ -811,33 +815,52 @@
                 </Grid>
             </GroupBox>
         </StackPanel>
+        <b:DropDownButton Grid.Row="1"
+                          MainImage="../Resources/24x24/export.png"
+                          HoverImage="../Resources/24x24/exportHover.png"
+                          Cursor="Hand"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Margin="0,0,12,0"
+                          Width="24"
+                          Height="24"
+                          ToolTip="Export">
+            <b:DropDownButton.Menu>
+                <ContextMenu>
+                    <MenuItem Command="{Binding ExportDragonfly}"
+                              Header="Export Dragonfly" />
+                    <MenuItem Command="{Binding ExportHoneybee}"
+                              Header="Export Honeybee" />
+                </ContextMenu>
+            </b:DropDownButton.Menu>
+        </b:DropDownButton>
         <Button Command="{Binding Cancel, Mode=OneWay}"
                 CommandParameter="{Binding ElementName=Win}"
-                Content="Cancel"
-                Margin="0,0,97,10"
-                Grid.Row="1"
+                Content="Close"
+                Margin="0,0,12,10"
+                Grid.Row="2"
                 HorizontalAlignment="Right"
                 Width="75"
                 Height="20"
                 VerticalAlignment="Bottom" />
-        <Button Command="{Binding Ok, Mode=OneWay}"
+        <!--<Button Command="{Binding Ok, Mode=OneWay}"
                 CommandParameter="{Binding ElementName=Win}"
                 Content="OK"
                 Margin="0,0,12,10"
-                Grid.Row="1"
+                Grid.Row="2"
                 HorizontalAlignment="Right"
                 Width="75"
                 Height="20"
-                VerticalAlignment="Bottom" />
+                VerticalAlignment="Bottom" />-->
         <Button Content="?"
                 Command="{Binding Help, Mode=OneWay}"
-                Margin="0,0,182,10"
-                Grid.Row="1"
+                Margin="0,0,97,10"
+                Grid.Row="2"
                 HorizontalAlignment="Right"
                 Width="37"
                 Height="20"
                 VerticalAlignment="Bottom" />
-        <StatusBar Grid.Row="2"
+        <StatusBar Grid.Row="3"
                    Height="25"
                    HorizontalAlignment="Stretch"
                    Name="StatusBar"
