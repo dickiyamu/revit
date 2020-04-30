@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
 using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -28,25 +29,25 @@ namespace Honeybee.Revit.Schemas
             return floorBoundary.Select(x => new List<double> {x.X, x.Y}).ToList();
         }
 
-        public static List<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>> ToDragonfly(
+        public static List<DF.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface>> ToDragonfly(
             this List<BoundaryConditionBase> bcs)
         {
-            var boundaryConditions = new List<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>>();
+            var boundaryConditions = new List<DF.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface>>();
             foreach (var bc in bcs)
             {
                 switch (bc)
                 {
                     case Outdoors unused:
-                        boundaryConditions.Add(bc.ToDragonfly() as DF.Outdoors);
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Outdoors);
                         break;
                     case Ground unused:
-                        boundaryConditions.Add(bc.ToDragonfly() as DF.Ground);
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Ground);
                         break;
                     case Adiabatic unused:
-                        boundaryConditions.Add(bc.ToDragonfly() as DF.Adiabatic);
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Adiabatic);
                         break;
                     case Surface unused:
-                        boundaryConditions.Add(bc.ToDragonfly() as DF.Surface);
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Surface);
                         break;
                     default:
                         boundaryConditions.Add(null);
@@ -89,15 +90,15 @@ namespace Honeybee.Revit.Schemas
             return windowParameters;
         }
 
-        public static List<DF.AnyOf<DF.ConstructionSetAbridged, DF.ConstructionSet>> ToDragonfly(this List<ConstructionSetBase> constructionSets)
+        public static List<DF.AnyOf<HB.ConstructionSetAbridged, HB.ConstructionSet>> ToDragonfly(this List<ConstructionSetBase> constructionSets)
         {
-            var sets = new List<DF.AnyOf<DF.ConstructionSetAbridged, DF.ConstructionSet>>();
+            var sets = new List<DF.AnyOf<HB.ConstructionSetAbridged, HB.ConstructionSet>>();
             foreach (var set in constructionSets)
             {
                 switch (set)
                 {
                     case ConstructionSetAbridged unused:
-                        sets.Add(set.ToDragonfly() as DF.ConstructionSetAbridged);
+                        sets.Add(set.ToDragonfly() as HB.ConstructionSetAbridged);
                         break;
                     default:
                         sets.Add(null);
@@ -108,24 +109,24 @@ namespace Honeybee.Revit.Schemas
             return sets;
         }
 
-        public static List<DF.AnyOf<DF.OpaqueConstructionAbridged, DF.WindowConstructionAbridged, DF.ShadeConstruction, DF.AirBoundaryConstructionAbridged, DF.OpaqueConstruction, DF.WindowConstruction, DF.AirBoundaryConstruction>> ToDragonfly(this List<ConstructionBase> cons)
+        public static List<DF.AnyOf<HB.OpaqueConstructionAbridged, HB.WindowConstructionAbridged, HB.ShadeConstruction, HB.AirBoundaryConstructionAbridged, HB.OpaqueConstruction, HB.WindowConstruction, HB.AirBoundaryConstruction>> ToDragonfly(this List<ConstructionBase> cons)
         {
             var constructions =
-                new List<DF.AnyOf<DF.OpaqueConstructionAbridged, DF.WindowConstructionAbridged, DF.ShadeConstruction,
-                    DF.AirBoundaryConstructionAbridged, DF.OpaqueConstruction, DF.WindowConstruction,
-                    DF.AirBoundaryConstruction>>();
+                new List<DF.AnyOf<HB.OpaqueConstructionAbridged, HB.WindowConstructionAbridged, HB.ShadeConstruction,
+                    HB.AirBoundaryConstructionAbridged, HB.OpaqueConstruction, HB.WindowConstruction,
+                    HB.AirBoundaryConstruction>>();
             foreach (var cb in cons)
             {
                 switch (cb)
                 {
                     case OpaqueConstructionAbridged unused:
-                        constructions.Add(cb.ToDragonfly() as DF.OpaqueConstructionAbridged);
+                        constructions.Add(cb.ToDragonfly() as HB.OpaqueConstructionAbridged);
                         break;
                     case WindowConstructionAbridged unused:
-                        constructions.Add(cb.ToDragonfly() as DF.WindowConstructionAbridged);
+                        constructions.Add(cb.ToDragonfly() as HB.WindowConstructionAbridged);
                         break;
                     case ShadeConstruction unused:
-                        constructions.Add(cb.ToDragonfly() as DF.ShadeConstruction);
+                        constructions.Add(cb.ToDragonfly() as HB.ShadeConstruction);
                         break;
                     default:
                         constructions.Add(null);
@@ -136,44 +137,44 @@ namespace Honeybee.Revit.Schemas
             return constructions;
         }
 
-        public static List<DF.AnyOf<DF.EnergyMaterial, DF.EnergyMaterialNoMass, DF.EnergyWindowMaterialGas,
-            DF.EnergyWindowMaterialGasCustom, DF.EnergyWindowMaterialGasMixture, DF.EnergyWindowMaterialSimpleGlazSys,
-            DF.EnergyWindowMaterialBlind, DF.EnergyWindowMaterialGlazing, DF.EnergyWindowMaterialShade>> ToDragonfly(
+        public static List<DF.AnyOf<HB.EnergyMaterial, HB.EnergyMaterialNoMass, HB.EnergyWindowMaterialGas,
+            HB.EnergyWindowMaterialGasCustom, HB.EnergyWindowMaterialGasMixture, HB.EnergyWindowMaterialSimpleGlazSys,
+            HB.EnergyWindowMaterialBlind, HB.EnergyWindowMaterialGlazing, HB.EnergyWindowMaterialShade>> ToDragonfly(
             this List<MaterialBase> mats)
         {
-            var materials = new List<DF.AnyOf<DF.EnergyMaterial, DF.EnergyMaterialNoMass, DF.EnergyWindowMaterialGas,
-                DF.EnergyWindowMaterialGasCustom, DF.EnergyWindowMaterialGasMixture, DF.EnergyWindowMaterialSimpleGlazSys,
-                DF.EnergyWindowMaterialBlind, DF.EnergyWindowMaterialGlazing, DF.EnergyWindowMaterialShade>>();
+            var materials = new List<DF.AnyOf<HB.EnergyMaterial, HB.EnergyMaterialNoMass, HB.EnergyWindowMaterialGas,
+                HB.EnergyWindowMaterialGasCustom, HB.EnergyWindowMaterialGasMixture, HB.EnergyWindowMaterialSimpleGlazSys,
+                HB.EnergyWindowMaterialBlind, HB.EnergyWindowMaterialGlazing, HB.EnergyWindowMaterialShade>>();
             foreach (var m in mats)
             {
                 switch (m)
                 {
                     case EnergyMaterial unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyMaterial);
+                        materials.Add(m.ToDragonfly() as HB.EnergyMaterial);
                         break;
                     case EnergyMaterialNoMass unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyMaterialNoMass);
+                        materials.Add(m.ToDragonfly() as HB.EnergyMaterialNoMass);
                         break;
                     case EnergyWindowMaterialBlind unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialBlind);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialBlind);
                         break;
                     case EnergyWindowMaterialGas unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialGas);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialGas);
                         break;
                     case EnergyWindowMaterialGasCustom unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialGasCustom);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialGasCustom);
                         break;
                     case EnergyWindowMaterialGasMixture unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialGasMixture);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialGasMixture);
                         break;
                     case EnergyWindowMaterialGlazing unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialGlazing);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialGlazing);
                         break;
                     case EnergyWindowMaterialShade unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialShade);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialShade);
                         break;
                     case EnergyWindowMaterialSimpleGlazSys unused:
-                        materials.Add(m.ToDragonfly() as DF.EnergyWindowMaterialSimpleGlazSys);
+                        materials.Add(m.ToDragonfly() as HB.EnergyWindowMaterialSimpleGlazSys);
                         break;
                     default:
                         materials.Add(null);

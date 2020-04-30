@@ -1,6 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -25,11 +25,11 @@ namespace Honeybee.Revit.Schemas
         {
             object obj;
             if (Autocalculate && Math.Abs(ViewFactor) < 0.001)
-                obj = new DF.Autocalculate();
+                obj = new HB.Autocalculate();
             else
                 obj = ViewFactor;
 
-            return new DF.Outdoors(Type, SunExposure, WindExposure, new DF.AnyOf<DF.Autocalculate, double>(obj));
+            return new HB.Outdoors(SunExposure, WindExposure, new HB.AnyOf<HB.Autocalculate, double>(obj));
         }
     }
 }

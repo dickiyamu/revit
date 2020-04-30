@@ -29,7 +29,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.SingleWindow(Width, Height, Type, SillHeight);
+            return new DF.SingleWindow(Width, Height, SillHeight);
         }
     }
 
@@ -46,7 +46,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.SimpleWindowRatio(WindowRatio, Type);
+            return new DF.SimpleWindowRatio(WindowRatio);
         }
     }
 
@@ -75,8 +75,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.RepeatingWindowRatio(WindowRatio, WindowHeight, SillHeight, HorizontalSeparation, Type,
-                VerticalSeparation);
+            return new DF.RepeatingWindowRatio(WindowRatio, WindowHeight, SillHeight, HorizontalSeparation, VerticalSeparation);
         }
     }
 
@@ -99,7 +98,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.RectangularWindows(Origins.ToDragonfly(), Widths, Heights, Type);
+            return new DF.RectangularWindows(Origins.ToDragonfly(), Widths, Heights);
         }
     }
 
@@ -116,7 +115,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.DetailedWindows(Polygons.ToDragonfly(), Type);
+            return new DF.DetailedWindows(Polygons.ToDragonfly());
         }
     }
 }

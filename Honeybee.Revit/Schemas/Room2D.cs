@@ -454,14 +454,14 @@ namespace Honeybee.Revit.Schemas
                 FloorHeight,
                 FloorToCeilingHeight,
                 Properties.ToDragonfly(),
-                DisplayName,
-                null,
-                Type,
                 FloorHoles.ToDragonfly(),
                 IsGroundContact,
                 IsTopExposed,
                 BoundaryConditions.ToDragonfly(),
-                WindowParameters.ToDragonfly()
+                WindowParameters.ToDragonfly(),
+                null, // shading params
+                DisplayName,
+                null // user data
             );
         }
 

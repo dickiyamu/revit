@@ -13,7 +13,7 @@ namespace Honeybee.Revit.Schemas
 
         public DF.ModelProperties ToDragonfly()
         {
-            return new DF.ModelProperties(Type);
+            return new DF.ModelProperties();
         }
     }
 }

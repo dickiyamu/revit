@@ -1,5 +1,5 @@
 ﻿using System;
-using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -12,27 +12,26 @@ namespace Honeybee.Revit.Schemas
 
         public override string Identifier { get; set; } = $"ConstructionSetAbridged_{Guid.NewGuid()}";
         public override string DisplayName { get; set; }
-        public DF.WallSetAbridged WallSet { get; set; } = new DF.WallSetAbridged();
-        public DF.FloorSetAbridged FloorSet { get; set; } = new DF.FloorSetAbridged();
-        public DF.RoofCeilingSetAbridged RoofCeilingSet { get; set; } = new DF.RoofCeilingSetAbridged();
-        public DF.ApertureSetAbridged ApertureSet { get; set; } = new DF.ApertureSetAbridged();
-        public DF.DoorSetAbridged DoorSet { get; set; } = new DF.DoorSetAbridged();
+        public HB.WallConstructionSetAbridged WallSet { get; set; } = new HB.WallConstructionSetAbridged();
+        public HB.FloorConstructionSetAbridged FloorSet { get; set; } = new HB.FloorConstructionSetAbridged();
+        public HB.RoofCeilingConstructionSetAbridged RoofCeilingSet { get; set; } = new HB.RoofCeilingConstructionSetAbridged();
+        public HB.ApertureConstructionSetAbridged ApertureSet { get; set; } = new HB.ApertureConstructionSetAbridged();
+        public HB.DoorConstructionSetAbridged DoorSet { get; set; } = new HB.DoorConstructionSetAbridged();
         public string ShadeConstruction { get; set; }
         public string AirBoundaryConstruction { get; set; }
 
         public override object ToDragonfly()
         {
-            return new DF.ConstructionSetAbridged(
+            return new HB.ConstructionSetAbridged(
                 Identifier,
-                DisplayName,
-                Type,
                 WallSet,
                 FloorSet,
                 RoofCeilingSet,
                 ApertureSet,
                 DoorSet,
                 ShadeConstruction,
-                AirBoundaryConstruction
+                AirBoundaryConstruction,
+                DisplayName
             );
         }
     }

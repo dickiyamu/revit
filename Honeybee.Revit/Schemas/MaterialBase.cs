@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 // ReSharper disable UnusedMember.Global
 
 namespace Honeybee.Revit.Schemas
 {
-    public abstract class MaterialBase : ISchema<object>
+    public abstract class MaterialBase : IBaseObject, ISchema<object>
     {
         public abstract string Type { get; }
-        public abstract string Name { get; set; }
         public abstract object ToDragonfly();
+        public abstract string Identifier { get; set; }
+        public abstract string DisplayName { get; set; }
     }
 
     public class EnergyMaterial : MaterialBase
@@ -19,19 +21,21 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyMaterial_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyMaterial_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double Thickness { get; set; }
         public double Conductivity { get; set; }
         public double Density { get; set; }
         public double SpecificHeat { get; set; }
-        public string Roughness { get; set; }
+        public HB.EnergyMaterial.RoughnessEnum? Roughness { get; set; } = HB.EnergyMaterial.RoughnessEnum.MediumRough;
         public double ThermalAbsorptance { get; set; }
         public double SolarAbsorptance { get; set; }
         public double VisibleAbsorptance { get; set; }
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyMaterial(Name, Thickness, Conductivity, Density, SpecificHeat, Type);
+            return new HB.EnergyMaterial(Identifier, Thickness, Conductivity, Density, SpecificHeat, Roughness,
+                ThermalAbsorptance, SolarAbsorptance, VisibleAbsorptance, DisplayName);
         }
     }
 
@@ -42,16 +46,19 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyMaterialNoMass_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyMaterialNoMass_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double RValue { get; set; }
-        public string Roughness { get; set; }
+
+        public HB.EnergyMaterialNoMass.RoughnessEnum? Roughness { get; set; } = HB.EnergyMaterialNoMass.RoughnessEnum.MediumRough;
         public double ThermalAbsorptance { get; set; } = 0.9d;
         public double SolarAbsorptance { get; set; } = 0.7d;
         public double VisibleAbsorptance { get; set; } = 0.7d;
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyMaterialNoMass(Name, RValue, Type);
+            return new HB.EnergyMaterialNoMass(Identifier, RValue, Roughness, ThermalAbsorptance, SolarAbsorptance,
+                VisibleAbsorptance, DisplayName);
         }
     }
 
@@ -62,8 +69,11 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialBlind_{Guid.NewGuid()}";
-        public string SlatOrientation { get; set; }
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialBlind_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
+
+        public HB.EnergyWindowMaterialBlind.SlatOrientationEnum? SlatOrientation { get; set; } =
+            HB.EnergyWindowMaterialBlind.SlatOrientationEnum.Horizontal;
         public double SlatWidth { get; set; }
         public double SlatSeparation { get; set; }
         public double SlatThickness { get; set; }
@@ -92,7 +102,14 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyWindowMaterialBlind(Name, Type);
+            return new HB.EnergyWindowMaterialBlind(Identifier, SlatOrientation, SlatWidth, SlatSeparation,
+                SlatThickness, SlatAngle, SlatConductivity, BeamSolarTransmittance, BeamSolarReflectance,
+                BeamSolarReflectanceBack, DiffuseSolarTransmittance, DiffuseSolarReflectance,
+                DiffuseSolarReflectanceBack, BeamVisibleTransmittance, BeamVisibleReflectance,
+                BeamVisibleReflectanceBack, DiffuseVisibleTransmittance, DiffuseVisibleReflectance,
+                DiffuseVisibleReflectanceBack, InfraredTransmittance, Emissivity, EmissivityBack, DistanceToGlass,
+                TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier, RightOpeningMultiplier,
+                DisplayName);
         }
     }
 
@@ -103,13 +120,14 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialGas_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialGas_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double Thickness { get; set; } = 0.0125;
-        public string GasType { get; set; }
+        public HB.EnergyWindowMaterialGas.GasTypeEnum? GasType { get; set; } = HB.EnergyWindowMaterialGas.GasTypeEnum.Air;
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyWindowMaterialGas(Name, Type);
+            return new HB.EnergyWindowMaterialGas(Identifier, Thickness, GasType, DisplayName);
         }
     }
 
@@ -120,7 +138,8 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialGasCustom_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialGasCustom_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double ConductivityCoeffA { get; set; }
         public double ViscosityCoeffA { get; set; }
         public double SpecificHeatCoeffA { get; set; }
@@ -136,14 +155,14 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyWindowMaterialGasCustom(
-                Name,
+            return new HB.EnergyWindowMaterialGasCustom(
+                Identifier,
                 ConductivityCoeffA,
                 ViscosityCoeffA,
                 SpecificHeatCoeffA,
                 SpecificHeatRatio,
-                MolecularWeight,
-                Type
+                MolecularWeight, Thickness, ConductivityCoeffB, ConductivityCoeffC, ViscosityCoeffB, ViscosityCoeffC,
+                SpecificHeatCoeffB, SpecificHeatCoeffC, DisplayName
             );
         }
     }
@@ -155,14 +174,15 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialGasMixture_{Guid.NewGuid()}";
-        public List<DF.EnergyWindowMaterialGasMixture.GasTypesEnum> GasTypes { get; set; }
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialGasMixture_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
+        public List<HB.EnergyWindowMaterialGasMixture.GasTypesEnum> GasTypes { get; set; }
         public List<double> GasFractions { get; set; }
         public double Thickness { get; set; }
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyWindowMaterialGasMixture(Name, GasTypes, GasFractions, Type);
+            return new HB.EnergyWindowMaterialGasMixture(Identifier, GasTypes, GasFractions, Thickness, DisplayName);
         }
     }
 
@@ -173,7 +193,8 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialGlazing_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialGlazing_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double Thickness { get; set; }
         public double SolarTransmittance { get; set; }
         public double SolarReflectance { get; set; }
@@ -186,11 +207,14 @@ namespace Honeybee.Revit.Schemas
         public double EmissivityBack { get; set; }
         public double Conductivity { get; set; }
         public double DirtCorrection { get; set; }
-        public double SolarDiffusing { get; set; }
+        public bool SolarDiffusing { get; set; }
 
         public override object ToDragonfly()
         {
-            return new EnergyWindowMaterialGlazing();
+            return new HB.EnergyWindowMaterialGlazing(Identifier, Thickness, SolarTransmittance, SolarReflectance,
+                SolarReflectanceBack, VisibleTransmittance, VisibleReflectance, VisibleReflectanceBack,
+                InfraredTransmittance, Emissivity, EmissivityBack, Conductivity, DirtCorrection, SolarDiffusing,
+                DisplayName);
         }
     }
 
@@ -201,7 +225,8 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialShade_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialShade_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double SolarTransmittance { get; set; }
         public double SolarReflectance { get; set; }
         public double VisibleTransmittance { get; set; }
@@ -219,7 +244,10 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyWindowMaterialShade(Name, Type);
+            return new HB.EnergyWindowMaterialShade(Identifier, SolarTransmittance, SolarReflectance,
+                VisibleTransmittance, VisibleReflectance, Emissivity, InfraredTransmittance, Thickness, Conductivity,
+                DistanceToGlass, TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier,
+                RightOpeningMultiplier, AirflowPermeability, DisplayName);
         }
     }
 
@@ -230,14 +258,15 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"EnergyWindowMaterialSimpleGlazSys_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"EnergyWindowMaterialSimpleGlazSys_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public double UFactor { get; set; }
         public double Shgc { get; set; }
         public double Vt { get; set; }
 
         public override object ToDragonfly()
         {
-            return new DF.EnergyWindowMaterialSimpleGlazSys(Name, UFactor, Shgc, Type);
+            return new HB.EnergyWindowMaterialSimpleGlazSys(Identifier, UFactor, Shgc, Vt, DisplayName);
         }
     }
 }

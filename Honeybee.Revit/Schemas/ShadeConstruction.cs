@@ -1,7 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -30,7 +29,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.ShadeConstruction(Identifier, DisplayName, Type, SolarReflectance, VisibleReflectance, IsSpecular);
+            return new HB.ShadeConstruction(Identifier, SolarReflectance, VisibleReflectance, IsSpecular, DisplayName);
         }
     }
 }

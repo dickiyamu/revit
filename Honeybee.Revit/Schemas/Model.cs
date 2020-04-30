@@ -59,14 +59,13 @@ namespace Honeybee.Revit.Schemas
                 Identifier,
                 Buildings.Select(x => x.ToDragonfly()).ToList(),
                 Properties.ToDragonfly(),
-                DisplayName,
-                null,
-                Type,
                 ContextShades,
                 NorthAngle,
                 Units,
                 Tolerance,
-                AngleTolerance
+                AngleTolerance,
+                DisplayName,
+                null // user data
             );
         }
     }

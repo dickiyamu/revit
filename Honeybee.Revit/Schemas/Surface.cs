@@ -1,7 +1,7 @@
 ﻿using System;
 using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
-using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -29,7 +29,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.Surface(BoundaryConditionObjects.ToDragonfly(), Type);
+            return new HB.Surface(BoundaryConditionObjects.ToDragonfly());
         }
     }
 }

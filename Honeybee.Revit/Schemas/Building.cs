@@ -43,8 +43,7 @@ namespace Honeybee.Revit.Schemas
                 UniqueStories.Select(x => x.ToDragonfly()).ToList(),
                 Properties.ToDragonfly(),
                 DisplayName,
-                null,
-                Type
+                null
             );
         }
     }

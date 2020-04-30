@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -15,11 +16,10 @@ namespace Honeybee.Revit.Schemas
         public DF.ModelEnergyProperties.TerrainTypeEnum TerrainType { get; set; } = DF.ModelEnergyProperties.TerrainTypeEnum.City;
         public ConstructionSetAbridged GlobalConstructionSet { get; set; }
         public List<ConstructionSetBase> ConstructionSets { get; set; } = new List<ConstructionSetBase>();
-        public List<DF.IdealAirSystemAbridged> Hvacs { get; set; } = new List<DF.IdealAirSystemAbridged>();
-        public List<DF.ProgramTypeAbridged> ProgramTypes { get; set; } = new List<DF.ProgramTypeAbridged>();
-        public List<DF.AnyOf<DF.ScheduleRulesetAbridged, DF.ScheduleFixedIntervalAbridged>> Schedules { get; set; } 
-            = new List<DF.AnyOf<DF.ScheduleRulesetAbridged, DF.ScheduleFixedIntervalAbridged>>();
-        public List<DF.ScheduleTypeLimit> ScheduleTypeLimits { get; set; } = new List<DF.ScheduleTypeLimit>();
+        public List<HB.IdealAirSystemAbridged> Hvacs { get; set; } = null;
+        public List<HB.ProgramTypeAbridged> ProgramTypes { get; set; } = null;
+        public List<DF.AnyOf<HB.ScheduleRulesetAbridged, HB.ScheduleFixedIntervalAbridged>> Schedules { get; set; } = null;
+        public List<HB.ScheduleTypeLimit> ScheduleTypeLimits { get; set; } = null;
 
         public ModelEnergyProperties()
         {
@@ -30,7 +30,6 @@ namespace Honeybee.Revit.Schemas
         public DF.ModelEnergyProperties ToDragonfly()
         {
             return new DF.ModelEnergyProperties(
-                Type,
                 TerrainType,
                 GlobalConstructionSet.Identifier,
                 ConstructionSets.ToDragonfly(),

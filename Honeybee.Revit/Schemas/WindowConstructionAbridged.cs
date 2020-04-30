@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
@@ -17,7 +17,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new DF.WindowConstructionAbridged(Identifier, Layers, DisplayName, Type);
+            return new HB.WindowConstructionAbridged(Identifier, Layers, DisplayName);
         }
     }
 }
