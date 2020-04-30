@@ -10,55 +10,24 @@ namespace Honeybee.Revit.Schemas
 {
     public static class Extensions
     {
-        public static List<Curve> GetCurves(this List<Point2D> pts)
+        public static List<Curve> GetCurves(this List<Point2D> pts, double z)
         {
             var curves = new List<Curve>();
             for (var i = 0; i < pts.Count; i++)
             {
                 var start = pts[i];
                 var end = i == pts.Count - 1 ? pts[0] : pts[i + 1];
-                curves.Add(Line.CreateBound(new XYZ(start.X, start.Y, 0), new XYZ(end.X, end.Y, 0)));
+                curves.Add(Line.CreateBound(new XYZ(start.X, start.Y, z), new XYZ(end.X, end.Y, z)));
             }
 
             return curves;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="arc"></param>
-        /// <returns></returns>
-        public static List<Curve> TessellateIntoCurves(this Arc arc)
-        {
-            var pt1 = arc.Evaluate(0, true);
-            var pt2 = arc.Evaluate(0.25, true);
-            var pt3 = arc.Evaluate(0.5, true);
-            var pt4 = arc.Evaluate(0.75, true);
-            var pt5 = arc.Evaluate(1, true);
-            return new List<Curve>
-            {
-                Line.CreateBound(pt1, pt2),
-                Line.CreateBound(pt2, pt3),
-                Line.CreateBound(pt3, pt4),
-                Line.CreateBound(pt4, pt5)
-            };
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="floorBoundary"></param>
-        /// <returns></returns>
         public static List<List<double>> ToDragonfly(this List<Point2D> floorBoundary)
         {
             return floorBoundary.Select(x => new List<double> {x.X, x.Y}).ToList();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bcs"></param>
-        /// <returns></returns>
         public static List<DF.AnyOf<DF.Ground, DF.Outdoors, DF.Adiabatic, DF.Surface>> ToDragonfly(
             this List<BoundaryConditionBase> bcs)
         {
@@ -88,12 +57,63 @@ namespace Honeybee.Revit.Schemas
             return boundaryConditions;
         }
 
-        public static List<DF.AnyOf<DF.OpaqueConstructionAbridged, DF.WindowConstructionAbridged, DF.ShadeConstruction>>
-            ToDragonfly(this List<ConstructionBase> cons)
+        public static List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> ToDragonfly(
+            this List<WindowParameterBase> bcs)
+        {
+            var windowParameters = new List<DF.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>>();
+            foreach (var bc in bcs)
+            {
+                switch (bc)
+                {
+                    case SingleWindow unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.SingleWindow);
+                        break;
+                    case SimpleWindowRatio unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.SimpleWindowRatio);
+                        break;
+                    case RepeatingWindowRatio unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.RepeatingWindowRatio);
+                        break;
+                    case RectangularWindows unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.RectangularWindows);
+                        break;
+                    case DetailedWindows unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.DetailedWindows);
+                        break;
+                    default:
+                        windowParameters.Add(null);
+                        break;
+                }
+            }
+
+            return windowParameters;
+        }
+
+        public static List<DF.AnyOf<DF.ConstructionSetAbridged, DF.ConstructionSet>> ToDragonfly(this List<ConstructionSetBase> constructionSets)
+        {
+            var sets = new List<DF.AnyOf<DF.ConstructionSetAbridged, DF.ConstructionSet>>();
+            foreach (var set in constructionSets)
+            {
+                switch (set)
+                {
+                    case ConstructionSetAbridged unused:
+                        sets.Add(set.ToDragonfly() as DF.ConstructionSetAbridged);
+                        break;
+                    default:
+                        sets.Add(null);
+                        break;
+                }
+            }
+
+            return sets;
+        }
+
+        public static List<DF.AnyOf<DF.OpaqueConstructionAbridged, DF.WindowConstructionAbridged, DF.ShadeConstruction, DF.AirBoundaryConstructionAbridged, DF.OpaqueConstruction, DF.WindowConstruction, DF.AirBoundaryConstruction>> ToDragonfly(this List<ConstructionBase> cons)
         {
             var constructions =
-                new List<DF.AnyOf<DF.OpaqueConstructionAbridged, DF.WindowConstructionAbridged, DF.ShadeConstruction
-                >>();
+                new List<DF.AnyOf<DF.OpaqueConstructionAbridged, DF.WindowConstructionAbridged, DF.ShadeConstruction,
+                    DF.AirBoundaryConstructionAbridged, DF.OpaqueConstruction, DF.WindowConstruction,
+                    DF.AirBoundaryConstruction>>();
             foreach (var cb in cons)
             {
                 switch (cb)
@@ -164,21 +184,11 @@ namespace Honeybee.Revit.Schemas
             return materials;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="floorHoles"></param>
-        /// <returns></returns>
         public static List<List<List<double>>> ToDragonfly(this List<List<Point2D>> floorHoles)
         {
             return floorHoles.Select(x => x.Select(y => new List<double> {y.X, y.Y}).ToList()).ToList();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="boundaryConditionObj"></param>
-        /// <returns></returns>
         public static List<string> ToDragonfly(this Tuple<int, string> boundaryConditionObj)
         {
             var (adjacentCurveIndex, adjacentRoomName) = boundaryConditionObj;
@@ -190,11 +200,6 @@ namespace Honeybee.Revit.Schemas
             };
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="se"></param>
-        /// <returns></returns>
         public static XYZ GetLocationPoint(this SpatialElement se)
         {
             XYZ result;
@@ -216,11 +221,6 @@ namespace Honeybee.Revit.Schemas
             return result;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="se"></param>
-        /// <returns></returns>
         public static double GetUnboundHeight(this SpatialElement se)
         {
             var result = 0d;

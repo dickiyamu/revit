@@ -3,14 +3,15 @@ using DF = DragonflySchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class ConstructionSetAbridged : ISchema<DF.ConstructionSetAbridged>
+    public class ConstructionSetAbridged : ConstructionSetBase
     {
-        public string Type
+        public override string Type
         {
             get { return GetType().Name; }
         }
 
-        public string Name { get; set; } = $"ConstructionSetAbridged_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"ConstructionSetAbridged_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public DF.WallSetAbridged WallSet { get; set; } = new DF.WallSetAbridged();
         public DF.FloorSetAbridged FloorSet { get; set; } = new DF.FloorSetAbridged();
         public DF.RoofCeilingSetAbridged RoofCeilingSet { get; set; } = new DF.RoofCeilingSetAbridged();
@@ -19,10 +20,11 @@ namespace Honeybee.Revit.Schemas
         public string ShadeConstruction { get; set; }
         public string AirBoundaryConstruction { get; set; }
 
-        public DF.ConstructionSetAbridged ToDragonfly()
+        public override object ToDragonfly()
         {
             return new DF.ConstructionSetAbridged(
-                Name,
+                Identifier,
+                DisplayName,
                 Type,
                 WallSet,
                 FloorSet,

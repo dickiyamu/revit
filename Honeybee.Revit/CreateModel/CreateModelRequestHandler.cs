@@ -144,8 +144,8 @@ namespace Honeybee.Revit.CreateModel
                     symbols.Add(familySymbol.Name, familySymbol);
                 }
 
-                var floorBoundaries = so.Room2D.FloorBoundary.GetCurves();
-                var floorHoles = so.Room2D.FloorHoles.SelectMany(x => x.GetCurves());
+                var floorBoundaries = so.Room2D.FloorBoundary.GetCurves(so.Level.Elevation);
+                var floorHoles = so.Room2D.FloorHoles.SelectMany(x => x.GetCurves(so.Level.Elevation));
                 var combinedSegments = new List<Curve>();
                 combinedSegments.AddRange(floorBoundaries);
                 combinedSegments.AddRange(floorHoles);
@@ -221,8 +221,9 @@ namespace Honeybee.Revit.CreateModel
 
                 var curves = new List<CurveLoop>();
                 var loop = new CurveLoop();
-                foreach (var curve in so.Room2D.FloorBoundary.GetCurves())
+                foreach (var curve in so.Room2D.FloorBoundary.GetCurves(so.Level.Elevation))
                 {
+                    //doc.Create.NewDetailCurve(doc.ActiveView, curve);
                     loop.Append(curve);
                 }
                 curves.Add(loop);

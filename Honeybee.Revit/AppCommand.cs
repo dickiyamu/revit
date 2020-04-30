@@ -1,6 +1,8 @@
 ﻿//using System;
 //using Autodesk.Revit.DB;
 //using Autodesk.Revit.DB.Events;
+
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 //using Autodesk.Revit.UI.Events;
 using Honeybee.Core;
@@ -29,6 +31,9 @@ namespace Honeybee.Revit
             //app.ControlledApplication.DocumentOpened += OnDocumentOpened;
             //app.ControlledApplication.DocumentCreated += OnDocumentCreated;
             //app.ViewActivated += OnViewActivated;
+            app.ControlledApplication.FailuresProcessing += FailureProcessor.CheckFailure;
+            app.ControlledApplication.DocumentSynchronizingWithCentral += OnDocumentSynchronizingWithCentral;
+            app.ControlledApplication.DocumentSynchronizedWithCentral += OnDocumentSynchronizedWithCentral;
 
             app.CreateRibbonTab("Honeybee");
             var panel = app.CreateRibbonPanel("Honeybee", "Honeybee");
@@ -42,6 +47,16 @@ namespace Honeybee.Revit
             AnnotationUpdater = new AnnotationUpdater(app.ActiveAddInId);
 
             return Result.Succeeded;
+        }
+
+        private static void OnDocumentSynchronizedWithCentral(object sender, DocumentSynchronizedWithCentralEventArgs e)
+        {
+            FailureProcessor.IsSynchronizing = false;
+        }
+
+        private static void OnDocumentSynchronizingWithCentral(object sender, DocumentSynchronizingWithCentralEventArgs e)
+        {
+            FailureProcessor.IsSynchronizing = true;
         }
 
         //private void OnViewActivated(object sender, ViewActivatedEventArgs e)
@@ -91,6 +106,9 @@ namespace Honeybee.Revit
             //app.ControlledApplication.DocumentOpened -= OnDocumentOpened;
             //app.ControlledApplication.DocumentCreated -= OnDocumentCreated;
             //app.ViewActivated -= OnViewActivated;
+            app.ControlledApplication.FailuresProcessing -= FailureProcessor.CheckFailure;
+            app.ControlledApplication.DocumentSynchronizingWithCentral -= OnDocumentSynchronizingWithCentral;
+            app.ControlledApplication.DocumentSynchronizedWithCentral -= OnDocumentSynchronizedWithCentral;
 
             return Result.Succeeded;
         }

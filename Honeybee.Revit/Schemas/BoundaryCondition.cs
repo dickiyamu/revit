@@ -12,22 +12,24 @@ namespace Honeybee.Revit.Schemas
         public abstract string Type { get; }
         public abstract object ToDragonfly();
 
-        public static BoundaryConditionBase Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow)
+        public static BoundaryConditionBase Init(IEnumerable<SpatialObjectWrapper> objects, Curve curve, SpatialObjectWrapper sow, bool allowAdiabatic)
         {
             var adjacentRoomName = string.Empty;
             var adjacentCurveIndex = -1;
             foreach (var so in objects)
             {
-                if (adjacentCurveIndex != -1 && adjacentRoomName != null) break;
+                if (adjacentCurveIndex != -1 && adjacentRoomName != null)
+                    break;
 
-                var boundarySegments = so.Room2D.FloorBoundary.GetCurves();
+                var boundarySegments = so.Room2D.FloorBoundary.GetCurves(so.Level.Elevation);
                 for (var i = 0; i < boundarySegments.Count; i++)
                 {
                     var c = boundarySegments[i];
-                    if (!c.OverlapsWith(curve)) continue;
+                    if (!c.OverlapsWithIn2D(curve))
+                        continue;
 
                     adjacentCurveIndex = i;
-                    adjacentRoomName = so.Room2D.Name;
+                    adjacentRoomName = so.Room2D.Identifier;
                     break;
                 }
             }
@@ -36,8 +38,12 @@ namespace Honeybee.Revit.Schemas
             {
                 // (Konrad) We found a matching Surface Boundary Condition.
                 var bConditionObj = new Tuple<int, string>(adjacentCurveIndex, adjacentRoomName);
+
                 return new Surface(bConditionObj);
             }
+
+            if (!allowAdiabatic)
+                return new Outdoors();
 
             // (Konrad) We can try assigning Adiabatic and Outdoors.
             var direction = curve is Line
@@ -52,11 +58,13 @@ namespace Honeybee.Revit.Schemas
             var doc = sow.Self.Document;
             var phases = doc.Phases;
             var room = phases.Cast<Phase>().Select(x => doc.GetRoomAtPoint(outPt, x)).FirstOrDefault(x => x != null);
-            if (room != null && room.Id != sow.Self.Id) return new Adiabatic();
+            if (room != null && room.Id != sow.Self.Id)
+                return new Adiabatic();
 
             var inPt = midPoint + perpendicular.Negate();
             room = phases.Cast<Phase>().Select(x => doc.GetRoomAtPoint(inPt, x)).FirstOrDefault(x => x != null);
-            if (room != null && room.Id != sow.Self.Id) return new Adiabatic();
+            if (room != null && room.Id != sow.Self.Id)
+                return new Adiabatic();
 
             // (Konrad) We can't find the Room adjacent to this Curve.
             return new Outdoors();

@@ -96,10 +96,15 @@ namespace Honeybee.Revit.CreateModel
                     switch (pId.Key)
                     {
                         case "AdjacentRoom":
-                            Messenger.Default.Send(new SurfaceAdjacentRoomChanged(new AnnotationWrapper(fi)));
+                            ReportFailure(data.GetDocument());
+                            //Messenger.Default.Send(new SurfaceAdjacentRoomChanged(new AnnotationWrapper(fi)));
                             break;
                         case "Type":
-                            Messenger.Default.Send(new TypeChanged(new AnnotationWrapper(fi)));
+                            var isSurface = data.GetDocument().GetElement(fi.GetTypeId()).Name == "Surface";
+                            if (isSurface)
+                                ReportFailure(data.GetDocument());
+                            else
+                                Messenger.Default.Send(new TypeChanged(new AnnotationWrapper(fi)));
                             break;
                         default:
                             break;
@@ -111,6 +116,20 @@ namespace Honeybee.Revit.CreateModel
             //{
             //    //TODO: Stop people from Deleting Annotations.
             //}
+        }
+
+        private static void ReportFailure(Document doc)
+        {
+            try
+            {
+                AnnotationFailure.IsElementModified = true;
+                AnnotationFailure.CurrentDoc = doc;
+                FailureProcessor.IsFailureFound = true;
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(e);
+            }
         }
 
         public UpdaterId GetUpdaterId()

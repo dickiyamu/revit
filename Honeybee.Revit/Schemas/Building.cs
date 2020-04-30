@@ -14,8 +14,8 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        [JsonProperty("name")]
-        public string Name { get; set; } = $"Building_{Guid.NewGuid()}";
+        [JsonProperty("identifier")]
+        public string Identifier { get; set; } = $"Building_{Guid.NewGuid()}";
 
         [JsonProperty("display_name")]
         public string DisplayName { get; set; }
@@ -25,6 +25,9 @@ namespace Honeybee.Revit.Schemas
 
         [JsonProperty("properties")]
         public BuildingPropertiesAbridged Properties { get; set; }
+
+        [JsonProperty("user_data")]
+        public object UserData { get; set; } = new Dictionary<string, object>();
 
         public Building(string displayName, List<Story> stories, BuildingPropertiesAbridged properties)
         {
@@ -36,10 +39,11 @@ namespace Honeybee.Revit.Schemas
         public DF.Building ToDragonfly()
         {
             return new DF.Building(
-                Name,
+                Identifier,
                 UniqueStories.Select(x => x.ToDragonfly()).ToList(),
                 Properties.ToDragonfly(),
                 DisplayName,
+                null,
                 Type
             );
         }

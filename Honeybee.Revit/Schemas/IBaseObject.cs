@@ -2,6 +2,7 @@
 {
     public interface IBaseObject
     {
-        string Name { get; set; }
+        string Identifier { get; set; }
+        string DisplayName { get; set; }
     }
 }

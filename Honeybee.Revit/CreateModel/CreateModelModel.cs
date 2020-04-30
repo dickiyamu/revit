@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Management.Automation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
@@ -13,10 +12,10 @@ using Autodesk.Revit.UI.Selection;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
-using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
 using NLog;
 using DF = DragonflySchema;
+using Surface = Honeybee.Revit.Schemas.Surface;
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
 #endregion
@@ -50,100 +49,124 @@ namespace Honeybee.Revit.CreateModel
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
+            //var stories = objects
+            //    .Select(x => x.Room2D)
+            //    .GroupBy(x => x.Level.Name)
+            //    .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
+            //    .ToList();
+
+            //DF.Model.UnitsEnum dfUnits;
+            //var units = Doc.GetUnits();
+            //var unitType = units.GetFormatOptions(UnitType.UT_Length).DisplayUnits;
+            //switch (unitType)
+            //{
+            //    case DisplayUnitType.DUT_METERS:
+            //        dfUnits = DF.Model.UnitsEnum.Meters;
+            //        break;
+            //    case DisplayUnitType.DUT_CENTIMETERS:
+            //        dfUnits = DF.Model.UnitsEnum.Centimeters;
+            //        break;
+            //    case DisplayUnitType.DUT_MILLIMETERS:
+            //        dfUnits = DF.Model.UnitsEnum.Millimeters;
+            //        break;
+            //    case DisplayUnitType.DUT_FEET_FRACTIONAL_INCHES:
+            //        dfUnits = DF.Model.UnitsEnum.Millimeters;
+            //        break;
+            //    case DisplayUnitType.DUT_MILLIMETERS:
+            //        dfUnits = DF.Model.UnitsEnum.Millimeters;
+            //        break;
+            //    default:
+            //        throw new ArgumentOutOfRangeException();
+            //}
+
+            //var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
+            //var model = new Model("Model 1", new List<Building> {building}, new ModelProperties())
+            //{
+            //    Units = DF.Model.UnitsEnum.Feet,
+            //    Tolerance = 0.0001d
+            //};
+            //var dfModel = model.ToDragonfly();
+            //var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
+            //var jsonPath = Path.Combine(Path.GetTempPath(), "Dragonfly.json"); 
+            //if (File.Exists(jsonPath)) FileUtils.TryDeleteFile(jsonPath);
+            //File.WriteAllText(jsonPath, json);
+
+            //var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+            //if (path == null) return objects;
+
+            //string pyPath = null;
+            //foreach (var p in path.Split(';'))
+            //{
+            //    var fullPath = Path.Combine(p, "python.exe");
+            //    if (!File.Exists(fullPath)) continue;
+
+            //    pyPath = fullPath;
+            //    break;
+            //}
+
+            //if (string.IsNullOrWhiteSpace(pyPath)) return objects;
+
+            //var pyDir = Path.GetDirectoryName(pyPath);
+            //if (pyDir == null) return objects;
+
+            //var dfPath = Path.Combine(pyDir, "Scripts", "dragonfly.exe");
+            //if (!File.Exists(dfPath)) return objects;
+
+            //var jsonResult = RunCommand(pyPath, dfPath, jsonPath);
+            //JsonConverter[] converters =
+            //{
+            //    new DF.AnyOfJsonConverter(),
+            //    new ConstructionBaseConverter(),
+            //    new MaterialBaseConverter(),
+            //    new Point2DConverter(),
+            //    new BoundaryConditionBaseConverter(),
+            //    new WindowParameterBaseConverter()
+            //};
+            //var resultModel = JsonConvert.DeserializeObject<Model>(jsonResult, converters);
+
+            //foreach (var b in resultModel.Buildings)
+            //{
+            //    foreach (var s in b.UniqueStories)
+            //    {
+            //        foreach (var r in s.Room2Ds)
+            //        {
+            //            var room = objects.FirstOrDefault(x => Equals(x.Room2D, r));
+            //            if (room == null) continue;
+
+            //            room.Room2D.BoundaryConditions = r.BoundaryConditions ?? new List<BoundaryConditionBase>();
+            //            room.Room2D.FloorBoundary = r.FloorBoundary ?? new List<Point2D>();
+            //            room.Room2D.FloorHoles = r.FloorHoles ?? new List<List<Point2D>>();
+            //        }
+            //    }
+            //}
+
             AssignBoundaryConditions(objects);
-
-            //return objects;
-
-            var stories = objects
-                .Select(x => x.Room2D)
-                .GroupBy(x => x.Level.Name)
-                .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
-                .ToList();
-
-            var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
-
-            var model = new Model("Model 1", new List<Building> { building }, new ModelProperties());
-            var dfModel = model.ToDragonfly();
-            var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
-            var jsonPath = Path.Combine(Path.GetTempPath(), "Dragonfly.json"); 
-            if (File.Exists(jsonPath)) FileUtils.TryDeleteFile(jsonPath);
-            File.WriteAllText(jsonPath, json);
-
-            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-            if (path == null) return objects;
-
-            string pyPath = null;
-            foreach (var p in path.Split(';'))
-            {
-                var fullPath = Path.Combine(p, "python.exe");
-                if (!File.Exists(fullPath)) continue;
-
-                pyPath = fullPath;
-                break;
-            }
-
-            if (string.IsNullOrWhiteSpace(pyPath)) return objects;
-
-            var pyDir = Path.GetDirectoryName(pyPath);
-            if (pyDir == null) return objects;
-
-            var dfPath = Path.Combine(pyDir, "Scripts", "dragonfly.exe");
-            if (!File.Exists(dfPath)) return objects;
-
-            var jsonResult = RunCommand(pyPath, dfPath, jsonPath);
-            JsonConverter[] converters =
-            {
-                new DF.AnyOfJsonConverter(),
-                new ConstructionBaseConverter(),
-                new MaterialBaseConverter(),
-                new Point2DConverter(),
-                new BoundaryConditionBaseConverter()
-            };
-            var resultModel = JsonConvert.DeserializeObject<Model>(jsonResult, converters);
-
-            var rooms = new List<Room2D>();
-            foreach (var b in resultModel.Buildings)
-            {
-                foreach (var s in b.UniqueStories)
-                {
-                    foreach (var r in s.Room2Ds)
-                    {
-                        rooms.Add(r);
-                    }
-                }
-            }
-            foreach (var so in objects)
-            {
-                var dfRoom = rooms.First(x => Equals(x, so.Room2D));
-                so.Room2D.BoundaryConditions = dfRoom.BoundaryConditions;
-                so.Room2D.FloorBoundary = dfRoom.FloorBoundary;
-            }
 
             return objects;
         }
 
-        public string RunCommand(string pyPath, string dfPath, string jsonPath)
-        {
-            var ps = PowerShell.Create();
-            ps.AddCommand(pyPath)
-                .AddParameter("-m")
-                .AddCommand(dfPath)
-                .AddArgument("edit")
-                .AddArgument("solve-adjacency")
-                .AddArgument(jsonPath);
-            var psObject = ps.Invoke();
-            var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
-            ps.Commands.Clear();
+        //public string RunCommand(string pyPath, string dfPath, string jsonPath)
+        //{
+        //    var ps = PowerShell.Create();
+        //    ps.AddCommand(pyPath)
+        //        .AddParameter("-m")
+        //        .AddCommand(dfPath)
+        //        .AddArgument("edit")
+        //        .AddArgument("solve-adjacency")
+        //        .AddArgument(jsonPath);
+        //    var psObject = ps.Invoke();
+        //    var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
+        //    ps.Commands.Clear();
 
-            return result;
-        }
+        //    return result;
+        //}
 
-        public void WriteJournalComment(string comment)
-        {
-            AppCommand.CreateModelHandler.Arg1 = comment;
-            AppCommand.CreateModelHandler.Request.Make(RequestId.WriteJournalComment);
-            AppCommand.CreateModelEvent.Raise();
-        }
+        //public void WriteJournalComment(string comment)
+        //{
+        //    AppCommand.CreateModelHandler.Arg1 = comment;
+        //    AppCommand.CreateModelHandler.Request.Make(RequestId.WriteJournalComment);
+        //    AppCommand.CreateModelEvent.Raise();
+        //}
 
         public void ShowBoundaryConditions(SpatialObjectWrapper so)
         {
@@ -156,15 +179,19 @@ namespace Honeybee.Revit.CreateModel
         {
             try
             {
-                var stories = rooms.GroupBy(x => x.Level.Name)
-                    .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged())).ToList();
-                var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
-                var model = new Model("Sample Model", new List<Building> {building}, new ModelProperties());
+                var stories = rooms
+                    .GroupBy(x => x.Level.Name)
+                    .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
+                    .ToList();
 
+                var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
+                var model = new Model("Model 1", new List<Building> { building }, new ModelProperties())
+                {
+                    Units = DF.Model.UnitsEnum.Feet,
+                    Tolerance = 0.0001d
+                };
                 var dfModel = model.ToDragonfly();
-                //var dfObjects = rooms.Select(x => x.ToDragonfly());
-                //var settings = new JsonSerializerSettings();
-                //settings.Converters.Add(new BoundaryConditionsConverter());
+                //var dfRooms = rooms.Select(x => x.ToDragonfly());
                 var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
                 if (string.IsNullOrWhiteSpace(json)) return;
 
@@ -209,18 +236,34 @@ namespace Honeybee.Revit.CreateModel
         {
             foreach (var so in objects)
             {
-                var bcs = new List<BoundaryConditionBase>();
-                foreach (var curve in so.Room2D.FloorBoundary.GetCurves())
+                var offset = so.Self.get_Parameter(BuiltInParameter.ROOM_LOWER_OFFSET).AsDouble();
+                var boundaryCurves = so.Room2D.FloorBoundary.GetCurves(so.Level.Elevation + offset);
+                for (var i = 0; i < boundaryCurves.Count; i++)
                 {
-                    bcs.Add(BoundaryConditionBase.Init(objects.Where(x => !Equals(x, so)), curve, so));
+                    var currentBc = so.Room2D.BoundaryConditions[i];
+                    if (currentBc is Surface) continue;
+
+                    // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
+                    var allowAdiabatic = so.Room2D.WindowParameters[i] == null;
+                    var bc = BoundaryConditionBase.Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), boundaryCurves[i], so, allowAdiabatic);
+                    if (bc is Outdoors) continue;
+
+                    so.Room2D.BoundaryConditions[i] = bc;
                 }
 
-                foreach (var curve in so.Room2D.FloorHoles.SelectMany(x => x.GetCurves()))
+                var holeCurves = so.Room2D.FloorHoles.SelectMany(x => x.GetCurves(so.Level.Elevation + offset)).ToList();
+                for (var i = 0; i < holeCurves.Count; i++)
                 {
-                    bcs.Add(BoundaryConditionBase.Init(objects.Where(x => !Equals(x, so)), curve, so));
-                }
+                    var currentBc = so.Room2D.BoundaryConditions[boundaryCurves.Count + i];
+                    if (currentBc is Surface) continue;
 
-                so.Room2D.BoundaryConditions = bcs;
+                    // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
+                    var allowAdiabatic = so.Room2D.WindowParameters[boundaryCurves.Count + i] == null;
+                    var bc = BoundaryConditionBase.Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), holeCurves[i], so, allowAdiabatic);
+                    if (bc is Outdoors) continue;
+
+                    so.Room2D.BoundaryConditions[boundaryCurves.Count + i] = bc;
+                }
             }
         }
 

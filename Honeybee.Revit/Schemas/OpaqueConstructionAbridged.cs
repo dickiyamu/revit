@@ -11,12 +11,13 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public override string Name { get; set; } = $"OpaqueConstructionAbridged_{Guid.NewGuid()}";
+        public override string Identifier { get; set; } = $"OpaqueConstructionAbridged_{Guid.NewGuid()}";
+        public override string DisplayName { get; set; }
         public List<string> Layers { get; set; } = new List<string>();
 
         public override object ToDragonfly()
         {
-            return new DF.OpaqueConstructionAbridged(Name, Layers, Type);
+            return new DF.OpaqueConstructionAbridged(Identifier, Layers, DisplayName, Type);
         }
     }
 }

@@ -15,8 +15,8 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        [JsonProperty("name")]
-        public string Name { get; set; } = $"Model_{Guid.NewGuid()}";
+        [JsonProperty("identifier")]
+        public string Identifier { get; set; } = $"Model_{Guid.NewGuid()}";
 
         [JsonProperty("display_name")]
         public string DisplayName { get; set; }
@@ -43,6 +43,9 @@ namespace Honeybee.Revit.Schemas
         [JsonProperty("angle_tolerance")]
         public double AngleTolerance { get; set; } = 1d;
 
+        [JsonProperty("user_data")]
+        public object UserData { get; set; } = new Dictionary<string, object>();
+
         public Model(string displayName, List<Building> buildings, ModelProperties properties)
         {
             DisplayName = displayName;
@@ -53,10 +56,11 @@ namespace Honeybee.Revit.Schemas
         public DF.Model ToDragonfly()
         {
             return new DF.Model(
-                Name,
+                Identifier,
                 Buildings.Select(x => x.ToDragonfly()).ToList(),
                 Properties.ToDragonfly(),
                 DisplayName,
+                null,
                 Type,
                 ContextShades,
                 NorthAngle,

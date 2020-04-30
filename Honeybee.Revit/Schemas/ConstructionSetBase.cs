@@ -1,6 +1,6 @@
 ﻿namespace Honeybee.Revit.Schemas
 {
-    public abstract class ConstructionBase : IBaseObject, ISchema<object>
+    public abstract class ConstructionSetBase : IBaseObject, ISchema<object>
     {
         public abstract string Type { get; }
         public abstract string Identifier { get; set; }
