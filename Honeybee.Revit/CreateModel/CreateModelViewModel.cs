@@ -183,7 +183,7 @@ namespace Honeybee.Revit.CreateModel
                 .Where(x => x.IsSelected)
                 .Select(x => x.Room2D)
                 .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected, true);
+            if (selected.Any()) Model.SerializeRoom2D(selected);
 
             win.Close();
         }
@@ -208,7 +208,6 @@ namespace Honeybee.Revit.CreateModel
 
         private void OnShowBoundaryConditions(SpatialObjectWrapper so)
         {
-            //Model.WriteJournalComment($"Showing Boundary Conditions for: {so.Name}.");
             Model.ShowBoundaryConditions(so);
         }
 

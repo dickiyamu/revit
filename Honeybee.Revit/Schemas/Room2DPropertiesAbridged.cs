@@ -3,7 +3,7 @@ using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class Room2DPropertiesAbridged : ISchema<DF.Room2DPropertiesAbridged, HB.RoomEnergyPropertiesAbridged>
+    public class Room2DPropertiesAbridged : ISchema<DF.Room2DPropertiesAbridged, HB.RoomPropertiesAbridged>
     {
         public string Type
         {
@@ -21,9 +21,9 @@ namespace Honeybee.Revit.Schemas
             return new DF.Room2DPropertiesAbridged(null);
         }
 
-        public HB.RoomEnergyPropertiesAbridged ToHoneybee()
+        public HB.RoomPropertiesAbridged ToHoneybee()
         {
-            throw new System.NotImplementedException();
+            return new HB.RoomPropertiesAbridged(null);
         }
     }
 }

@@ -824,12 +824,15 @@
                           Margin="0,0,12,0"
                           Width="24"
                           Height="24"
-                          ToolTip="Export">
+                          ToolTip="Export"
+                          Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
             <b:DropDownButton.Menu>
                 <ContextMenu>
                     <MenuItem Command="{Binding ExportDragonfly}"
+                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                               Header="Export Dragonfly" />
                     <MenuItem Command="{Binding ExportHoneybee}"
+                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                               Header="Export Honeybee" />
                 </ContextMenu>
             </b:DropDownButton.Menu>

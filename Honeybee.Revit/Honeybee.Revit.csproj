@@ -200,6 +200,8 @@
     <Compile Include="Schemas\Enumerations\Vintages.cs" />
     <Compile Include="Schemas\Extensions.cs" />
     <Compile Include="Schemas\Ground.cs" />
+    <Compile Include="Schemas\Honeybee\Face.cs" />
+    <Compile Include="Schemas\Honeybee\Face3D.cs" />
     <Compile Include="Schemas\HvacTypes.cs" />
     <Compile Include="Schemas\IBaseObject.cs" />
     <Compile Include="Schemas\MaterialBase.cs" />
@@ -220,6 +222,7 @@
     <Compile Include="Schemas\StoryEnergyPropertiesAbridged.cs" />
     <Compile Include="Schemas\StoryPropertiesAbridged.cs" />
     <Compile Include="Schemas\Surface.cs" />
+    <Compile Include="Schemas\Utilities.cs" />
     <Compile Include="Schemas\WindowConstructionAbridged.cs" />
     <Compile Include="Schemas\WindowParameterBase.cs" />
   </ItemGroup>
@@ -289,6 +292,7 @@
     <Resource Include="Resources\24x24\export.png" />
     <Resource Include="Resources\24x24\exportHover.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo Configuration: $(Configuration)
