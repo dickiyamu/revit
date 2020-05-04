@@ -18,23 +18,17 @@ namespace Honeybee.Revit.Schemas
         [JsonProperty("wind_exposure")]
         public bool WindExposure { get; set; }
 
-        private bool Autocalculate { get; } = true;
-        private double ViewFactor { get; } = 0d;
+        [JsonProperty("view_factor")]
+        public HB.AnyOf<HB.Autocalculate, double> ViewFactor { get; set; }
 
         public override object ToDragonfly()
         {
-            object obj;
-            if (Autocalculate && Math.Abs(ViewFactor) < 0.001)
-                obj = new HB.Autocalculate();
-            else
-                obj = ViewFactor;
-
-            return new HB.Outdoors(SunExposure, WindExposure, new HB.AnyOf<HB.Autocalculate, double>(obj));
+            return new HB.Outdoors();
         }
 
         public override object ToHoneybee()
         {
-            throw new NotImplementedException();
+            return new HB.Outdoors();
         }
     }
 }

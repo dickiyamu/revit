@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Newtonsoft.Json;
 using DF = DragonflySchema;
 using HB = HoneybeeSchema;
 
@@ -12,29 +13,31 @@ namespace Honeybee.Revit.Schemas
         }
 
         private ProgramType _programType = new ProgramType();
-        private ConstructionSet _constructionSet = new ConstructionSet();
-        private HvacTypes _hvac;
-        private bool _conditioned;
-
-
+        [JsonProperty("program_type")]
         public ProgramType ProgramType
         {
             get { return _programType; }
             set { _programType = value; RaisePropertyChanged(nameof(ProgramType)); }
         }
 
+        private ConstructionSet _constructionSet = new ConstructionSet();
+        [JsonProperty("construction_set")]
         public ConstructionSet ConstructionSet
         {
             get { return _constructionSet; }
             set { _constructionSet = value; RaisePropertyChanged(nameof(ConstructionSet)); }
         }
 
+        private bool _conditioned;
+        [JsonIgnore]
         public bool Conditioned
         {
             get { return _conditioned; }
             set { _conditioned = value; RaisePropertyChanged(nameof(Conditioned)); }
         }
 
+        private HvacTypes _hvac;
+        [JsonProperty("hvac")]
         public HvacTypes Hvac
         {
             get { return _hvac; }
@@ -53,7 +56,7 @@ namespace Honeybee.Revit.Schemas
         /// <returns></returns>
         public DF.Room2DEnergyPropertiesAbridged ToDragonfly()
         {
-            return new DF.Room2DEnergyPropertiesAbridged(ConstructionSet.Name, ProgramType.Name, Hvac?.Name);
+            return new DF.Room2DEnergyPropertiesAbridged(ConstructionSet.Identifier, ProgramType.Identifier, Hvac?.Name);
         }
 
         public HB.RoomEnergyPropertiesAbridged ToHoneybee()

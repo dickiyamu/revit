@@ -136,13 +136,6 @@ namespace Honeybee.Revit.CreateModel
             set { _bldgProgramType = value; RaisePropertyChanged(() => BldgProgramType); }
         }
 
-        private Model _energyModel;
-        public Model EnergyModel
-        {
-            get { return _energyModel; }
-            set { _energyModel = value; RaisePropertyChanged(() => EnergyModel); }
-        }
-
         #endregion
 
         public CreateModelViewModel(CreateModelModel model)

@@ -7,7 +7,7 @@ namespace Honeybee.Revit.Schemas.Converters
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            if (value is ConstructionSet programType) writer.WriteValue(programType.Name);
+            if (value is ConstructionSet programType) writer.WriteValue(programType.Identifier);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

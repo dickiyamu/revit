@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
@@ -146,6 +147,96 @@ namespace Honeybee.Revit.CreateModel
             return objects;
         }
 
+        public string RunHoneybeeEnergyCommand(string command, IEnumerable<string> ids)
+        {
+            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+            if (path == null)
+                return string.Empty;
+
+            string pyPath = null;
+            foreach (var p in path.Split(';'))
+            {
+                var fullPath = Path.Combine(p, "python.exe");
+                if (!File.Exists(fullPath))
+                    continue;
+
+                pyPath = fullPath;
+                break;
+            }
+
+            if (string.IsNullOrWhiteSpace(pyPath))
+                return string.Empty;
+
+            var pyDir = Path.GetDirectoryName(pyPath);
+            if (pyDir == null)
+                return string.Empty;
+
+            var dfPath = Path.Combine(pyDir, "Scripts", "honeybee-energy.exe");
+            if (!File.Exists(dfPath))
+                return string.Empty;
+
+            var ps = PowerShell.Create();
+            ps.AddCommand(pyPath)
+                .AddParameter("-m")
+                .AddCommand(dfPath)
+                .AddArgument("lib")
+                .AddArgument(command)
+                .AddArgument(ids);
+
+            var psObject = ps.Invoke();
+            var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
+            ps.Commands.Clear();
+
+            return result;
+        }
+
+        public string RunHoneybeeEnergyCommand2(string command, IEnumerable<string> args)
+        {
+            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+            if (path == null)
+                return string.Empty;
+
+            string pyPath = null;
+            foreach (var p in path.Split(';'))
+            {
+                var fullPath = Path.Combine(p, "python.exe");
+                if (!File.Exists(fullPath))
+                    continue;
+
+                pyPath = fullPath;
+                break;
+            }
+
+            if (string.IsNullOrWhiteSpace(pyPath))
+                return string.Empty;
+
+            var pyDir = Path.GetDirectoryName(pyPath);
+            if (pyDir == null)
+                return string.Empty;
+
+            var dfPath = Path.Combine(pyDir, "Scripts", "honeybee-energy.exe");
+            if (!File.Exists(dfPath))
+                return string.Empty;
+
+            var ps = PowerShell.Create();
+            ps.AddCommand(pyPath)
+                .AddParameter("-m")
+                .AddCommand(dfPath)
+                .AddArgument("lib")
+                .AddArgument(command);
+
+            foreach (var arg in args)
+            {
+                ps.AddArgument(arg);
+            }
+
+            var psObject = ps.Invoke();
+            var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
+            ps.Commands.Clear();
+
+            return result;
+        }
+
         //public string RunCommand(string pyPath, string dfPath, string jsonPath)
         //{
         //    var ps = PowerShell.Create();
@@ -169,12 +260,72 @@ namespace Honeybee.Revit.CreateModel
             AppCommand.CreateModelEvent.Raise();
         }
 
+        private List<HB.ProgramType> GetProgramTypeSet(IEnumerable<Room2D> rooms)
+        {
+            var pTypes = rooms
+                .GroupBy(x => x.Properties.Energy.ProgramType.Identifier)
+                .Select(x => x.Key);
+
+            var jsonProgramTypes = RunHoneybeeEnergyCommand("program-types-by-id", pTypes);
+            JsonConverter[] converters =
+            {
+                new DF.AnyOfJsonConverter(),
+                new HB.AnyOfJsonConverter()
+            };
+
+            return JsonConvert.DeserializeObject<List<HB.ProgramType>>(jsonProgramTypes, converters);
+        }
+
+        private HB.ConstructionSet GetDefaultConstructionSet()
+        {
+            var args = new List<string> {"Default Generic Construction Set", "--none-defaults", "False"};
+            var jsonConstructionSets = RunHoneybeeEnergyCommand2("construction-set-by-id", args);
+            JsonConverter[] converters =
+            {
+                new DF.AnyOfJsonConverter(),
+                new HB.AnyOfJsonConverter()
+            };
+
+            return JsonConvert.DeserializeObject<HB.ConstructionSet>(jsonConstructionSets, converters);
+        }
+
+        private List<HB.ConstructionSet> GetConstructionSets(IEnumerable<Room2D> rooms)
+        {
+            var cSets = rooms
+                .GroupBy(x => x.Properties.Energy.ConstructionSet.Identifier)
+                .Select(x => x.Key);
+
+            var jsonConstructionSets = RunHoneybeeEnergyCommand("construction-sets-by-id", cSets);
+            JsonConverter[] converters =
+            {
+                new DF.AnyOfJsonConverter(),
+                new HB.AnyOfJsonConverter()
+            };
+
+            return JsonConvert.DeserializeObject<List<HB.ConstructionSet>>(jsonConstructionSets, converters);
+        }
+
         public void SerializeRoom2D(List<Room2D> rooms, bool dragonfly = true)
         {
             try
             {
                 if (dragonfly)
                 {
+                    var hbProgramTypes = GetProgramTypeSet(rooms);
+                    var hbConstructionSets = GetConstructionSets(rooms);
+                    var globalConstructionSet = GetDefaultConstructionSet();
+
+                    var properties = new ModelProperties
+                    {
+                        Energy = new ModelEnergyProperties()
+                    };
+
+                    properties.Energy.ConstructionSets.Add(globalConstructionSet);
+                    properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
+
+                    hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
+                    hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));
+
                     var stories = rooms
                         .GroupBy(x => x.Level.Name)
                         .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
@@ -187,7 +338,9 @@ namespace Honeybee.Revit.CreateModel
                         Tolerance = 0.0001d
                     };
                     var dfModel = model.ToDragonfly();
-                    var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
+                    dfModel.Properties = properties.ToDragonfly();
+
+                    var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter(), new HB.AnyOfJsonConverter());
                     if (string.IsNullOrWhiteSpace(json)) return;
 
                     const string filePath = @"C:\Users\ksobon\Desktop\Dragonfly.json";
