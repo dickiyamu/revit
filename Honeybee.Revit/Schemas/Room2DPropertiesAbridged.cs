@@ -18,12 +18,12 @@ namespace Honeybee.Revit.Schemas
         /// <returns></returns>
         public DF.Room2DPropertiesAbridged ToDragonfly()
         {
-            return new DF.Room2DPropertiesAbridged(null);
+            return new DF.Room2DPropertiesAbridged(Energy.ToDragonfly());
         }
 
         public HB.RoomPropertiesAbridged ToHoneybee()
         {
-            return new HB.RoomPropertiesAbridged(null);
+            return new HB.RoomPropertiesAbridged(Energy.ToHoneybee());
         }
     }
 }

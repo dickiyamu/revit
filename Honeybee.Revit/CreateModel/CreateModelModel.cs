@@ -142,7 +142,8 @@ namespace Honeybee.Revit.CreateModel
             //    }
             //}
 
-            AssignBoundaryConditions(objects);
+            DF_AssignBoundaryConditions(objects);
+            HB_AssignBoundaryConditions(objects);
 
             return objects;
         }
@@ -260,11 +261,15 @@ namespace Honeybee.Revit.CreateModel
             AppCommand.CreateModelEvent.Raise();
         }
 
-        private List<HB.ProgramType> GetProgramTypeSet(IEnumerable<Room2D> rooms)
+        private List<HB.ProgramType> GetProgramTypeSet(IEnumerable<Room2D> rooms, ProgramType bProgramType)
         {
             var pTypes = rooms
                 .GroupBy(x => x.Properties.Energy.ProgramType.Identifier)
-                .Select(x => x.Key);
+                .Select(x => x.Key)
+                .ToList();
+
+            if (!pTypes.Contains(bProgramType.Identifier))
+                pTypes.Add(bProgramType.Identifier);
 
             var jsonProgramTypes = RunHoneybeeEnergyCommand("program-types-by-id", pTypes);
             JsonConverter[] converters =
@@ -289,11 +294,15 @@ namespace Honeybee.Revit.CreateModel
             return JsonConvert.DeserializeObject<HB.ConstructionSet>(jsonConstructionSets, converters);
         }
 
-        private List<HB.ConstructionSet> GetConstructionSets(IEnumerable<Room2D> rooms)
+        private List<HB.ConstructionSet> GetConstructionSets(IEnumerable<Room2D> rooms, ConstructionSet bConstructionSet)
         {
             var cSets = rooms
                 .GroupBy(x => x.Properties.Energy.ConstructionSet.Identifier)
-                .Select(x => x.Key);
+                .Select(x => x.Key)
+                .ToList();
+
+            if (!cSets.Contains(bConstructionSet.Identifier))
+                cSets.Add(bConstructionSet.Identifier);
 
             var jsonConstructionSets = RunHoneybeeEnergyCommand("construction-sets-by-id", cSets);
             JsonConverter[] converters =
@@ -305,36 +314,47 @@ namespace Honeybee.Revit.CreateModel
             return JsonConvert.DeserializeObject<List<HB.ConstructionSet>>(jsonConstructionSets, converters);
         }
 
-        public void SerializeRoom2D(List<Room2D> rooms, bool dragonfly = true)
+        public void SerializeRoom2D(List<Room2D> rooms, ProgramType bProgramType, ConstructionSet bConstructionSet, bool dragonfly = true)
         {
             try
             {
+                var hbProgramTypes = GetProgramTypeSet(rooms, bProgramType);
+                var hbConstructionSets = GetConstructionSets(rooms, bConstructionSet);
+
                 if (dragonfly)
                 {
-                    var hbProgramTypes = GetProgramTypeSet(rooms);
-                    var hbConstructionSets = GetConstructionSets(rooms);
+                    var properties = new ModelProperties {Energy = new ModelEnergyProperties()};
                     var globalConstructionSet = GetDefaultConstructionSet();
 
-                    var properties = new ModelProperties
-                    {
-                        Energy = new ModelEnergyProperties()
-                    };
-
-                    properties.Energy.ConstructionSets.Add(globalConstructionSet);
+                    properties.Energy.DF_ConstructionSets.Add(globalConstructionSet);
                     properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
 
-                    hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
-                    hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));
+                    hbProgramTypes.ForEach(x => properties.Energy.DF_ProgramTypes.Add(x));
+                    hbConstructionSets.ForEach(x => properties.Energy.DF_ConstructionSets.Add(x));
 
                     var stories = rooms
                         .GroupBy(x => x.Level.Name)
-                        .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
+                        .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged
+                        {
+                            Energy = new StoryEnergyPropertiesAbridged
+                            {
+                                ConstructionSet = bConstructionSet?.Identifier
+                            }
+                        }))
                         .ToList();
 
-                    var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
+                    var building = new Building("Building 1", stories,
+                        new BuildingPropertiesAbridged
+                        {
+                            Energy = new BuildingEnergyPropertiesAbridged
+                            {
+                                ConstructionSet = bConstructionSet?.Identifier
+                            }
+                        });
+
                     var model = new Model("Model 1", new List<Building> { building }, new ModelProperties())
                     {
-                        Units = DF.Model.UnitsEnum.Feet,
+                        DF_Units = DF.Model.UnitsEnum.Feet,
                         Tolerance = 0.0001d
                     };
                     var dfModel = model.ToDragonfly();
@@ -354,7 +374,34 @@ namespace Honeybee.Revit.CreateModel
                 }
                 else
                 {
-                    var hbModel = rooms.Select(x => x.ToHoneybee());
+                    var properties = new ModelProperties { Energy = new ModelEnergyProperties() };
+                    var globalConstructionSet = GetDefaultConstructionSet();
+
+                    properties.Energy.HB_ConstructionSets.Add(globalConstructionSet);
+                    properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
+
+                    hbProgramTypes.ForEach(x => properties.Energy.HB_ProgramTypes.Add(x));
+                    hbConstructionSets.ForEach(x => properties.Energy.HB_ConstructionSets.Add(x));
+
+                    var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties())
+                    {
+                        HB_Units = HB.Model.UnitsEnum.Feet,
+                        Tolerance = 0.0001d
+                    };
+                    
+                    var hbRooms = rooms.Select(x =>
+                    {
+                        var hb = x.ToHoneybee();
+                        hb.Properties.Energy.ConstructionSet = x.Properties.Energy.ConstructionSet.Identifier;
+                        hb.Properties.Energy.ProgramType = x.Properties.Energy.ProgramType.Identifier;
+                        return hb;
+                    }).ToList();
+
+                    model.Rooms = hbRooms;
+
+                    var hbModel = model.ToHoneybee();
+                    hbModel.Properties = properties.ToHoneybee();
+
                     var json = JsonConvert.SerializeObject(hbModel, Formatting.Indented, new HB.AnyOfJsonConverter());
                     if (string.IsNullOrWhiteSpace(json)) return;
 
@@ -396,7 +443,7 @@ namespace Honeybee.Revit.CreateModel
 
         #region Utilities
 
-        private static void AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
+        private static void DF_AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
         {
             foreach (var so in objects)
             {
@@ -405,12 +452,14 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < boundaryCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[i];
-                    if (currentBc is Surface) continue;
+                    if (currentBc is Surface)
+                        continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
                     var allowAdiabatic = so.Room2D.WindowParameters[i] == null;
-                    var bc = BoundaryConditionBase.Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), boundaryCurves[i], so, allowAdiabatic);
-                    if (bc is Outdoors) continue;
+                    var bc = BoundaryConditionBase.DF_Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), boundaryCurves[i], so, allowAdiabatic);
+                    if (bc is Outdoors)
+                        continue;
 
                     so.Room2D.BoundaryConditions[i] = bc;
                 }
@@ -419,14 +468,34 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < holeCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[boundaryCurves.Count + i];
-                    if (currentBc is Surface) continue;
+                    if (currentBc is Surface)
+                        continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
                     var allowAdiabatic = so.Room2D.WindowParameters[boundaryCurves.Count + i] == null;
-                    var bc = BoundaryConditionBase.Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), holeCurves[i], so, allowAdiabatic);
-                    if (bc is Outdoors) continue;
+                    var bc = BoundaryConditionBase.DF_Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), holeCurves[i], so, allowAdiabatic);
+                    if (bc is Outdoors)
+                        continue;
 
                     so.Room2D.BoundaryConditions[boundaryCurves.Count + i] = bc;
+                }
+            }
+        }
+
+        private static void HB_AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
+        {
+            foreach (var so in objects)
+            {
+                var faces = so.Room2D.Faces;
+                for (var i = 0; i < faces.Count; i++)
+                {
+                    var currentFace = so.Room2D.Faces[i];
+                    // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
+                    var allowAdiabatic = currentFace.Apertures == null || currentFace.Apertures.Count <= 0;
+                    var bc = BoundaryConditionBase.HB_Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), faces[i], so, allowAdiabatic);
+
+                    currentFace.BoundaryCondition = bc;
+                    currentFace.Apertures?.ForEach(x => x.BoundaryCondition = bc);
                 }
             }
         }

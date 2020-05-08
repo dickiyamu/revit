@@ -9,11 +9,11 @@ namespace Honeybee.Revit.Schemas
             get { return GetType().Name; }
         }
 
-        public ConstructionSetAbridged ConstructionSet { get; set; }
+        public string ConstructionSet { get; set; }
 
         public DF.StoryEnergyPropertiesAbridged ToDragonfly()
         {
-            return new DF.StoryEnergyPropertiesAbridged(ConstructionSet?.Identifier);
+            return new DF.StoryEnergyPropertiesAbridged(ConstructionSet);
         }
 
         public object ToHoneybee()

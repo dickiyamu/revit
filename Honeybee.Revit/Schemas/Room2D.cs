@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel;
 using Honeybee.Revit.CreateModel.Wrappers;
@@ -36,8 +37,7 @@ namespace Honeybee.Revit.Schemas
         public string DisplayName { get; set; }
 
         [JsonProperty("properties")]
-        public Room2DPropertiesAbridged 
-            Properties { get; set; } = new Room2DPropertiesAbridged();
+        public Room2DPropertiesAbridged Properties { get; set; } = new Room2DPropertiesAbridged();
 
         [JsonProperty("floor_boundary")]
         public List<Point2D> FloorBoundary { get; set; }
@@ -177,7 +177,40 @@ namespace Honeybee.Revit.Schemas
                 }
                 else
                 {
-                    hbFaces.Add(new Face(face));
+                    var hbFace = new Face(face);
+
+                    GetGlazingInfo(face, doc, roomGeo, tolerance, out var glazingPts, out var unused);
+
+                    var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList()))
+                        .ToList();
+                    hbFace.Apertures = apertures.Any() ? apertures : null;
+
+                    var boundaryFaces = roomGeo.GetBoundaryFaceInfo(face).FirstOrDefault();
+                    if (boundaryFaces != null)
+                    {
+                        switch (boundaryFaces.SubfaceType)
+                        {
+                            case RVT.SubfaceType.Bottom:
+                                hbFace.FaceType = HB.Face.FaceTypeEnum.Floor;
+                                break;
+                            case RVT.SubfaceType.Top:
+                                hbFace.FaceType = HB.Face.FaceTypeEnum.RoofCeiling;
+                                break;
+                            case RVT.SubfaceType.Side:
+                                hbFace.FaceType = HB.Face.FaceTypeEnum.Wall;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    else
+                    {
+                        // (Konrad) We don't really know what type of face it is.
+                        // TODO: This is probably an Air Boundary/Room Separation Line.
+                        hbFace.FaceType = HB.Face.FaceTypeEnum.Wall;
+                    }
+
+                    hbFaces.Add(hbFace);
                 }
             }
 
@@ -251,36 +284,48 @@ namespace Honeybee.Revit.Schemas
             var t5 = top.Evaluate(1, true);
 
             var f1 = new Face(new List<Point3D>
-                    {
-                        new Point3D(b1),
-                        new Point3D(b2),
-                        new Point3D(t4),
-                        new Point3D(t5)
-                    }, new List<List<Point3D>>());
+            {
+                new Point3D(b1),
+                new Point3D(b2),
+                new Point3D(t4),
+                new Point3D(t5)
+            }, new List<List<Point3D>>())
+            {
+                FaceType = HB.Face.FaceTypeEnum.Wall
+            };
 
             var f2 = new Face(new List<Point3D>
-                    {
-                        new Point3D(b2),
-                        new Point3D(b3),
-                        new Point3D(t3),
-                        new Point3D(t4)
-                    }, new List<List<Point3D>>());
+            {
+                new Point3D(b2),
+                new Point3D(b3),
+                new Point3D(t3),
+                new Point3D(t4)
+            }, new List<List<Point3D>>())
+            {
+                FaceType = HB.Face.FaceTypeEnum.Wall
+            };
 
             var f3 = new Face(new List<Point3D>
-                    {
-                        new Point3D(b3),
-                        new Point3D(b4),
-                        new Point3D(t2),
-                        new Point3D(t3)
-                    }, new List<List<Point3D>>());
+            {
+                new Point3D(b3),
+                new Point3D(b4),
+                new Point3D(t2),
+                new Point3D(t3)
+            }, new List<List<Point3D>>())
+            {
+                FaceType = HB.Face.FaceTypeEnum.Wall
+            };
 
             var f4 = new Face(new List<Point3D>
-                    {
-                        new Point3D(b4),
-                        new Point3D(b5),
-                        new Point3D(t1),
-                        new Point3D(t2)
-                    }, new List<List<Point3D>>());
+            {
+                new Point3D(b4),
+                new Point3D(b5),
+                new Point3D(t1),
+                new Point3D(t2)
+            }, new List<List<Point3D>>())
+            {
+                FaceType = HB.Face.FaceTypeEnum.Wall
+            };
 
             return new List<Face> {f1, f2, f3, f4};
         }
@@ -343,6 +388,8 @@ namespace Honeybee.Revit.Schemas
                             hPts[i] = offsetPt;
                         }
                     }
+
+                    if (hPts.Count < 3) continue;
 
                     glazingAreas.Add(PolygonArea(hUvs));
                     glazingPts.Add(hPts);
@@ -434,6 +481,8 @@ namespace Honeybee.Revit.Schemas
                         hPts[i] = offsetPt;
                     }
                 }
+
+                if (hPts.Count < 3) continue;
 
                 glazingAreas.Add(PolygonArea(hUvs));
                 glazingPts.Add(hPts);

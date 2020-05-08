@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
 using HB = HoneybeeSchema;
@@ -29,12 +30,26 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.Surface(BoundaryConditionObjects.ToDragonfly());
+            return new HB.Surface(BoundaryConditionObjects.ToHoneybee());
         }
 
         public override object ToHoneybee()
         {
-            throw new NotImplementedException();
+            return new HB.Surface(BoundaryConditionObjects.ToHoneybee());
+        }
+    }
+
+    public static class SurfaceExtensions
+    {
+        public static List<string> ToHoneybee(this Tuple<int, string> boundaryConditionObj)
+        {
+            var (adjacentCurveIndex, adjacentRoomName) = boundaryConditionObj;
+
+            return new List<string>
+            {
+                $"{adjacentRoomName}..Face{adjacentCurveIndex + 1}",
+                adjacentRoomName
+            };
         }
     }
 }

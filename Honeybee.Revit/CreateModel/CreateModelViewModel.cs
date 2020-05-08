@@ -115,6 +115,13 @@ namespace Honeybee.Revit.CreateModel
             set { _bldgConstructionSet = value; RaisePropertyChanged(() => BldgConstructionSet); }
         }
 
+        private ProgramType _bldgProgramType = new ProgramType();
+        public ProgramType BldgProgramType
+        {
+            get { return _bldgProgramType; }
+            set { _bldgProgramType = value; RaisePropertyChanged(() => BldgProgramType); }
+        }
+
         private ConstructionSet _constructionSetTemp = new ConstructionSet();
         public ConstructionSet ConstructionSetTemp
         {
@@ -127,13 +134,6 @@ namespace Honeybee.Revit.CreateModel
         {
             get { return _programTypeTemp; }
             set { _programTypeTemp = value; RaisePropertyChanged(() => ProgramTypeTemp); }
-        }
-
-        private ProgramType _bldgProgramType = new ProgramType();
-        public ProgramType BldgProgramType
-        {
-            get { return _bldgProgramType; }
-            set { _bldgProgramType = value; RaisePropertyChanged(() => BldgProgramType); }
         }
 
         #endregion
@@ -176,7 +176,7 @@ namespace Honeybee.Revit.CreateModel
                 .Where(x => x.IsSelected)
                 .Select(x => x.Room2D)
                 .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected);
+            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet);
 
             win.Close();
         }
@@ -187,7 +187,7 @@ namespace Honeybee.Revit.CreateModel
                 .Where(x => x.IsSelected)
                 .Select(x => x.Room2D)
                 .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected, false);
+            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, false);
 
             win.Close();
         }
@@ -325,13 +325,13 @@ namespace Honeybee.Revit.CreateModel
 
         private void OnOk(Window win)
         {
-            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-                .Where(x => x.IsSelected)
-                .Select(x => x.Room2D)
-                .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected);
+            //var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+            //    .Where(x => x.IsSelected)
+            //    .Select(x => x.Room2D)
+            //    .ToList();
+            //if (selected.Any()) Model.SerializeRoom2D(selected);
 
-            win.Close();
+            //win.Close();
         }
 
         private static void OnHelp()

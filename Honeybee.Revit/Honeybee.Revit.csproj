@@ -200,6 +200,7 @@
     <Compile Include="Schemas\Enumerations\Vintages.cs" />
     <Compile Include="Schemas\Extensions.cs" />
     <Compile Include="Schemas\Ground.cs" />
+    <Compile Include="Schemas\Honeybee\Aperture.cs" />
     <Compile Include="Schemas\Honeybee\Face.cs" />
     <Compile Include="Schemas\Honeybee\Face3D.cs" />
     <Compile Include="Schemas\HvacTypes.cs" />

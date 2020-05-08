@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using HB = HoneybeeSchema;
 
@@ -20,13 +21,13 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public HB.Face.FaceTypeEnum? FaceType { get; set; }
 
         [JsonProperty("boundary_condition")]
-        public HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface> BoundaryCondition { get; set; }
+        public BoundaryConditionBase BoundaryCondition { get; set; }
 
         [JsonProperty("properties")]
         public HB.FacePropertiesAbridged Properties { get; set; }
 
         [JsonProperty("apertures")]
-        public List<HB.Aperture> Apertures { get; set; }
+        public List<Aperture> Apertures { get; set; } = new List<Aperture>();
 
         [JsonProperty("doors")]
         public List<HB.Door> Doors { get; set; }
@@ -48,11 +49,15 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public Face(List<Point3D> boundary, List<List<Point3D>> holes)
         {
             Geometry = new Face3D {Boundary = boundary, Holes = holes};
+            BoundaryCondition = new Outdoors();
+            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged());
         }
 
         public Face(Autodesk.Revit.DB.Face face)
         {
             Geometry = new Face3D(face);
+            BoundaryCondition = new Outdoors();
+            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged());
         }
 
         public object ToDragonfly()
@@ -65,16 +70,29 @@ namespace Honeybee.Revit.Schemas.Honeybee
             return new HB.Face(
                 Identifier,
                 Geometry.ToHoneybee(),
-                null, // face type
-                null, // boundary condition
-                null, // properties
-                null, // apertures
+                FaceType,
+                new HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface>(BoundaryCondition.ToHoneybee()),
+                Properties,
+                Apertures?.Select(x => x.ToHoneybee()).ToList(),
                 null, // doors
                 null, // indoor shades
                 null, // outdoor shades
                 DisplayName,
                 null // user data
             );
+        }
+    }
+
+    public static class FaceExtensions
+    {
+        public static bool OverlapsWith(this Face face, Face other)
+        {
+            if (face.Geometry.Boundary.Count != other.Geometry.Boundary.Count) return false;
+            if (face.Geometry.Holes.Count != other.Geometry.Holes.Count) return false;
+
+            if (face.Geometry.Boundary.Any(pt => !other.Geometry.Boundary.Contains(pt))) return false;
+
+            return true;
         }
     }
 }

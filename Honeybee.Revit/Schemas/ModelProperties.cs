@@ -1,8 +1,9 @@
 ﻿using DF = DragonflySchema;
+using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class ModelProperties : ISchema<DF.ModelProperties, object>
+    public class ModelProperties : ISchema<DF.ModelProperties, HB.ModelProperties>
     {
         public string Type
         {
@@ -16,9 +17,9 @@ namespace Honeybee.Revit.Schemas
             return new DF.ModelProperties(Energy.ToDragonfly());
         }
 
-        public object ToHoneybee()
+        public HB.ModelProperties ToHoneybee()
         {
-            throw new System.NotImplementedException();
+            return new HB.ModelProperties(Energy.ToHoneybee());
         }
     }
 }

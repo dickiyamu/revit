@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using DF = DragonflySchema;
 using HB = HoneybeeSchema;
 using RVT = Autodesk.Revit.DB;
 
@@ -19,9 +18,10 @@ namespace Honeybee.Revit.Schemas.Honeybee
         [JsonProperty("plane")]
         public HB.Plane Plane { get; set; }
 
-        [JsonConstructor]
-        public Face3D()
+        public Face3D() { }
+        public Face3D(List<Point3D> boundary)
         {
+            Boundary = boundary;
         }
 
         public Face3D(RVT.Face face)
@@ -68,8 +68,8 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public HB.Face3D ToHoneybee()
         {
             return new HB.Face3D(
-                Boundary.ToHoneybee(),
-                Holes.ToHoneybee(),
+                Boundary?.ToHoneybee(),
+                Holes?.ToHoneybee(),
                 Plane
             );
         }

@@ -50,10 +50,6 @@ namespace Honeybee.Revit.Schemas
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         public DF.Room2DEnergyPropertiesAbridged ToDragonfly()
         {
             return new DF.Room2DEnergyPropertiesAbridged(ConstructionSet.Identifier, ProgramType.Identifier, Hvac?.Name);
@@ -61,7 +57,17 @@ namespace Honeybee.Revit.Schemas
 
         public HB.RoomEnergyPropertiesAbridged ToHoneybee()
         {
-            throw new System.NotImplementedException();
+            return new HB.RoomEnergyPropertiesAbridged(
+                ConstructionSet.Identifier, 
+                ProgramType.Identifier, 
+                Hvac?.Name, 
+                null, // people
+                null, // lighting
+                null, // electrical equipment
+                null, // gas equipment
+                null, // infiltration
+                null, // ventilation
+                null); // setpoint
         }
     }
 }

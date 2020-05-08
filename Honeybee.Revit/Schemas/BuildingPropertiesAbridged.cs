@@ -13,7 +13,7 @@ namespace Honeybee.Revit.Schemas
 
         public DF.BuildingPropertiesAbridged ToDragonfly()
         {
-            return new DF.BuildingPropertiesAbridged();
+            return new DF.BuildingPropertiesAbridged(Energy.ToDragonfly());
         }
 
         public object ToHoneybee()
