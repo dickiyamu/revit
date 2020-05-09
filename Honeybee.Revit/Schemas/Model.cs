@@ -71,13 +71,13 @@ namespace Honeybee.Revit.Schemas
                 Identifier,
                 Buildings.Select(x => x.ToDragonfly()).ToList(),
                 Properties.ToDragonfly(),
+                DisplayName,
+                null, // user data
                 ContextShades,
                 NorthAngle,
                 DF_Units,
                 Tolerance,
-                AngleTolerance,
-                DisplayName,
-                null // user data
+                AngleTolerance
             );
         }
 
@@ -86,6 +86,8 @@ namespace Honeybee.Revit.Schemas
             return new HB.Model(
                 Identifier,
                 Properties.ToHoneybee(),
+                DisplayName,
+                null, // user data
                 Rooms,
                 null, // orphaned faces
                 null, // orphaned shades
@@ -94,9 +96,7 @@ namespace Honeybee.Revit.Schemas
                 NorthAngle,
                 HB_Units,
                 Tolerance,
-                AngleTolerance,
-                DisplayName,
-                null // user data
+                AngleTolerance
             );
         }
     }

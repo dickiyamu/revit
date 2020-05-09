@@ -274,7 +274,6 @@ namespace Honeybee.Revit.CreateModel
             var jsonProgramTypes = RunHoneybeeEnergyCommand("program-types-by-id", pTypes);
             JsonConverter[] converters =
             {
-                new DF.AnyOfJsonConverter(),
                 new HB.AnyOfJsonConverter()
             };
 
@@ -287,7 +286,6 @@ namespace Honeybee.Revit.CreateModel
             var jsonConstructionSets = RunHoneybeeEnergyCommand2("construction-set-by-id", args);
             JsonConverter[] converters =
             {
-                new DF.AnyOfJsonConverter(),
                 new HB.AnyOfJsonConverter()
             };
 
@@ -307,7 +305,6 @@ namespace Honeybee.Revit.CreateModel
             var jsonConstructionSets = RunHoneybeeEnergyCommand("construction-sets-by-id", cSets);
             JsonConverter[] converters =
             {
-                new DF.AnyOfJsonConverter(),
                 new HB.AnyOfJsonConverter()
             };
 
@@ -320,18 +317,17 @@ namespace Honeybee.Revit.CreateModel
             {
                 var hbProgramTypes = GetProgramTypeSet(rooms, bProgramType);
                 var hbConstructionSets = GetConstructionSets(rooms, bConstructionSet);
+                var properties = new ModelProperties { Energy = new ModelEnergyProperties() };
+                var globalConstructionSet = GetDefaultConstructionSet();
+
+                properties.Energy.ConstructionSets.Add(globalConstructionSet);
+                properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
+
+                hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
+                hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));
 
                 if (dragonfly)
                 {
-                    var properties = new ModelProperties {Energy = new ModelEnergyProperties()};
-                    var globalConstructionSet = GetDefaultConstructionSet();
-
-                    properties.Energy.DF_ConstructionSets.Add(globalConstructionSet);
-                    properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
-
-                    hbProgramTypes.ForEach(x => properties.Energy.DF_ProgramTypes.Add(x));
-                    hbConstructionSets.ForEach(x => properties.Energy.DF_ConstructionSets.Add(x));
-
                     var stories = rooms
                         .GroupBy(x => x.Level.Name)
                         .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged
@@ -360,7 +356,7 @@ namespace Honeybee.Revit.CreateModel
                     var dfModel = model.ToDragonfly();
                     dfModel.Properties = properties.ToDragonfly();
 
-                    var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter(), new HB.AnyOfJsonConverter());
+                    var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new HB.AnyOfJsonConverter());
                     if (string.IsNullOrWhiteSpace(json)) return;
 
                     const string filePath = @"C:\Users\ksobon\Desktop\Dragonfly.json";
@@ -374,15 +370,6 @@ namespace Honeybee.Revit.CreateModel
                 }
                 else
                 {
-                    var properties = new ModelProperties { Energy = new ModelEnergyProperties() };
-                    var globalConstructionSet = GetDefaultConstructionSet();
-
-                    properties.Energy.HB_ConstructionSets.Add(globalConstructionSet);
-                    properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
-
-                    hbProgramTypes.ForEach(x => properties.Energy.HB_ProgramTypes.Add(x));
-                    hbConstructionSets.ForEach(x => properties.Energy.HB_ConstructionSets.Add(x));
-
                     var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties())
                     {
                         HB_Units = HB.Model.UnitsEnum.Feet,

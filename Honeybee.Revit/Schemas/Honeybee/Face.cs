@@ -18,7 +18,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public Face3D Geometry { get; set; }
 
         [JsonProperty("face_type")]
-        public HB.Face.FaceTypeEnum? FaceType { get; set; }
+        public HB.Face.FaceTypeEnum FaceType { get; set; }
 
         [JsonProperty("boundary_condition")]
         public BoundaryConditionBase BoundaryCondition { get; set; }
@@ -73,12 +73,12 @@ namespace Honeybee.Revit.Schemas.Honeybee
                 FaceType,
                 new HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface>(BoundaryCondition.ToHoneybee()),
                 Properties,
+                DisplayName,
+                null, // user data
                 Apertures?.Select(x => x.ToHoneybee()).ToList(),
                 null, // doors
                 null, // indoor shades
-                null, // outdoor shades
-                DisplayName,
-                null // user data
+                null // outdoor shades
             );
         }
     }

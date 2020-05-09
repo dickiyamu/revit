@@ -24,14 +24,14 @@ namespace Honeybee.Revit.Schemas
         {
             return new HB.ConstructionSetAbridged(
                 Identifier,
+                DisplayName,
                 WallSet,
                 FloorSet,
                 RoofCeilingSet,
                 ApertureSet,
                 DoorSet,
                 ShadeConstruction,
-                AirBoundaryConstruction,
-                DisplayName
+                AirBoundaryConstruction
             );
         }
 

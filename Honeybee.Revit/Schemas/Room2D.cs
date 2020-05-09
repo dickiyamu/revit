@@ -225,14 +225,14 @@ namespace Honeybee.Revit.Schemas
                 FloorHeight,
                 FloorToCeilingHeight,
                 Properties.ToDragonfly(),
+                DisplayName,
+                null, // user data
                 FloorHoles.ToDragonfly(),
                 IsGroundContact,
                 IsTopExposed,
                 BoundaryConditions.ToDragonfly(),
                 WindowParameters.ToDragonfly(),
-                null, // shading params
-                DisplayName,
-                null // user data
+                null // shading params
             );
         }
 
@@ -242,11 +242,11 @@ namespace Honeybee.Revit.Schemas
                 Identifier,
                 Faces.Select(x => x.ToHoneybee()).ToList(),
                 Properties.ToHoneybee(),
+                DisplayName,
+                null, // user data
                 null, // indoor shades
                 null, // outdoor shades
-                1,
-                DisplayName,
-                null // user data
+                1 // multiplier
             );
         }
 
@@ -798,5 +798,69 @@ namespace Honeybee.Revit.Schemas
         //}
 
         #endregion
+    }
+
+    public static class RoomExtensions
+    {
+        public static List<HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface>> ToDragonfly(
+            this List<BoundaryConditionBase> bcs)
+        {
+            var boundaryConditions = new List<HB.AnyOf<HB.Ground, HB.Outdoors, HB.Adiabatic, HB.Surface>>();
+            foreach (var bc in bcs)
+            {
+                switch (bc)
+                {
+                    case Outdoors unused:
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Outdoors);
+                        break;
+                    case Ground unused:
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Ground);
+                        break;
+                    case Adiabatic unused:
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Adiabatic);
+                        break;
+                    case Surface unused:
+                        boundaryConditions.Add(bc.ToDragonfly() as HB.Surface);
+                        break;
+                    default:
+                        boundaryConditions.Add(null);
+                        break;
+                }
+            }
+
+            return boundaryConditions;
+        }
+
+        public static List<HB.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>> ToDragonfly(
+            this List<WindowParameterBase> bcs)
+        {
+            var windowParameters = new List<HB.AnyOf<DF.SingleWindow, DF.SimpleWindowRatio, DF.RepeatingWindowRatio, DF.RectangularWindows, DF.DetailedWindows>>();
+            foreach (var bc in bcs)
+            {
+                switch (bc)
+                {
+                    case SingleWindow unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.SingleWindow);
+                        break;
+                    case SimpleWindowRatio unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.SimpleWindowRatio);
+                        break;
+                    case RepeatingWindowRatio unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.RepeatingWindowRatio);
+                        break;
+                    case RectangularWindows unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.RectangularWindows);
+                        break;
+                    case DetailedWindows unused:
+                        windowParameters.Add(bc.ToDragonfly() as DF.DetailedWindows);
+                        break;
+                    default:
+                        windowParameters.Add(null);
+                        break;
+                }
+            }
+
+            return windowParameters;
+        }
     }
 }

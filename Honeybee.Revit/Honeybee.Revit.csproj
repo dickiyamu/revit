@@ -71,8 +71,8 @@
     <Reference Include="CommonServiceLocator, Version=2.0.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.2\lib\net47\CommonServiceLocator.dll</HintPath>
     </Reference>
-    <Reference Include="DragonflySchema, Version=1.5.10.1981, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DragonflySchema.1.5.10.1981\lib\net45\DragonflySchema.dll</HintPath>
+    <Reference Include="DragonflySchema, Version=1.5.13.24840, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DragonflySchema.1.5.13.24840\lib\net45\DragonflySchema.dll</HintPath>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight, Version=5.4.1.0, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.dll</HintPath>
@@ -83,8 +83,8 @@
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.4.1.0, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
     </Reference>
-    <Reference Include="HoneybeeSchema, Version=1.26.0.39391, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\HoneybeeSchema.1.26.0.39391\lib\net45\HoneybeeSchema.dll</HintPath>
+    <Reference Include="HoneybeeSchema, Version=1.27.4.7885, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\HoneybeeSchema.1.27.4.7885\lib\net45\HoneybeeSchema.dll</HintPath>
     </Reference>
     <Reference Include="JsonSubTypes, Version=1.5.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\JsonSubTypes.1.5.2\lib\net47\JsonSubTypes.dll</HintPath>

@@ -48,11 +48,11 @@ namespace Honeybee.Revit.Schemas.Honeybee
                 Geometry?.ToHoneybee(),
                 BoundaryCondition.ToHoneybeeAnyOf(),
                 Properties,
+                DisplayName,
+                null, // user data
                 IsOperable,
                 IndoorShades,
-                OutdoorShades,
-                DisplayName,
-                null // user data
+                OutdoorShades
             );
         }
     }

@@ -35,8 +35,18 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyMaterial(Identifier, Thickness, Conductivity, Density, SpecificHeat, Roughness,
-                ThermalAbsorptance, SolarAbsorptance, VisibleAbsorptance, DisplayName);
+            return new HB.EnergyMaterial(
+                Identifier,
+                Thickness,
+                Conductivity,
+                Density,
+                SpecificHeat,
+                DisplayName,
+                Roughness,
+                ThermalAbsorptance,
+                SolarAbsorptance,
+                VisibleAbsorptance
+            );
         }
 
         public override object ToHoneybee()
@@ -63,8 +73,15 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyMaterialNoMass(Identifier, RValue, Roughness, ThermalAbsorptance, SolarAbsorptance,
-                VisibleAbsorptance, DisplayName);
+            return new HB.EnergyMaterialNoMass(
+                Identifier,
+                RValue,
+                DisplayName,
+                Roughness,
+                ThermalAbsorptance,
+                SolarAbsorptance,
+                VisibleAbsorptance
+            );
         }
 
         public override object ToHoneybee()
@@ -113,14 +130,13 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyWindowMaterialBlind(Identifier, SlatOrientation, SlatWidth, SlatSeparation,
+            return new HB.EnergyWindowMaterialBlind(Identifier, DisplayName, SlatOrientation, SlatWidth, SlatSeparation,
                 SlatThickness, SlatAngle, SlatConductivity, BeamSolarTransmittance, BeamSolarReflectance,
                 BeamSolarReflectanceBack, DiffuseSolarTransmittance, DiffuseSolarReflectance,
                 DiffuseSolarReflectanceBack, BeamVisibleTransmittance, BeamVisibleReflectance,
                 BeamVisibleReflectanceBack, DiffuseVisibleTransmittance, DiffuseVisibleReflectance,
                 DiffuseVisibleReflectanceBack, InfraredTransmittance, Emissivity, EmissivityBack, DistanceToGlass,
-                TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier, RightOpeningMultiplier,
-                DisplayName);
+                TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier, RightOpeningMultiplier);
         }
 
         public override object ToHoneybee()
@@ -143,7 +159,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyWindowMaterialGas(Identifier, Thickness, GasType, DisplayName);
+            return new HB.EnergyWindowMaterialGas(Identifier, DisplayName, Thickness, GasType);
         }
 
         public override object ToHoneybee()
@@ -182,8 +198,15 @@ namespace Honeybee.Revit.Schemas
                 ViscosityCoeffA,
                 SpecificHeatCoeffA,
                 SpecificHeatRatio,
-                MolecularWeight, Thickness, ConductivityCoeffB, ConductivityCoeffC, ViscosityCoeffB, ViscosityCoeffC,
-                SpecificHeatCoeffB, SpecificHeatCoeffC, DisplayName
+                MolecularWeight, 
+                DisplayName, 
+                Thickness, 
+                ConductivityCoeffB, 
+                ConductivityCoeffC, 
+                ViscosityCoeffB, 
+                ViscosityCoeffC,
+                SpecificHeatCoeffB, 
+                SpecificHeatCoeffC
             );
         }
 
@@ -208,7 +231,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyWindowMaterialGasMixture(Identifier, GasTypes, GasFractions, Thickness, DisplayName);
+            return new HB.EnergyWindowMaterialGasMixture(Identifier, GasTypes, GasFractions, DisplayName, Thickness);
         }
 
         public override object ToHoneybee()
@@ -242,10 +265,9 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyWindowMaterialGlazing(Identifier, Thickness, SolarTransmittance, SolarReflectance,
+            return new HB.EnergyWindowMaterialGlazing(Identifier, DisplayName, Thickness, SolarTransmittance, SolarReflectance,
                 SolarReflectanceBack, VisibleTransmittance, VisibleReflectance, VisibleReflectanceBack,
-                InfraredTransmittance, Emissivity, EmissivityBack, Conductivity, DirtCorrection, SolarDiffusing,
-                DisplayName);
+                InfraredTransmittance, Emissivity, EmissivityBack, Conductivity, DirtCorrection, SolarDiffusing);
         }
 
         public override object ToHoneybee()
@@ -280,10 +302,10 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyWindowMaterialShade(Identifier, SolarTransmittance, SolarReflectance,
+            return new HB.EnergyWindowMaterialShade(Identifier, DisplayName, SolarTransmittance, SolarReflectance,
                 VisibleTransmittance, VisibleReflectance, Emissivity, InfraredTransmittance, Thickness, Conductivity,
                 DistanceToGlass, TopOpeningMultiplier, BottomOpeningMultiplier, LeftOpeningMultiplier,
-                RightOpeningMultiplier, AirflowPermeability, DisplayName);
+                RightOpeningMultiplier, AirflowPermeability);
         }
 
         public override object ToHoneybee()
@@ -307,7 +329,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.EnergyWindowMaterialSimpleGlazSys(Identifier, UFactor, Shgc, Vt, DisplayName);
+            return new HB.EnergyWindowMaterialSimpleGlazSys(Identifier, UFactor, Shgc, DisplayName, Vt);
         }
 
         public override object ToHoneybee()

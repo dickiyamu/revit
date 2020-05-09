@@ -29,7 +29,7 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToDragonfly()
         {
-            return new HB.ShadeConstruction(Identifier, SolarReflectance, VisibleReflectance, IsSpecular, DisplayName);
+            return new HB.ShadeConstruction(Identifier, DisplayName, SolarReflectance, VisibleReflectance, IsSpecular);
         }
 
         public override object ToHoneybee()

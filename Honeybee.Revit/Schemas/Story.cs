@@ -48,10 +48,10 @@ namespace Honeybee.Revit.Schemas
                 Identifier,
                 Room2Ds.Select(x => x.ToDragonfly()).ToList(),
                 Properties.ToDragonfly(),
-                FloorToFloorHeight,
-                Multiplier,
                 DisplayName,
-                null // user data
+                null, // user data
+                FloorToFloorHeight,
+                Multiplier
             );
         }
 
