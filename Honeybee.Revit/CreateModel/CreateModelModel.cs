@@ -13,11 +13,12 @@ using Autodesk.Revit.UI.Selection;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
+using Honeybee.Revit.Schemas.Honeybee;
 using Newtonsoft.Json;
 using NLog;
 using DF = DragonflySchema;
 using HB = HoneybeeSchema;
-using Surface = Honeybee.Revit.Schemas.Surface;
+
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
 #endregion
@@ -50,6 +51,11 @@ namespace Honeybee.Revit.CreateModel
                 .Select(x => new SpatialObjectWrapper(x))
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
+
+            DF_AssignBoundaryConditions(objects);
+            HB_AssignBoundaryConditions(objects);
+
+            return objects;
 
             //var stories = objects
             //    .Select(x => x.Room2D)
@@ -141,11 +147,6 @@ namespace Honeybee.Revit.CreateModel
             //        }
             //    }
             //}
-
-            DF_AssignBoundaryConditions(objects);
-            HB_AssignBoundaryConditions(objects);
-
-            return objects;
         }
 
         public string RunHoneybeeEnergyCommand(string command, IEnumerable<string> ids)
@@ -439,7 +440,7 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < boundaryCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[i];
-                    if (currentBc is Surface)
+                    if (currentBc is DragonflySurface)
                         continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
@@ -455,7 +456,7 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < holeCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[boundaryCurves.Count + i];
-                    if (currentBc is Surface)
+                    if (currentBc is DragonflySurface)
                         continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
@@ -477,12 +478,13 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < faces.Count; i++)
                 {
                     var currentFace = so.Room2D.Faces[i];
-                    // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
-                    var allowAdiabatic = currentFace.Apertures == null || currentFace.Apertures.Count <= 0;
-                    var bc = BoundaryConditionBase.HB_Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), faces[i], so, allowAdiabatic);
+                    currentFace.AssignBoundaryConditions(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id));
+                    //// (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
+                    //var allowAdiabatic = currentFace.Apertures == null || currentFace.Apertures.Count <= 0;
+                    //var bc = BoundaryConditionBase.HB_Init(objects.Where(x => !Equals(x, so) && x.Level.Id == so.Level.Id), faces[i], so, allowAdiabatic);
 
-                    currentFace.BoundaryCondition = bc;
-                    currentFace.Apertures?.ForEach(x => x.BoundaryCondition = bc);
+                    //currentFace.BoundaryCondition = bc;
+                    //currentFace.Apertures?.ForEach(x => x.BoundaryCondition = bc);
                 }
             }
         }

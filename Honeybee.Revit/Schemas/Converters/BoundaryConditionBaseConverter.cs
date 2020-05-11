@@ -21,7 +21,7 @@ namespace Honeybee.Revit.Schemas.Converters
                 case "Outdoors":
                     return jo.ToObject<Outdoors>(serializer);
                 case "Surface":
-                    return jo.ToObject<Surface>(serializer);
+                    return jo.ToObject<DragonflySurface>(serializer);
                 case "Adiabatic":
                     return jo.ToObject<Adiabatic>(serializer);
                 default:

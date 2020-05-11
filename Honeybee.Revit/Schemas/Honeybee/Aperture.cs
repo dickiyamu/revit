@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using HB = HoneybeeSchema;
 
@@ -68,11 +69,33 @@ namespace Honeybee.Revit.Schemas.Honeybee
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(new HB.Outdoors());
                 case Outdoors outdoors:
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(outdoors.ToHoneybee() as HB.Outdoors);
-                case Surface surface:
+                case DragonflySurface surface:
+                    return new HB.AnyOf<HB.Outdoors, HB.Surface>(surface.ToDragonfly() as HB.Surface);
+                case HoneybeeSurface surface:
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(surface.ToHoneybee() as HB.Surface);
                 default:
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(new HB.Outdoors());
             }
+        }
+    }
+
+    public class ApertureComparer : IEqualityComparer<Aperture>
+    {
+        public bool Equals(Aperture x, Aperture y)
+        {
+            if (y == null && x == null)
+                return true;
+            else if (x == null || y == null)
+                return false;
+            else if (x.Geometry.Boundary.All(pt => y.Geometry.Boundary.Contains(pt)))
+                return true;
+            else
+                return false;
+        }
+
+        public int GetHashCode(Aperture obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }

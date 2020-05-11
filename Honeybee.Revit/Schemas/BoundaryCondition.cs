@@ -14,13 +14,20 @@ namespace Honeybee.Revit.Schemas
         public abstract object ToDragonfly();
         public abstract object ToHoneybee();
 
-        public static BoundaryConditionBase HB_Init(IEnumerable<SpatialObjectWrapper> objects, Face face, SpatialObjectWrapper sow, bool allowAdiabatic)
+        public static BoundaryConditionBase HB_Init(
+            IEnumerable<SpatialObjectWrapper> objects, 
+            Face face, 
+            SpatialObjectWrapper sow, 
+            bool allowAdiabatic)
         {
-            var adjacentRoomName = string.Empty;
-            var adjacentFaceIndex = -1;
+            var adjacentRoomId = string.Empty;
+            var adjacentFaceId = string.Empty;
+
+            Face adjacentFace;
             foreach (var so in objects)
             {
-                if (adjacentFaceIndex != -1 && adjacentRoomName != null)
+                if (!string.IsNullOrWhiteSpace(adjacentRoomId) && 
+                    !string.IsNullOrWhiteSpace(adjacentFaceId))
                     break;
 
                 var faces = so.Room2D.Faces;
@@ -30,18 +37,21 @@ namespace Honeybee.Revit.Schemas
                     if (!f.OverlapsWith(face))
                         continue;
 
-                    adjacentFaceIndex = i;
-                    adjacentRoomName = so.Room2D.Identifier;
+                    adjacentFace = faces[i];
+                    adjacentFaceId = faces[i].Identifier;
+                    adjacentRoomId = so.Room2D.Identifier;
                     break;
                 }
             }
 
-            if (adjacentFaceIndex != -1 && !string.IsNullOrWhiteSpace(adjacentRoomName))
+            if (!string.IsNullOrWhiteSpace(adjacentRoomId) && 
+                !string.IsNullOrWhiteSpace(adjacentFaceId))
             {
                 // (Konrad) We found a matching Surface Boundary Condition.
-                var bConditionObj = new Tuple<int, string>(adjacentFaceIndex, adjacentRoomName);
+                // Tuple for HB Surface is always ApertureId, FaceId, RoomId.
+                var bConditionObj = new Tuple<string, string, string>(string.Empty, adjacentFaceId, adjacentRoomId);
 
-                return new Surface(bConditionObj);
+                return new HoneybeeSurface(bConditionObj);
             }
 
             if (!allowAdiabatic)
@@ -83,7 +93,7 @@ namespace Honeybee.Revit.Schemas
                 // (Konrad) We found a matching Surface Boundary Condition.
                 var bConditionObj = new Tuple<int, string>(adjacentCurveIndex, adjacentRoomName);
 
-                return new Surface(bConditionObj);
+                return new DragonflySurface(bConditionObj);
             }
 
             if (!allowAdiabatic)

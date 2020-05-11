@@ -14,7 +14,6 @@ using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
 using NLog;
 using FamilyUtils = Honeybee.Core.FamilyUtils;
-using Surface = Honeybee.Revit.Schemas.Surface;
 
 #endregion
 
@@ -170,7 +169,7 @@ namespace Honeybee.Revit.CreateModel
                     {
                         switch (bCondition)
                         {
-                            case Surface unused:
+                            case DragonflySurface unused:
                                 fs = symbols["Surface"];
                                 break;
                             case Outdoors unused:
@@ -187,7 +186,7 @@ namespace Honeybee.Revit.CreateModel
                                 break;
                         }
 
-                        adjacentRoom = (bCondition as Surface)?.BoundaryConditionObjects.Item2;
+                        adjacentRoom = (bCondition as DragonflySurface)?.BoundaryConditionObjects.Item2;
                     }
 
                     var loc = curve.Evaluate(0.5, true);

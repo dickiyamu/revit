@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Instrumentation;
+using Honeybee.Core.Extensions;
+using Honeybee.Revit.CreateModel.Wrappers;
 using Newtonsoft.Json;
 using HB = HoneybeeSchema;
 
@@ -93,6 +96,61 @@ namespace Honeybee.Revit.Schemas.Honeybee
             if (face.Geometry.Boundary.Any(pt => !other.Geometry.Boundary.Contains(pt))) return false;
 
             return true;
+        }
+
+        public static void AssignBoundaryConditions(this Face face, IEnumerable<SpatialObjectWrapper> objects)
+        {
+            var adjacentRoomId = string.Empty;
+            var adjacentFaceId = string.Empty;
+
+            Face adjacentFace = null;
+            foreach (var so in objects)
+            {
+                if (!string.IsNullOrWhiteSpace(adjacentRoomId) &&
+                    !string.IsNullOrWhiteSpace(adjacentFaceId))
+                    break;
+
+                var faces = so.Room2D.Faces;
+                for (var i = 0; i < faces.Count; i++)
+                {
+                    var f = faces[i];
+                    if (!f.OverlapsWith(face))
+                        continue;
+
+                    adjacentFace = faces[i];
+                    adjacentFaceId = faces[i].Identifier;
+                    adjacentRoomId = so.Room2D.Identifier;
+                    break;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(adjacentRoomId) &&
+                !string.IsNullOrWhiteSpace(adjacentFaceId))
+            {
+                // (Konrad) We found a matching Surface Boundary Condition.
+                // Tuple for HB Surface is always ApertureId, FaceId, RoomId.
+                var bConditionObj = new Tuple<string, string, string>(string.Empty, adjacentFaceId, adjacentRoomId);
+
+                face.BoundaryCondition = new HoneybeeSurface(bConditionObj);
+
+                if (face.Apertures == null || !face.Apertures.Any())
+                    return;
+
+                var comparer = new ApertureComparer();
+                foreach (var aperture in face.Apertures)
+                {
+                    var adjacentAperture = adjacentFace?.Apertures.FirstOrDefault(comparer, aperture);
+                    if (adjacentAperture == null)
+                        continue;
+
+                    var bcObject = new Tuple<string, string, string>(adjacentAperture.Identifier, adjacentFaceId, adjacentRoomId);
+                    aperture.BoundaryCondition = new HoneybeeSurface(bcObject);
+                }
+
+                return;
+            }
+
+            face.BoundaryCondition = new Outdoors();
         }
     }
 }

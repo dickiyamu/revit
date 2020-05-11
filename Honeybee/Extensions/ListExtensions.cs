@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Honeybee.Core.Extensions
 {
@@ -17,6 +18,11 @@ namespace Honeybee.Core.Extensions
         {
             foreach (var item in source)
                 action(item);
+        }
+
+        public static T FirstOrDefault<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer, T value)
+        {
+            return source.FirstOrDefault(item => comparer.Equals(item, value));
         }
     }
 }
