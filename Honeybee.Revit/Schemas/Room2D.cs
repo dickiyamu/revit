@@ -72,7 +72,7 @@ namespace Honeybee.Revit.Schemas
         public List<Face> Faces { get; set; } = new List<Face>();
 
         [JsonIgnore]
-        internal RVT.Level Level { get; set; }
+        internal string LevelName { get; set; }
 
         [JsonIgnore]
         internal List<AnnotationWrapper> Annotations { get; set; } = new List<AnnotationWrapper>();
@@ -86,10 +86,12 @@ namespace Honeybee.Revit.Schemas
         {
             DisplayName = e.Name;
 
+            var offset = e.get_Parameter(RVT.BuiltInParameter.ROOM_LOWER_OFFSET).AsDouble();
             if (e.Document.GetElement(e.LevelId) is RVT.Level level)
             {
-                FloorHeight = level.Elevation;
-                Level = level;
+                // (Konrad) Room might be attached to Level and have negative offset.
+                FloorHeight = level.Elevation + offset; 
+                LevelName = level.Name;
             }
 
             var doc = e.Document;
@@ -105,7 +107,7 @@ namespace Honeybee.Revit.Schemas
             var height = bb.Max.Z - bb.Min.Z;
             var segments = e.GetBoundarySegments(bOptions);
             var faces = roomGeo.GetGeometry().Faces;
-            var offset = e.get_Parameter(RVT.BuiltInParameter.ROOM_LOWER_OFFSET).AsDouble();
+            
 
             var boundary = new List<Point2D>();
             var holes = new List<List<Point2D>>();
@@ -353,13 +355,27 @@ namespace Honeybee.Revit.Schemas
                         GetGlazingFromWindows(wall, face, tolerance, ref glazingPoints, ref glazingAreas);
                     }
                 }
+                else if (bElement is RVT.RoofBase roof)
+                {
+                    GetGlazingFromWindows(roof, face, tolerance, ref glazingPoints, ref glazingAreas);
+                }
             }
         }
 
-        private static void GetGlazingFromWindows(RVT.Wall wall, RVT.Face face, double tolerance, ref List<List<RVT.XYZ>> glazingPts, ref List<double> glazingAreas)
+        private static void GetGlazingFromWindows(object wallRoof, RVT.Face face, double tolerance, ref List<List<RVT.XYZ>> glazingPts, ref List<double> glazingAreas)
         {
-            var doc = wall.Document;
-            var inserts = wall.FindInserts(true, false, true, true).Select(doc.GetElement);
+            IEnumerable<RVT.Element> inserts = new List<RVT.Element>();
+            if (wallRoof is RVT.Wall wall)
+            {
+                var doc = wall.Document;
+                inserts = wall.FindInserts(true, false, true, true).Select(doc.GetElement);
+            }
+            else if (wallRoof is RVT.RoofBase roof)
+            {
+                var doc = roof.Document;
+                inserts = roof.FindInserts(true, false, true, true).Select(doc.GetElement);
+            }
+
             foreach (var insert in inserts)
             {
                 if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Windows.GetHashCode())

@@ -331,7 +331,7 @@ namespace Honeybee.Revit.CreateModel
                 if (dragonfly)
                 {
                     var stories = rooms
-                        .GroupBy(x => x.Level.Name)
+                        .GroupBy(x => x.LevelName)
                         .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged
                         {
                             Energy = new StoryEnergyPropertiesAbridged
