@@ -819,7 +819,7 @@ namespace Honeybee.Revit.Schemas
                     case Adiabatic unused:
                         boundaryConditions.Add(bc.ToDragonfly() as HB.Adiabatic);
                         break;
-                    case DragonflySurface unused:
+                    case Surface unused:
                         boundaryConditions.Add(bc.ToDragonfly() as HB.Surface);
                         break;
                     default:

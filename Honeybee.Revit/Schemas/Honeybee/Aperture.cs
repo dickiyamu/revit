@@ -69,9 +69,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(new HB.Outdoors());
                 case Outdoors outdoors:
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(outdoors.ToHoneybee() as HB.Outdoors);
-                case DragonflySurface surface:
-                    return new HB.AnyOf<HB.Outdoors, HB.Surface>(surface.ToDragonfly() as HB.Surface);
-                case HoneybeeSurface surface:
+                case Surface surface:
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(surface.ToHoneybee() as HB.Surface);
                 default:
                     return new HB.AnyOf<HB.Outdoors, HB.Surface>(new HB.Outdoors());

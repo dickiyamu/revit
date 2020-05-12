@@ -369,10 +369,10 @@ namespace Honeybee.Revit.CreateModel
             if (found == null) return;
 
             var index = found.Room2D.Annotations.IndexOf(msg.Annotation);
-            if (!(found.Room2D.BoundaryConditions[index] is DragonflySurface bc)) return;
+            if (!(found.Room2D.BoundaryConditions[index] is Surface bc)) return;
 
             // (Konrad) We only need to update the BoundaryCondition Adjacent Room properties.
-            var newBc = new Tuple<int, string>(bc.BoundaryConditionObjects.Item1, msg.Annotation.AdjacentRoom);
+            var newBc = new Tuple<string, string, string>(string.Empty, bc.BoundaryConditionObjects.Item1, msg.Annotation.AdjacentRoom);
             bc.BoundaryConditionObjects = newBc;
 
             // (Konrad) Replace Annotation with new one.
@@ -396,7 +396,7 @@ namespace Honeybee.Revit.CreateModel
                     newBc = new Ground();
                     break;
                 case "Surface":
-                    newBc = new DragonflySurface(new Tuple<int, string>(-1, string.Empty));
+                    newBc = new Surface(new Tuple<string, string, string>(string.Empty, "-1", string.Empty));
                     break;
                 case "Outdoors":
                     newBc = new Outdoors();

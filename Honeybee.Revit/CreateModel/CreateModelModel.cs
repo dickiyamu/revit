@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 using NLog;
 using DF = DragonflySchema;
 using HB = HoneybeeSchema;
+using Surface = Honeybee.Revit.Schemas.Surface;
 
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
@@ -440,7 +441,7 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < boundaryCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[i];
-                    if (currentBc is DragonflySurface)
+                    if (currentBc is Surface)
                         continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
@@ -456,7 +457,7 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < holeCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[boundaryCurves.Count + i];
-                    if (currentBc is DragonflySurface)
+                    if (currentBc is Surface)
                         continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.

@@ -51,7 +51,7 @@ namespace Honeybee.Revit.Schemas
                 // Tuple for HB Surface is always ApertureId, FaceId, RoomId.
                 var bConditionObj = new Tuple<string, string, string>(string.Empty, adjacentFaceId, adjacentRoomId);
 
-                return new HoneybeeSurface(bConditionObj);
+                return new Surface(bConditionObj);
             }
 
             if (!allowAdiabatic)
@@ -66,7 +66,11 @@ namespace Honeybee.Revit.Schemas
             return new Outdoors();
         }
 
-        public static BoundaryConditionBase DF_Init(IEnumerable<SpatialObjectWrapper> objects, RVT.Curve curve, SpatialObjectWrapper sow, bool allowAdiabatic)
+        public static BoundaryConditionBase DF_Init(
+            IEnumerable<SpatialObjectWrapper> objects, 
+            RVT.Curve curve, 
+            SpatialObjectWrapper sow, 
+            bool allowAdiabatic)
         {
             var adjacentRoomName = string.Empty;
             var adjacentCurveIndex = -1;
@@ -91,9 +95,9 @@ namespace Honeybee.Revit.Schemas
             if (adjacentCurveIndex != -1 && !string.IsNullOrWhiteSpace(adjacentRoomName))
             {
                 // (Konrad) We found a matching Surface Boundary Condition.
-                var bConditionObj = new Tuple<int, string>(adjacentCurveIndex, adjacentRoomName);
+                var bConditionObj = new Tuple<string, string, string>(string.Empty, adjacentCurveIndex.ToString(), adjacentRoomName);
 
-                return new DragonflySurface(bConditionObj);
+                return new Surface(bConditionObj);
             }
 
             if (!allowAdiabatic)

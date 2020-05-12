@@ -1,60 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
 using HB = HoneybeeSchema;
 
 namespace Honeybee.Revit.Schemas
 {
-    public class HoneybeeSurface : BoundaryConditionBase
+    public class Surface : BoundaryConditionBase
     {
         [JsonProperty("type")]
         public override string Type
         {
-            get { return "Surface"; }
+            get { return GetType().Name; }
         }
 
         public Tuple<string, string, string> BoundaryConditionObjects { get; set; }
 
         [JsonConstructor]
-        public HoneybeeSurface()
+        public Surface()
         {
         }
 
-        public HoneybeeSurface(Tuple<string, string, string> bConObj)
-        {
-            BoundaryConditionObjects = bConObj;
-        }
-
-        public override object ToDragonfly()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object ToHoneybee()
-        {
-            return new HB.Surface(BoundaryConditionObjects.ToHoneybee());
-        }
-    }
-
-    public class DragonflySurface : BoundaryConditionBase
-    {
-        [JsonProperty("type")]
-        public override string Type
-        {
-            get { return "Surface"; }
-        }
-
-        //[JsonProperty("boundary_condition_objects")]
-        //[JsonConverter(typeof(BoundaryConditionObjectsConverter))]
-        public Tuple<int, string> BoundaryConditionObjects { get; set; }
-
-        [JsonConstructor]
-        public DragonflySurface()
-        {
-        }
-
-        public DragonflySurface(Tuple<int, string> bConObj)
+        public Surface(Tuple<string, string, string> bConObj)
         {
             BoundaryConditionObjects = bConObj;
         }
@@ -66,34 +32,34 @@ namespace Honeybee.Revit.Schemas
 
         public override object ToHoneybee()
         {
-            throw new NotImplementedException();
+            return new HB.Surface(BoundaryConditionObjects.ToHoneybee());
         }
     }
 
     public static class SurfaceExtensions
     {
-        public static List<string> ToDragonfly(this Tuple<int, string> boundaryConditionObj)
+        public static List<string> ToDragonfly(this Tuple<string, string, string> boundaryConditionObj)
         {
-            var (adjacentCurveIndex, adjacentRoomName) = boundaryConditionObj;
-
+            var (unused, adjacentCurveIndex, adjacentRoomId) = boundaryConditionObj;
+            var index = int.Parse(adjacentCurveIndex);
             return new List<string>
             {
-                $"{adjacentRoomName}..Face{adjacentCurveIndex + 1}",
-                adjacentRoomName
+                $"{adjacentRoomId}..Face{index + 1}", // we +1 because this is not 0-indexed
+                adjacentRoomId
             };
         }
 
         public static List<string> ToHoneybee(this Tuple<string, string, string> boundaryConditionObj)
         {
-            var (adjacentAperture, adjacentFace, adjacentRoom) = boundaryConditionObj;
+            var (adjacentApertureId, adjacentFaceId, adjacentRoomId) = boundaryConditionObj;
 
             var output = new List<string>();
-            if (!string.IsNullOrWhiteSpace(adjacentAperture))
+            if (!string.IsNullOrWhiteSpace(adjacentApertureId))
             {
-                output.Add(adjacentAperture);
+                output.Add(adjacentApertureId);
             }
-            output.Add(adjacentFace);
-            output.Add(adjacentRoom);
+            output.Add(adjacentFaceId);
+            output.Add(adjacentRoomId);
             return output;
         }
     }

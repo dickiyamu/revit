@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Instrumentation;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Newtonsoft.Json;
@@ -131,7 +130,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
                 // Tuple for HB Surface is always ApertureId, FaceId, RoomId.
                 var bConditionObj = new Tuple<string, string, string>(string.Empty, adjacentFaceId, adjacentRoomId);
 
-                face.BoundaryCondition = new HoneybeeSurface(bConditionObj);
+                face.BoundaryCondition = new Surface(bConditionObj);
 
                 if (face.Apertures == null || !face.Apertures.Any())
                     return;
@@ -144,7 +143,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
                         continue;
 
                     var bcObject = new Tuple<string, string, string>(adjacentAperture.Identifier, adjacentFaceId, adjacentRoomId);
-                    aperture.BoundaryCondition = new HoneybeeSurface(bcObject);
+                    aperture.BoundaryCondition = new Surface(bcObject);
                 }
 
                 return;
