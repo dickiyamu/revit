@@ -213,6 +213,7 @@ namespace Honeybee.Revit.Schemas
             }
 
             Faces = hbFaces;
+            IsGroundContact = IsTouchingGround(e);
         }
 
         public DF.Room2D ToDragonfly()
@@ -677,6 +678,32 @@ namespace Honeybee.Revit.Schemas
                     pts.AddRange(_params.Select(p => e.Evaluate(p)));
                 }
             }
+        }
+
+        private static bool IsTouchingGround(RVT.SpatialElement se)
+        {
+            var view = new RVT.FilteredElementCollector(se.Document)
+                .OfClass(typeof(RVT.View3D))
+                .Cast<RVT.View3D>()
+                .FirstOrDefault(x => !x.IsTemplate);
+            var basePt = se.GetLocationPoint();
+
+            if (view == null || basePt == null)
+                return false;
+
+            var direction = new RVT.XYZ(0, 0, -1);
+            var filter = new RVT.ElementClassFilter(typeof(Autodesk.Revit.DB.Architecture.TopographySurface));
+            var refIntersector = new RVT.ReferenceIntersector(filter, RVT.FindReferenceTarget.All, view);
+            var refWithContext = refIntersector.FindNearest(basePt, direction);
+            if (refWithContext == null)
+                return false;
+
+            var reference = refWithContext.GetReference();
+            var intersection = reference.GlobalPoint;
+            var distance = basePt.DistanceTo(intersection);
+
+            // (Konrad) If Room's bottom face is within 2ft of Topography, it's in contact w/ ground.
+            return !(distance > 2);
         }
 
         //private static List<List<Point2D>> GetHoles(IList<IList<RVT.BoundarySegment>> bs)

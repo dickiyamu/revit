@@ -48,26 +48,26 @@ namespace Honeybee.Revit.Schemas
         //    };
         //}
 
-        //public static RVT.XYZ GetLocationPoint(this RVT.SpatialElement se)
-        //{
-        //    RVT.XYZ result;
-        //    if (se.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Rooms.GetHashCode())
-        //    {
-        //        if (!(se is Autodesk.Revit.DB.Architecture.Room room)) return null;
-        //        if (!(room.Location is RVT.LocationPoint loc)) return null;
+        public static RVT.XYZ GetLocationPoint(this RVT.SpatialElement se)
+        {
+            RVT.XYZ result;
+            if (se.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Rooms.GetHashCode())
+            {
+                if (!(se is Autodesk.Revit.DB.Architecture.Room room)) return null;
+                if (!(room.Location is RVT.LocationPoint loc)) return null;
 
-        //        result = loc.Point;
-        //    }
-        //    else
-        //    {
-        //        if (!(se is Autodesk.Revit.DB.Mechanical.Space space)) return null;
-        //        if (!(space.Location is RVT.LocationPoint loc)) return null;
+                result = loc.Point;
+            }
+            else
+            {
+                if (!(se is Autodesk.Revit.DB.Mechanical.Space space)) return null;
+                if (!(space.Location is RVT.LocationPoint loc)) return null;
 
-        //        result = loc.Point;
-        //    }
+                result = loc.Point;
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
 
         //public static double GetUnboundHeight(this SpatialElement se)
         //{
