@@ -4,7 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Automation;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel;
 using Honeybee.Revit.CreateModel.Wrappers;
@@ -108,7 +107,6 @@ namespace Honeybee.Revit.Schemas
             var segments = e.GetBoundarySegments(bOptions);
             var faces = roomGeo.GetGeometry().Faces;
             
-
             var boundary = new List<Point2D>();
             var holes = new List<List<Point2D>>();
             var windows = new List<WindowParameterBase>();
@@ -121,7 +119,6 @@ namespace Honeybee.Revit.Schemas
                         // (Konrad) Boundary curves have elevation of the level that room base is set to.
                         // They don't account for base offset.
                         var boundaryCurve = bs.GetCurve().Offset(offset);
-                        
                         if (boundaryCurve.Length < 0.01)
                             continue; // Exclude tiny curves, they don't produce faces.
 
@@ -152,7 +149,6 @@ namespace Honeybee.Revit.Schemas
                 foreach (var bs in segments[i])
                 {
                     //TODO: Floor Holes need Glazing info processed.
-
                     var boundaryCurve = bs.GetCurve();
                     var segmentPts = GeometryUtils.GetPoints(boundaryCurve);
 
@@ -332,7 +328,7 @@ namespace Honeybee.Revit.Schemas
             return new List<Face> {f1, f2, f3, f4};
         }
 
-        private static void GetGlazingInfo(RVT.Face face, RVT.Document doc, RVT.SpatialElementGeometryResults result, double tolerance, out List<List<RVT.XYZ>> glazingPoints, out List<double> glazingAreas)
+        private void GetGlazingInfo(RVT.Face face, RVT.Document doc, RVT.SpatialElementGeometryResults result, double tolerance, out List<List<RVT.XYZ>> glazingPoints, out List<double> glazingAreas)
         {
             glazingPoints = new List<List<RVT.XYZ>>();
             glazingAreas = new List<double>();
@@ -357,6 +353,9 @@ namespace Honeybee.Revit.Schemas
                 }
                 else if (bElement is RVT.RoofBase roof)
                 {
+                    // (Konrad) Top Face is a Roof. Safe assumption is that it's exposed.
+                    IsTopExposed = true;
+
                     GetGlazingFromWindows(roof, face, tolerance, ref glazingPoints, ref glazingAreas);
                 }
             }
@@ -877,6 +876,16 @@ namespace Honeybee.Revit.Schemas
             }
 
             return windowParameters;
+        }
+
+        public static List<List<double>> ToDragonfly(this List<Point2D> floorBoundary)
+        {
+            return floorBoundary.Select(x => new List<double> { x.X, x.Y }).ToList();
+        }
+
+        public static List<List<List<double>>> ToDragonfly(this List<List<Point2D>> floorHoles)
+        {
+            return floorHoles.Select(x => x.Select(y => new List<double> { y.X, y.Y }).ToList()).ToList();
         }
     }
 }

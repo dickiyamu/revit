@@ -296,7 +296,11 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>echo Configuration: $(Configuration)
+    <PostBuildEvent>:CodeSign
+echo Signing...
+if exist "C:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe" "C:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe" sign /f "$(ProjectDir)bin\archilabCertificate.pfx" /p "fX\kZ[Td=BJv@C+Y" /t http://timestamp.comodoca.com/authenticode "$(TargetPath)"
+if exist "C:\Program Files (x86)\Windows Kits\10\bin\10.0.15063.0\x86\signtool.exe" "C:\Program Files (x86)\Windows Kits\10\bin\10.0.15063.0\x86\signtool.exe" sign /f "$(ProjectDir)bin\archilabCertificate.pfx" /p "fX\kZ[Td=BJv@C+Y" /t http://timestamp.comodoca.com/authenticode "$(TargetPath)"
+
 if $(Configuration) == 2018 goto Build2018
 if $(Configuration) == 2019 goto Build2019
 if $(Configuration) == 2020 goto Build2020
