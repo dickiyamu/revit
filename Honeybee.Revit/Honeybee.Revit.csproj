@@ -170,6 +170,16 @@
     <Compile Include="CreateModel\Wrappers\AnnotationWrapper.cs" />
     <Compile Include="CreateModel\Wrappers\LevelWrapper.cs" />
     <Compile Include="CreateModel\Wrappers\SpatialObjectWrapper.cs" />
+    <Compile Include="ModelSettings\Geometry\GeometryControl.xaml.cs">
+      <DependentUpon>GeometryControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ModelSettings\Geometry\GeometrySettings.cs" />
+    <Compile Include="ModelSettings\Geometry\GeometryViewModel.cs" />
+    <Compile Include="ModelSettings\SettingsCommand.cs" />
+    <Compile Include="ModelSettings\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ModelSettings\SettingsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -226,6 +236,9 @@
     <Compile Include="Schemas\Utilities.cs" />
     <Compile Include="Schemas\WindowConstructionAbridged.cs" />
     <Compile Include="Schemas\WindowParameterBase.cs" />
+    <Compile Include="StoredSettings.cs" />
+    <Compile Include="Utilities\CurveExtensions.cs" />
+    <Compile Include="Utilities\DoubleExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -255,6 +268,14 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="CreateModel\CreateModelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ModelSettings\Geometry\GeometryControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ModelSettings\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -293,7 +314,13 @@
     <Resource Include="Resources\24x24\export.png" />
     <Resource Include="Resources\24x24\exportHover.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\32x32\settings.png" />
+  </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\ModelSettings\roomHeightOverride.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>:CodeSign

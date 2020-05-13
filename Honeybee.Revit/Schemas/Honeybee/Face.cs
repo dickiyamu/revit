@@ -52,14 +52,14 @@ namespace Honeybee.Revit.Schemas.Honeybee
         {
             Geometry = new Face3D {Boundary = boundary, Holes = holes};
             BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged());
+            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged(), new HB.FaceRadiancePropertiesAbridged());
         }
 
         public Face(Autodesk.Revit.DB.Face face)
         {
             Geometry = new Face3D(face);
             BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged());
+            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged(), new HB.FaceRadiancePropertiesAbridged());
         }
 
         public object ToDragonfly()

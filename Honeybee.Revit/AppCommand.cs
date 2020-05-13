@@ -7,6 +7,7 @@ using Autodesk.Revit.UI;
 //using Autodesk.Revit.UI.Events;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel;
+using Honeybee.Revit.ModelSettings;
 using NLog;
 
 namespace Honeybee.Revit
@@ -38,6 +39,7 @@ namespace Honeybee.Revit
             app.CreateRibbonTab("Honeybee");
             var panel = app.CreateRibbonPanel("Honeybee", "Honeybee");
 
+            SettingsCommand.CreateButton(panel);
             CreateModelCommand.CreateButton(panel);
 
             CreateModelHandler = new CreateModelRequestHandler();

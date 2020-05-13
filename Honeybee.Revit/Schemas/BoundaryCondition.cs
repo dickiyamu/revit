@@ -4,6 +4,7 @@ using System.Linq;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas.Honeybee;
+using Honeybee.Revit.Utilities;
 using RVT = Autodesk.Revit.DB;
 
 namespace Honeybee.Revit.Schemas

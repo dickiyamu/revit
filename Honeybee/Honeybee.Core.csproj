@@ -125,8 +125,6 @@
   <ItemGroup>
     <Compile Include="Enumerations.cs" />
     <Compile Include="EnumUtils.cs" />
-    <Compile Include="Extensions\CurveExtensions.cs" />
-    <Compile Include="Extensions\DoubleExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="FamilyUtils.cs" />
     <Compile Include="FileUtils.cs" />

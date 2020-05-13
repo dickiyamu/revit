@@ -1,33 +1,13 @@
 ﻿using System;
 using Autodesk.Revit.DB;
 
-namespace Honeybee.Core.Extensions
+namespace Honeybee.Revit.Utilities
 {
     public static class CurveExtensions
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="compareTo"></param>
-        /// <returns></returns>
-        public static bool OverlapsWith(this Curve source, Curve compareTo)
-        {
-            const double tolerance = 0.001;
-            if (Math.Abs(source.Length - compareTo.Length) > tolerance) return false;
-
-            var sourceStart = source.GetEndPoint(0);
-            var sourceEnd = source.GetEndPoint(1);
-            var compareToStart = compareTo.GetEndPoint(0);
-            var compareToEnd = compareTo.GetEndPoint(1);
-
-            return (sourceStart.IsAlmostEqualTo(compareToStart, tolerance) || sourceStart.IsAlmostEqualTo(compareToEnd, tolerance)) &&
-                (sourceEnd.IsAlmostEqualTo(compareToStart, tolerance) || sourceEnd.IsAlmostEqualTo(compareToEnd, tolerance));
-        }
-
         public static bool OverlapsWithIn2D(this Curve source, Curve compareTo)
         {
-            const double tolerance = 0.001;
+            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             if (Math.Abs(source.Length - compareTo.Length) > tolerance) return false;
 
             var sourceStart = source.GetEndPoint(0).Flatten();
@@ -36,7 +16,7 @@ namespace Honeybee.Core.Extensions
             var compareToEnd = compareTo.GetEndPoint(1).Flatten();
 
             return (sourceStart.IsAlmostEqualTo(compareToStart, tolerance) || sourceStart.IsAlmostEqualTo(compareToEnd, tolerance)) &&
-                (sourceEnd.IsAlmostEqualTo(compareToStart, tolerance) || sourceEnd.IsAlmostEqualTo(compareToEnd, tolerance));
+                   (sourceEnd.IsAlmostEqualTo(compareToStart, tolerance) || sourceEnd.IsAlmostEqualTo(compareToEnd, tolerance));
         }
 
         public static Curve Offset(this Curve curve, double offset)

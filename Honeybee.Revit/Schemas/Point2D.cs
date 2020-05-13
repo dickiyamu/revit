@@ -1,7 +1,7 @@
 ﻿using System;
 using Autodesk.Revit.DB;
-using Honeybee.Core.Extensions;
 using Honeybee.Revit.Schemas.Converters;
+using Honeybee.Revit.Utilities;
 using Newtonsoft.Json;
 // ReSharper disable NonReadonlyMemberInGetHashCode
 

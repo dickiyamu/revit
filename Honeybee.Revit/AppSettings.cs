@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using Honeybee.Core;
 using Newtonsoft.Json;
@@ -7,7 +8,7 @@ using NLog;
 
 namespace Honeybee.Revit
 {
-    public sealed class AppSettings
+    public sealed class AppSettings : INotifyPropertyChanged
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly Lazy<AppSettings> _lazy = new Lazy<AppSettings>(() => new AppSettings());
@@ -23,6 +24,13 @@ namespace Honeybee.Revit
         public Dictionary<string, List<string>> Rooms2004 { get; } = new Dictionary<string, List<string>>();
         public Dictionary<string, List<string>> Rooms1980To2004 { get; } = new Dictionary<string, List<string>>();
         public Dictionary<string, List<string>> RoomsPre1980 { get; } = new Dictionary<string, List<string>>();
+
+        private StoredSettings _storedSettings = new StoredSettings();
+        public StoredSettings StoredSettings
+        {
+            get { return _storedSettings; }
+            set { _storedSettings = value; RaisePropertyChanged(nameof(StoredSettings)); }
+        }
 
         private AppSettings()
         {
@@ -51,6 +59,12 @@ namespace Honeybee.Revit
             {
                 _logger.Fatal(e);
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
