@@ -14,6 +14,7 @@ using Honeybee.Core.Extensions;
 using Honeybee.Core.WPF;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
+using Honeybee.Revit.Schemas.Honeybee;
 
 #endregion
 
@@ -42,6 +43,9 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand<SpatialObjectWrapper> ShowDetails { get; set; }
         public RelayCommand<Window> ExportHoneybee { get; set; }
         public RelayCommand<Window> ExportDragonfly { get; set; }
+        public RelayCommand AddPlanting { get; set; }
+        public RelayCommand AddFaces { get; set; }
+        public RelayCommand ClearShades { get; set; }
 
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
@@ -136,11 +140,19 @@ namespace Honeybee.Revit.CreateModel
             set { _programTypeTemp = value; RaisePropertyChanged(() => ProgramTypeTemp); }
         }
 
+        private ObservableCollection<Shade> _contextShades = new ObservableCollection<Shade>();
+        public ObservableCollection<Shade> ContextShades
+        {
+            get { return _contextShades; }
+            set { _contextShades = value; RaisePropertyChanged(() => ContextShades); }
+        }
+
         #endregion
 
         public CreateModelViewModel(CreateModelModel model)
         {
             Model = model;
+            ContextShades = Model.GetContextShades().ToObservableCollection();
 
             var so = Model.GetSpatialObjects();
             Levels = so.Select(x => x.Level).Distinct().ToObservableCollection();
@@ -168,6 +180,24 @@ namespace Honeybee.Revit.CreateModel
             ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
             ExportHoneybee = new RelayCommand<Window>(OnExportHoneybee);
             ExportDragonfly = new RelayCommand<Window>(OnExportDragonfly);
+            AddPlanting = new RelayCommand(OnAddPlanting);
+            AddFaces = new RelayCommand(OnAddFaces);
+            ClearShades = new RelayCommand(OnClearShades);
+        }
+
+        private void OnClearShades()
+        {
+            ContextShades.Clear();
+        }
+
+        private void OnAddFaces()
+        {
+            Model.SelectFaces().ForEach(x => ContextShades.Add(x));
+        }
+
+        private void OnAddPlanting()
+        {
+            Model.SelectPlanting().ForEach(x => ContextShades.Add(x));
         }
 
         private void OnExportDragonfly(Window win)
@@ -176,7 +206,7 @@ namespace Honeybee.Revit.CreateModel
                 .Where(x => x.IsSelected)
                 .Select(x => x.Room2D)
                 .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet);
+            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, true, ContextShades.ToList());
 
             win.Close();
         }
@@ -187,7 +217,7 @@ namespace Honeybee.Revit.CreateModel
                 .Where(x => x.IsSelected)
                 .Select(x => x.Room2D)
                 .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, false);
+            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, false, ContextShades.ToList());
 
             //win.Close();
         }

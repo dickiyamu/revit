@@ -336,6 +336,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Construction Set:"
@@ -362,6 +363,62 @@
                                        CommandParameter="{Binding ElementName=BuildingProgramTypePopup}"
                                        MainImage="../Resources/24x24/set.png"
                                        HoverImage="../Resources/24x24/setHover.png"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Cursor="Hand"
+                                       Width="22"
+                                       Height="22"
+                                       Margin="5,0,0,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" 
+                                Grid.Row="0" 
+                                Grid.Column="2">
+                        <Label Content="Context Shades:" 
+                               FontWeight="Bold" />
+                        <Label Content="Selected [" />
+                        <Label Content="{Binding ContextShades.Count, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='0'}" 
+                               Padding="0" 
+                               VerticalContentAlignment="Center" />
+                        <Label Content="]" />
+                        <b:DropDownButton MainImage="../Resources/24x24/pick.png"
+                                          HoverImage="../Resources/24x24/pickHover.png"
+                                          Cursor="Hand"
+                                          HorizontalAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          Margin="5,0,0,0"
+                                          Width="22"
+                                          Height="22"
+                                          ToolTip="Add Context Shading Elements">
+                            <b:DropDownButton.Menu>
+                                <ContextMenu>
+                                    <MenuItem Command="{Binding AddPlanting}"
+                                              Header="Select Planting" />
+                                    <MenuItem Command="{Binding AddFaces}"
+                                              Header="Select Faces" />
+                                </ContextMenu>
+                            </b:DropDownButton.Menu>
+                        </b:DropDownButton>
+                        <!--<b:ImageButton Command="{Binding AddPlanting, Mode=OneWay}"
+                                       MainImage="../Resources/24x24/pickPlanting.png"
+                                       HoverImage="../Resources/24x24/pickPlantingHover.png"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Cursor="Hand"
+                                       Width="22"
+                                       Height="22"
+                                       Margin="5,0,0,0" />
+                        <b:ImageButton Command="{Binding AddFaces, Mode=OneWay}"
+                                       MainImage="../Resources/24x24/pickFace.png"
+                                       HoverImage="../Resources/24x24/pickFaceHover.png"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Cursor="Hand"
+                                       Width="22"
+                                       Height="22"
+                                       Margin="5,0,0,0" />-->
+                        <b:ImageButton Command="{Binding ClearShades, Mode=OneWay}"
+                                       MainImage="../Resources/24x24/delete.png"
+                                       HoverImage="../Resources/24x24/deleteHover.png"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
                                        Cursor="Hand"
@@ -792,14 +849,6 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal"
                                         FlowDirection="RightToLeft">
-                                <b:ImageButton Command="{Binding PickSpatialObjects, Mode=OneWay}"
-                                               MainImage="../Resources/24x24/pick.png"
-                                               HoverImage="../Resources/24x24/pickHover.png"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Center"
-                                               Cursor="Hand"
-                                               Width="24"
-                                               Height="24" />
                                 <b:ImageButton Command="{Binding ClearFilters, Mode=OneWay}"
                                                MainImage="../Resources/24x24/delete.png"
                                                HoverImage="../Resources/24x24/deleteHover.png"
@@ -809,6 +858,14 @@
                                                Width="24"
                                                Height="24"
                                                Margin="5,0,5,0" />
+                                <b:ImageButton Command="{Binding PickSpatialObjects, Mode=OneWay}"
+                                               MainImage="../Resources/24x24/pick.png"
+                                               HoverImage="../Resources/24x24/pickHover.png"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"
+                                               Cursor="Hand"
+                                               Width="24"
+                                               Height="24" />
                             </StackPanel>
                         </Grid>
                     </StackPanel>

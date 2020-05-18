@@ -32,6 +32,12 @@ namespace Honeybee.Revit.Schemas.Honeybee
             Properties = new HB.ShadePropertiesAbridged();
         }
 
+        public Shade(Face3D face)
+        {
+            Geometry = face;
+            Properties = new HB.ShadePropertiesAbridged();
+        }
+
         public DF.ContextShade ToDragonfly()
         {
             throw new NotImplementedException();

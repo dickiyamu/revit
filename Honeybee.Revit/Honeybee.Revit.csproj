@@ -318,7 +318,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\32x32\settings.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\24x24\pickFace.png" />
+    <Resource Include="Resources\24x24\pickFaceHover.png" />
+    <Resource Include="Resources\24x24\pickPlanting.png" />
+    <Resource Include="Resources\24x24\pickPlantingHover.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\ModelSettings\roomHeightOverride.png" />
   </ItemGroup>

@@ -16,10 +16,8 @@ using Honeybee.Revit.Schemas;
 using Honeybee.Revit.Schemas.Honeybee;
 using Newtonsoft.Json;
 using NLog;
-using DF = DragonflySchema;
 using HB = HoneybeeSchema;
 using Surface = Honeybee.Revit.Schemas.Surface;
-
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
 #endregion
@@ -314,7 +312,12 @@ namespace Honeybee.Revit.CreateModel
             return JsonConvert.DeserializeObject<List<HB.ConstructionSet>>(jsonConstructionSets, converters);
         }
 
-        public void SerializeRoom2D(List<Room2D> rooms, ProgramType bProgramType, ConstructionSet bConstructionSet, bool dragonfly = true)
+        public void SerializeRoom2D(
+            List<Room2D> rooms, 
+            ProgramType bProgramType, 
+            ConstructionSet bConstructionSet, 
+            bool dragonfly = true,
+            List<Shade> shades = null)
         {
             try
             {
@@ -373,8 +376,8 @@ namespace Honeybee.Revit.CreateModel
                 }
                 else
                 {
-                    var shades = GetContextShades(Doc);
-                    var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties(), shades)
+                    var contextShades = shades ?? GetContextShades();
+                    var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties(), contextShades)
                     {
                         Units = HB.Units.Feet,
                         Tolerance = 0.0001d
@@ -432,13 +435,65 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        #region Utilities
+        public List<Shade> SelectFaces()
+        {
+            var result = new List<Shade>();
+            try
+            {
+                var selection = UiDoc.Selection.PickObjects(ObjectType.Face, new FilterPlanarFace(Doc), "Please select Planar Faces only.");
+                var shades = new List<Shade>();
+                foreach (var tree in selection)
+                {
+                    var e = Doc.GetElement(tree);
+                    var geometry = e.GetGeometryObjectFromReference(tree) as PlanarFace;
+                    shades.Add(new Shade(new Face3D(geometry)));
+                }
 
-        private static List<Shade> GetContextShades(Document doc)
+                return shades;
+            }
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            {
+                _logger.Info("Selection was cancelled.");
+                return result;
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(e);
+                return result;
+            }
+        }
+
+        public List<Shade> SelectPlanting()
+        {
+            var result = new List<Shade>();
+            try
+            {
+                var selection = UiDoc.Selection.PickObjects(ObjectType.Element, new FilterPlanting(), "Please select Planting only.");
+                var shades = new List<Shade>();
+                foreach (var reference in selection)
+                {
+                    shades.AddRange(ShadesFromTrees(Doc.GetElement(reference), Doc.ActiveView));
+                }
+
+                return shades;
+            }
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            {
+                _logger.Info("Selection was cancelled.");
+                return result;
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(e);
+                return result;
+            }
+        }
+
+        public List<Shade> GetContextShades()
         {
             var shades = new List<Shade>();
-            var trees = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Planting).WhereElementIsNotElementType();
-            var view = new FilteredElementCollector(doc)
+            var trees = new FilteredElementCollector(Doc).OfCategory(BuiltInCategory.OST_Planting).WhereElementIsNotElementType();
+            var view = new FilteredElementCollector(Doc)
                 .OfClass(typeof(View))
                 .Cast<View>()
                 .FirstOrDefault(x => x.ViewType == ViewType.ThreeD && !x.IsTemplate);
@@ -450,6 +505,8 @@ namespace Honeybee.Revit.CreateModel
 
             return shades;
         }
+
+        #region Utilities
 
         private static List<Shade> ShadesFromTrees(Element e, View v)
         {
@@ -552,6 +609,41 @@ namespace Honeybee.Revit.CreateModel
         public bool AllowReference(Reference reference, XYZ position)
         {
             return false;
+        }
+    }
+
+    public class FilterPlanting : ISelectionFilter
+    {
+        public bool AllowElement(Element elem)
+        {
+            return elem.Category.Id.IntegerValue == BuiltInCategory.OST_Planting.GetHashCode();
+        }
+
+        public bool AllowReference(Reference reference, XYZ position)
+        {
+            return false;
+        }
+    }
+
+    public class FilterPlanarFace : ISelectionFilter
+    {
+        private readonly Document _doc;
+
+        public FilterPlanarFace(Document doc)
+        {
+            _doc = doc;
+        }
+
+        public bool AllowElement(Element elem)
+        {
+            return true;
+        }
+
+        public bool AllowReference(Reference reference, XYZ position)
+        {
+            var element = _doc.GetElement(reference);
+            var planarFace = element.GetGeometryObjectFromReference(reference) as PlanarFace;
+            return planarFace != null;
         }
     }
 }

@@ -53,9 +53,14 @@ namespace Honeybee.Revit.Schemas
                     pts.Add(new Point3D(arc.Evaluate(0.5, true)));
                     pts.Add(new Point3D(arc.Evaluate(0.75, true)));
                     break;
+                case HermiteSpline hermiteSpline:
+                    pts.Add(new Point3D(hermiteSpline.Evaluate(0, true)));
+                    pts.Add(new Point3D(hermiteSpline.Evaluate(0.25, true)));
+                    pts.Add(new Point3D(hermiteSpline.Evaluate(0.5, true)));
+                    pts.Add(new Point3D(hermiteSpline.Evaluate(0.75, true)));
+                    break;
                 case CylindricalHelix unused:
                 case Ellipse unused1:
-                case HermiteSpline unused2:
                 case NurbSpline unused3:
                     break;
             }
