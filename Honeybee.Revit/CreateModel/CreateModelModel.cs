@@ -48,6 +48,7 @@ namespace Honeybee.Revit.CreateModel
                 .OfClass(typeof(SpatialElement))
                 .WhereElementIsNotElementType()
                 .Cast<SpatialElement>()
+                //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("318"))
                 .Where(x => (x is Room || x is Space) && x.Area > 0)
                 .Select(x => new SpatialObjectWrapper(x))
                 .OrderBy(x => x.Level.Elevation)
@@ -352,7 +353,7 @@ namespace Honeybee.Revit.CreateModel
 
                     var model = new Model("Model 1", new List<Building> { building }, new ModelProperties())
                     {
-                        DF_Units = DF.Model.UnitsEnum.Feet,
+                        Units = HB.Units.Feet,
                         Tolerance = 0.0001d
                     };
                     var dfModel = model.ToDragonfly();
@@ -372,9 +373,10 @@ namespace Honeybee.Revit.CreateModel
                 }
                 else
                 {
-                    var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties())
+                    var shades = GetContextShades(Doc);
+                    var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties(), shades)
                     {
-                        HB_Units = HB.Model.UnitsEnum.Feet,
+                        Units = HB.Units.Feet,
                         Tolerance = 0.0001d
                     };
                     
@@ -431,6 +433,52 @@ namespace Honeybee.Revit.CreateModel
         }
 
         #region Utilities
+
+        private static List<Shade> GetContextShades(Document doc)
+        {
+            var shades = new List<Shade>();
+            var trees = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Planting).WhereElementIsNotElementType();
+            var view = new FilteredElementCollector(doc)
+                .OfClass(typeof(View))
+                .Cast<View>()
+                .FirstOrDefault(x => x.ViewType == ViewType.ThreeD && !x.IsTemplate);
+
+            foreach (var tree in trees)
+            {
+                shades.AddRange(ShadesFromTrees(tree, view));
+            }
+
+            return shades;
+        }
+
+        private static List<Shade> ShadesFromTrees(Element e, View v)
+        {
+            var bb = e.get_BoundingBox(v);
+            var min = bb.Min;
+            var max = bb.Max;
+            var width = max.X - min.X;
+            var depth = max.Y - min.Y;
+
+            var plane1 = new List<Point3D>
+            {
+                new Point3D(new XYZ(min.X + (0.5 * width), min.Y, min.Z)),
+                new Point3D(new XYZ(min.X + (0.5 * width), max.Y, min.Z)),
+                new Point3D(new XYZ(min.X + (0.5 * width), max.Y, max.Z)),
+                new Point3D(new XYZ(min.X + (0.5 * width), min.Y, max.Z))
+            };
+            var plane2 = new List<Point3D>
+            {
+                new Point3D(new XYZ(min.X, min.Y + (0.5 * depth), min.Z)),
+                new Point3D(new XYZ(max.X, min.Y + (0.5 * depth), min.Z)),
+                new Point3D(new XYZ(max.X, min.Y + (0.5 * depth), max.Z)),
+                new Point3D(new XYZ(min.X, min.Y + (0.5 * depth), max.Z))
+            };
+
+            return new List<Shade>
+            {
+                new Shade(plane1), new Shade(plane2)
+            };
+        }
 
         private static void DF_AssignBoundaryConditions(IReadOnlyCollection<SpatialObjectWrapper> objects)
         {

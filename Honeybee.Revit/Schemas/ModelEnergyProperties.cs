@@ -15,10 +15,6 @@ namespace Honeybee.Revit.Schemas
         public List<ConstructionBase> Constructions { get; set; } = new List<ConstructionBase>();
         public List<MaterialBase> Materials { get; set; } = new List<MaterialBase>();
 
-
-        public DF.ModelEnergyProperties.TerrainTypeEnum DF_TerrainType { get; set; } = DF.ModelEnergyProperties.TerrainTypeEnum.City;
-        public HB.ModelEnergyProperties.TerrainTypeEnum HB_TerrainType { get; set; } = HB.ModelEnergyProperties.TerrainTypeEnum.City;
-
         [JsonProperty("global_construction_set")]
         public string GlobalConstructionSet { get; set; }
 
@@ -32,7 +28,6 @@ namespace Honeybee.Revit.Schemas
         public DF.ModelEnergyProperties ToDragonfly()
         {
             return new DF.ModelEnergyProperties(
-                DF_TerrainType,
                 GlobalConstructionSet,
                 ConstructionSets,
                 Constructions.ToHoneybee(),
@@ -47,7 +42,6 @@ namespace Honeybee.Revit.Schemas
         public HB.ModelEnergyProperties ToHoneybee()
         {
             return new HB.ModelEnergyProperties(
-                HB_TerrainType,
                 GlobalConstructionSet,
                 ConstructionSets,
                 Constructions.ToHoneybee(),

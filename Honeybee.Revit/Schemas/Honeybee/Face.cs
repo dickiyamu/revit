@@ -20,7 +20,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public Face3D Geometry { get; set; }
 
         [JsonProperty("face_type")]
-        public HB.Face.FaceTypeEnum FaceType { get; set; }
+        public HB.FaceType FaceType { get; set; }
 
         [JsonProperty("boundary_condition")]
         public BoundaryConditionBase BoundaryCondition { get; set; }
@@ -52,14 +52,14 @@ namespace Honeybee.Revit.Schemas.Honeybee
         {
             Geometry = new Face3D {Boundary = boundary, Holes = holes};
             BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged(), new HB.FaceRadiancePropertiesAbridged());
+            Properties = new HB.FacePropertiesAbridged();
         }
 
         public Face(Autodesk.Revit.DB.Face face)
         {
             Geometry = new Face3D(face);
             BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged(new HB.FaceEnergyPropertiesAbridged(), new HB.FaceRadiancePropertiesAbridged());
+            Properties = new HB.FacePropertiesAbridged();
         }
 
         public object ToDragonfly()

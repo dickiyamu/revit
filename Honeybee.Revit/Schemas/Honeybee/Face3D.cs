@@ -18,7 +18,11 @@ namespace Honeybee.Revit.Schemas.Honeybee
         [JsonProperty("plane")]
         public HB.Plane Plane { get; set; }
 
-        public Face3D() { }
+        public Face3D()
+        {
+
+        }
+
         public Face3D(List<Point3D> boundary)
         {
             Boundary = boundary;

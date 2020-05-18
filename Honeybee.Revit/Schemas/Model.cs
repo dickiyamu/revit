@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Honeybee.Revit.Schemas.Honeybee;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using DF = DragonflySchema;
@@ -29,16 +30,14 @@ namespace Honeybee.Revit.Schemas
         public ModelProperties Properties { get; set; }
 
         [JsonProperty("context_shades")]
-        public List<DF.ContextShade> ContextShades { get; set; } = new List<DF.ContextShade>();
+        public List<Shade> ContextShades { get; set; } = new List<Shade>();
 
         [JsonProperty("north_angle")]
         public double NorthAngle { get; set; }
 
         [JsonProperty("units")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DF.Model.UnitsEnum DF_Units { get; set; } = DF.Model.UnitsEnum.Meters;
-
-        public HB.Model.UnitsEnum HB_Units { get; set; } = HB.Model.UnitsEnum.Meters;
+        public HB.Units? Units { get; set; } = HB.Units.Meters;
 
         [JsonProperty("tolerance")]
         public double Tolerance { get; set; } = 0.0001d;
@@ -51,11 +50,12 @@ namespace Honeybee.Revit.Schemas
 
         public List<HB.Room> Rooms { get; set; } = new List<HB.Room>();
 
-        public Model(string displayName, List<HB.Room> rooms, ModelProperties properties)
+        public Model(string displayName, List<HB.Room> rooms, ModelProperties properties, List<Shade> shades)
         {
             DisplayName = displayName;
             Rooms = rooms;
             Properties = properties;
+            ContextShades = shades;
         }
 
         public Model(string displayName, List<Building> buildings, ModelProperties properties)
@@ -73,9 +73,8 @@ namespace Honeybee.Revit.Schemas
                 Properties.ToDragonfly(),
                 DisplayName,
                 null, // user data
-                ContextShades,
-                NorthAngle,
-                DF_Units,
+                null, // context shades
+                Units,
                 Tolerance,
                 AngleTolerance
             );
@@ -90,11 +89,10 @@ namespace Honeybee.Revit.Schemas
                 null, // user data
                 Rooms,
                 null, // orphaned faces
-                null, // orphaned shades
+                ContextShades.Select(x => x.ToHoneybee()).ToList(),
                 null, // orphaned apertures
                 null, // orphaned doors
-                NorthAngle,
-                HB_Units,
+                Units,
                 Tolerance,
                 AngleTolerance
             );

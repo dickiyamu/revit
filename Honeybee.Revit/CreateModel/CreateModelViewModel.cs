@@ -189,7 +189,7 @@ namespace Honeybee.Revit.CreateModel
                 .ToList();
             if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, false);
 
-            win.Close();
+            //win.Close();
         }
 
         private static void OnShowDetails(SpatialObjectWrapper so)

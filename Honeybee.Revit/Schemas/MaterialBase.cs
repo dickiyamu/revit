@@ -28,7 +28,7 @@ namespace Honeybee.Revit.Schemas
         public double Conductivity { get; set; }
         public double Density { get; set; }
         public double SpecificHeat { get; set; }
-        public HB.EnergyMaterial.RoughnessEnum? Roughness { get; set; } = HB.EnergyMaterial.RoughnessEnum.MediumRough;
+        public HB.Roughness? Roughness { get; set; } = HB.Roughness.MediumRough;
         public double ThermalAbsorptance { get; set; }
         public double SolarAbsorptance { get; set; }
         public double VisibleAbsorptance { get; set; }
@@ -66,7 +66,7 @@ namespace Honeybee.Revit.Schemas
         public override string DisplayName { get; set; }
         public double RValue { get; set; }
 
-        public HB.EnergyMaterialNoMass.RoughnessEnum? Roughness { get; set; } = HB.EnergyMaterialNoMass.RoughnessEnum.MediumRough;
+        public HB.Roughness? Roughness { get; set; } = HB.Roughness.MediumRough;
         public double ThermalAbsorptance { get; set; } = 0.9d;
         public double SolarAbsorptance { get; set; } = 0.7d;
         public double VisibleAbsorptance { get; set; } = 0.7d;
@@ -100,8 +100,8 @@ namespace Honeybee.Revit.Schemas
         public override string Identifier { get; set; } = $"EnergyWindowMaterialBlind_{Guid.NewGuid()}";
         public override string DisplayName { get; set; }
 
-        public HB.EnergyWindowMaterialBlind.SlatOrientationEnum? SlatOrientation { get; set; } =
-            HB.EnergyWindowMaterialBlind.SlatOrientationEnum.Horizontal;
+        public HB.SlatOrientation? SlatOrientation { get; set; } =
+            HB.SlatOrientation.Horizontal;
         public double SlatWidth { get; set; }
         public double SlatSeparation { get; set; }
         public double SlatThickness { get; set; }
@@ -155,7 +155,7 @@ namespace Honeybee.Revit.Schemas
         public override string Identifier { get; set; } = $"EnergyWindowMaterialGas_{Guid.NewGuid()}";
         public override string DisplayName { get; set; }
         public double Thickness { get; set; } = 0.0125;
-        public HB.EnergyWindowMaterialGas.GasTypeEnum? GasType { get; set; } = HB.EnergyWindowMaterialGas.GasTypeEnum.Air;
+        public HB.GasType? GasType { get; set; } = HB.GasType.Air;
 
         public override object ToDragonfly()
         {
@@ -225,7 +225,7 @@ namespace Honeybee.Revit.Schemas
 
         public override string Identifier { get; set; } = $"EnergyWindowMaterialGasMixture_{Guid.NewGuid()}";
         public override string DisplayName { get; set; }
-        public List<HB.EnergyWindowMaterialGasMixture.GasTypesEnum> GasTypes { get; set; }
+        public List<HB.GasType> GasTypes { get; set; }
         public List<double> GasFractions { get; set; }
         public double Thickness { get; set; }
 
