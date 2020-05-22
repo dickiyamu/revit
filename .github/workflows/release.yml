@@ -23,7 +23,7 @@ jobs:
         run: nuget restore 
 
       - name: MSBuild Honyebee Core
-        working-directory: Honeybeee.Core
+        working-directory: Honeybee.Core
         run: |
           msbuild /p:Configuration=Release
           
