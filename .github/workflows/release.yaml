@@ -22,14 +22,16 @@ jobs:
       - name: Nuget Restore
         run: nuget restore 
 
-      - name: MSBuild Revit 2020 
-        working-directory: Honeybee.Revit.2020
-        run: |
-          msbuild /p:Configuration=Release
       - name: MSBuild Honyebee Core
         working-directory: Honeybeee.Core
         run: |
           msbuild /p:Configuration=Release
+          
+      - name: MSBuild Revit 2020 
+        working-directory: Honeybee.Revit.2020
+        run: |
+          msbuild /p:Configuration=Release
+                    
       - name: Zip Build Artifact
         run: |
           Compress-Archive -U -Path Honeybee.Revit.2020\bin\Release\* -DestinationPath HoneybeeRevitPlugin
