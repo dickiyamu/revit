@@ -15,7 +15,7 @@ namespace Honeybee.Core
             public FamilyLoadProcessor(bool overwriteParams = false, bool useNewShared = true)
             {
                 _overwriteParameters = overwriteParams;
-                this._useNewShared = useNewShared;
+                _useNewShared = useNewShared;
             }
 
             public bool OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)
