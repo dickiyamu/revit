@@ -153,10 +153,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Honeybee.Revit\Honeybee.Revit.csproj">
-      <Project>{3dad5ba0-15fd-4ca9-ac38-0cc44a876f03}</Project>
-      <Name>Honeybee.Revit</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Honeybee\Honeybee.Core.csproj">
       <Project>{a4edbdc2-b04e-4939-811e-12e1152e130b}</Project>
       <Name>Honeybee.Core</Name>

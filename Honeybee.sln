@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Core", "Honeybee\Honeybee.Core.csproj", "{A4EDBDC2-B04E-4939-811E-12E1152E130B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit", "Honeybee.Revit\Honeybee.Revit.csproj", "{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit.Tests", "Honeybee.Revit.Tests\Honeybee.Revit.Tests.csproj", "{29948A8E-3D07-4A55-8462-A0B5D22598A4}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Honeybee.Revit.SharedProject", "Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.shproj", "{7EA5AC03-97C9-49AD-A09D-CB61C2ECC7DA}"
@@ -27,10 +25,6 @@ Global
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Release|Any CPU.Build.0 = Release|Any CPU
 		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
