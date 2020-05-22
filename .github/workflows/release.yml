@@ -1,4 +1,4 @@
-name: CD
+name: Release Revit Plugins
 
 on: 
   push:
@@ -21,11 +21,6 @@ jobs:
 
       - name: Nuget Restore
         run: nuget restore 
-
-      - name: MSBuild Honyebee Core
-        working-directory: Honeybee
-        run: |
-          msbuild /p:Configuration=Release
           
       - name: MSBuild Revit 2021
         working-directory: Honeybee.Revit.2021
