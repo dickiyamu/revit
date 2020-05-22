@@ -33,9 +33,9 @@ namespace Honeybee.Revit.CreateModel
                 IsElementModified = false;
                 FailureProcessor.IsFailureProcessing = false;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-
+                // ignore
             }
         }
     }

@@ -153,107 +153,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppCommand.cs" />
-    <Compile Include="CreateModel\AnnotationFailure.cs" />
-    <Compile Include="CreateModel\AnnotationUpdater.cs" />
-    <Compile Include="CreateModel\Converters.cs" />
-    <Compile Include="CreateModel\ConvexHull.cs" />
-    <Compile Include="CreateModel\CreateModelCommand.cs" />
-    <Compile Include="CreateModel\CreateModelModel.cs" />
-    <Compile Include="CreateModel\CreateModelRequestHandler.cs" />
-    <Compile Include="CreateModel\CreateModelView.xaml.cs">
-      <DependentUpon>CreateModelView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="CreateModel\CreateModelViewModel.cs" />
-    <Compile Include="CreateModel\FailureProcessor.cs" />
-    <Compile Include="CreateModel\Messages.cs" />
-    <Compile Include="CreateModel\Wrappers\AnnotationWrapper.cs" />
-    <Compile Include="CreateModel\Wrappers\LevelWrapper.cs" />
-    <Compile Include="CreateModel\Wrappers\SpatialObjectWrapper.cs" />
-    <Compile Include="ModelSettings\Geometry\GeometryControl.xaml.cs">
-      <DependentUpon>GeometryControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ModelSettings\Geometry\GeometrySettings.cs" />
-    <Compile Include="ModelSettings\Geometry\GeometryViewModel.cs" />
-    <Compile Include="ModelSettings\SettingsCommand.cs" />
-    <Compile Include="ModelSettings\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ModelSettings\SettingsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Schemas\Adiabatic.cs" />
-    <Compile Include="Schemas\BoundaryCondition.cs" />
-    <Compile Include="Schemas\Building.cs" />
-    <Compile Include="Schemas\BuildingEnergyPropertiesAbridged.cs" />
-    <Compile Include="Schemas\BuildingPropertiesAbridged.cs" />
-    <Compile Include="Schemas\ConstructionBase.cs" />
-    <Compile Include="Schemas\ConstructionSet.cs" />
-    <Compile Include="Schemas\ConstructionSetAbridged.cs" />
-    <Compile Include="Schemas\ConstructionSetBase.cs" />
-    <Compile Include="Schemas\Converters\BoundaryConditionBaseConverter.cs" />
-    <Compile Include="Schemas\Converters\BoundaryConditionObjectsConverter.cs" />
-    <Compile Include="Schemas\Converters\ConstructionBaseConverter.cs" />
-    <Compile Include="Schemas\Converters\ConstructionSetConverter.cs" />
-    <Compile Include="Schemas\Converters\ListOfPoint2DConverter.cs" />
-    <Compile Include="Schemas\Converters\MaterialBaseConverter.cs" />
-    <Compile Include="Schemas\Converters\ProgramTypeConverter.cs" />
-    <Compile Include="Schemas\Converters\WindowParameterBaseConverter.cs" />
-    <Compile Include="Schemas\Enumerations\BuildingPrograms.cs" />
-    <Compile Include="Schemas\Enumerations\ClimateZones.cs" />
-    <Compile Include="Schemas\Enumerations\ConstructionTypes.cs" />
-    <Compile Include="Schemas\Enumerations\RoomPrograms.cs" />
-    <Compile Include="Schemas\Enumerations\Vintages.cs" />
-    <Compile Include="Schemas\Extensions.cs" />
-    <Compile Include="Schemas\Ground.cs" />
-    <Compile Include="Schemas\Honeybee\Aperture.cs" />
-    <Compile Include="Schemas\Honeybee\Face.cs" />
-    <Compile Include="Schemas\Honeybee\Face3D.cs" />
-    <Compile Include="Schemas\Honeybee\Shade.cs" />
-    <Compile Include="Schemas\HvacTypes.cs" />
-    <Compile Include="Schemas\IBaseObject.cs" />
-    <Compile Include="Schemas\MaterialBase.cs" />
-    <Compile Include="Schemas\Model.cs" />
-    <Compile Include="Schemas\ModelEnergyProperties.cs" />
-    <Compile Include="Schemas\ModelProperties.cs" />
-    <Compile Include="Schemas\OpaqueConstructionAbridged.cs" />
-    <Compile Include="Schemas\Outdoors.cs" />
-    <Compile Include="Schemas\Point2D.cs" />
-    <Compile Include="Schemas\ProgramType.cs" />
-    <Compile Include="Schemas\Room2D.cs" />
-    <Compile Include="Schemas\Room2DEnergyPropertiesAbridged.cs" />
-    <Compile Include="Schemas\Room2DPropertiesAbridged.cs" />
-    <Compile Include="AppSettings.cs" />
-    <Compile Include="Schemas\ISchema.cs" />
-    <Compile Include="Schemas\ShadeConstruction.cs" />
-    <Compile Include="Schemas\Story.cs" />
-    <Compile Include="Schemas\StoryEnergyPropertiesAbridged.cs" />
-    <Compile Include="Schemas\StoryPropertiesAbridged.cs" />
-    <Compile Include="Schemas\Surface.cs" />
-    <Compile Include="Schemas\Utilities.cs" />
-    <Compile Include="Schemas\WindowConstructionAbridged.cs" />
-    <Compile Include="Schemas\WindowParameterBase.cs" />
-    <Compile Include="StoredSettings.cs" />
-    <Compile Include="Utilities\CurveExtensions.cs" />
-    <Compile Include="Utilities\DoubleExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <EmbeddedResource Include="CreateModel\R20\2020_BoundaryConditions.rfa" />
-    <None Include="Honeybee.Revit.addin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
-    <EmbeddedResource Include="Resources\Schema\1980_2004_registry.json" />
-    <EmbeddedResource Include="Resources\Schema\2004_registry.json" />
-    <EmbeddedResource Include="Resources\Schema\2007_registry.json" />
-    <EmbeddedResource Include="Resources\Schema\2010_registry.json" />
-    <EmbeddedResource Include="Resources\Schema\2013_registry.json" />
-    <EmbeddedResource Include="Resources\Schema\pre_1980_registry.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Honeybee\Honeybee.Core.csproj">
@@ -266,66 +175,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="CreateModel\CreateModelView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ModelSettings\Geometry\GeometryControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ModelSettings\SettingsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\honeybee.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\pick.png" />
-    <Resource Include="Resources\24x24\pickHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\delete.png" />
-    <Resource Include="Resources\24x24\deleteHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\set.png" />
-    <Resource Include="Resources\24x24\setHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\reset.png" />
-    <Resource Include="Resources\24x24\resetHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\32x32\createModel.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\show.png" />
-    <Resource Include="Resources\24x24\showDetails.png" />
-    <Resource Include="Resources\24x24\showDetailsHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\showHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\export.png" />
-    <Resource Include="Resources\24x24\exportHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\32x32\settings.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\24x24\pickFace.png" />
-    <Resource Include="Resources\24x24\pickFaceHover.png" />
-    <Resource Include="Resources\24x24\pickPlanting.png" />
-    <Resource Include="Resources\24x24\pickPlantingHover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\ModelSettings\roomHeightOverride.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

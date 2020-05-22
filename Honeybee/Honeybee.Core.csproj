@@ -126,7 +126,6 @@
     <Compile Include="Enumerations.cs" />
     <Compile Include="EnumUtils.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
-    <Compile Include="FamilyUtils.cs" />
     <Compile Include="FileUtils.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="NlogUtils.cs" />
