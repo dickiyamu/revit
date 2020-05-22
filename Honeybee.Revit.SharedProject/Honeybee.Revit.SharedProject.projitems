@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7ea5ac03-97c9-49ad-a09d-cb61c2ecc7da</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Honeybee.Revit.SharedProject</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AppCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\AnnotationFailure.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\AnnotationUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Converters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\ConvexHull.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelRequestHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelView.xaml.cs">
+      <DependentUpon>CreateModelView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\FailureProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Messages.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\AnnotationWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\LevelWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\SpatialObjectWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometryControl.xaml.cs">
+      <DependentUpon>GeometryControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometrySettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometryViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Adiabatic.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\BoundaryCondition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Building.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\BuildingEnergyPropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\BuildingPropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ConstructionBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ConstructionSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ConstructionSetAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ConstructionSetBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\BoundaryConditionBaseConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\BoundaryConditionObjectsConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\ConstructionBaseConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\ConstructionSetConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\ListOfPoint2DConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\MaterialBaseConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\ProgramTypeConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\WindowParameterBaseConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\BuildingPrograms.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\ClimateZones.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\ConstructionTypes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\RoomPrograms.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\Vintages.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Ground.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Aperture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Face.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Face3D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Shade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\HvacTypes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\IBaseObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ISchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\MaterialBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Model.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ModelEnergyProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ModelProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\OpaqueConstructionAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Outdoors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Point2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ProgramType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Room2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Room2DEnergyPropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Room2DPropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ShadeConstruction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ShadePropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Story.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\StoryEnergyPropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\StoryPropertiesAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Surface.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Utilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\WindowConstructionAbridged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\WindowParameterBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StoredSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\CurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\DoubleExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\FamilyUtils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Honeybee.Revit.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\delete.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\deleteHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\export.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\exportHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pick.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickFace.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickFaceHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickPlanting.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickPlantingHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\reset.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\resetHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\set.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\setHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\show.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\showDetails.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\showDetailsHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\showHover.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\honeybee.ico" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\ModelSettings\roomHeightOverride.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)CreateModel\R20\2020_BoundaryConditions.rfa" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\createModel.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\settings.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\1980_2004_registry.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2004_registry.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2007_registry.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2010_registry.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2013_registry.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\pre_1980_registry.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometryControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>

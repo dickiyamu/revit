@@ -73,7 +73,7 @@ namespace Honeybee.Revit.Schemas
                 Properties.ToDragonfly(),
                 DisplayName,
                 null, // user data
-                null, // context shades
+                ContextShades.Select(x => x.ToDragonfly()).ToList(),
                 Units,
                 Tolerance,
                 AngleTolerance

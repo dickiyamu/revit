@@ -24,23 +24,27 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public Face3D Geometry { get; set; }
 
         [JsonProperty("properties")]
-        public HB.ShadePropertiesAbridged Properties { get; set; }
+        public ShadePropertiesAbridged Properties { get; set; } = new ShadePropertiesAbridged();
 
         public Shade(List<Point3D> boundary)
         {
             Geometry = new Face3D(boundary);
-            Properties = new HB.ShadePropertiesAbridged();
         }
 
         public Shade(Face3D face)
         {
             Geometry = face;
-            Properties = new HB.ShadePropertiesAbridged();
         }
 
         public DF.ContextShade ToDragonfly()
         {
-            throw new NotImplementedException();
+            return new DF.ContextShade(
+                Identifier,
+                new List<HB.Face3D> {Geometry.ToHoneybee()},
+                Properties.ToDragonfly(),
+                DisplayName,
+                null // user data
+            );
         }
 
         public HB.Shade ToHoneybee()
@@ -48,7 +52,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
             return new HB.Shade(
                 Identifier,
                 Geometry.ToHoneybee(),
-                Properties,
+                Properties.ToHoneybee(),
                 DisplayName,
                 null // user data
             );

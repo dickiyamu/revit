@@ -9,43 +9,34 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit", "Honeybee.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit.Tests", "Honeybee.Revit.Tests\Honeybee.Revit.Tests.csproj", "{29948A8E-3D07-4A55-8462-A0B5D22598A4}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Honeybee.Revit.SharedProject", "Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.shproj", "{7EA5AC03-97C9-49AD-A09D-CB61C2ECC7DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit.2020", "Honeybee.Revit.2020\Honeybee.Revit.2020.csproj", "{C15017EB-B1EE-4418-B9CF-395347F2A1F6}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems*{7ea5ac03-97c9-49ad-a09d-cb61c2ecc7da}*SharedItemsImports = 13
+		Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems*{c15017eb-b1ee-4418-b9cf-395347f2a1f6}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		2018|Any CPU = 2018|Any CPU
-		2019|Any CPU = 2019|Any CPU
-		2020|Any CPU = 2020|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.2018|Any CPU.ActiveCfg = 2018|Any CPU
-		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.2018|Any CPU.Build.0 = 2018|Any CPU
-		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.2019|Any CPU.ActiveCfg = 2019|Any CPU
-		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.2019|Any CPU.Build.0 = 2019|Any CPU
-		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.2020|Any CPU.ActiveCfg = 2020|Any CPU
-		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.2020|Any CPU.Build.0 = 2020|Any CPU
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4EDBDC2-B04E-4939-811E-12E1152E130B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.2018|Any CPU.ActiveCfg = 2018|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.2018|Any CPU.Build.0 = 2018|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.2019|Any CPU.ActiveCfg = 2019|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.2019|Any CPU.Build.0 = 2019|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.2020|Any CPU.ActiveCfg = 2020|Any CPU
-		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.2020|Any CPU.Build.0 = 2020|Any CPU
 		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DAD5BA0-15FD-4CA9-AC38-0CC44A876F03}.Release|Any CPU.Build.0 = Release|Any CPU
-		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.2018|Any CPU.ActiveCfg = 2018|Any CPU
-		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.2018|Any CPU.Build.0 = 2018|Any CPU
-		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.2019|Any CPU.ActiveCfg = 2019|Any CPU
-		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.2019|Any CPU.Build.0 = 2019|Any CPU
-		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.2020|Any CPU.ActiveCfg = 2020|Any CPU
-		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.2020|Any CPU.Build.0 = 2020|Any CPU
 		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{29948A8E-3D07-4A55-8462-A0B5D22598A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
