@@ -114,6 +114,7 @@ namespace Honeybee.Revit
         //{
         //    AnnotationUpdater.Register(doc);
         //}
+
         //private bool DocumentChanged(Document doc)
         //{
         //    return ActiveDoc.GetHashCode() != doc.GetHashCode();
