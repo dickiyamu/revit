@@ -89,16 +89,6 @@
     <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2019'))">
-      <HintPath>..\packages\Revit.2019.Assemblies.1.0.0\lib\RevitAPI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI" Condition="$(Configuration.Contains('2019'))">
-      <HintPath>..\packages\Revit.2019.Assemblies.1.0.0\lib\RevitAPIUI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2020'))">
       <HintPath>..\packages\Revit.2020.Assemblies.1.0.0\lib\RevitAPI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>

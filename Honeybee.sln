@@ -11,8 +11,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Honeybee.Revit.SharedProjec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit.2020", "Honeybee.Revit.2020\Honeybee.Revit.2020.csproj", "{C15017EB-B1EE-4418-B9CF-395347F2A1F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit.2019", "Honeybee.Revit.2019\Honeybee.Revit.2019.csproj", "{522154EB-D0FA-490F-8F4E-00801F2221D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honeybee.Revit.2021", "Honeybee.Revit.2021\Honeybee.Revit.2021.csproj", "{0423B7F4-8CF0-44D4-BD97-0E0750FC0F5A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems*{0423b7f4-8cf0-44d4-bd97-0e0750fc0f5a}*SharedItemsImports = 4
+		Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems*{522154eb-d0fa-490f-8f4e-00801f2221d4}*SharedItemsImports = 4
 		Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems*{7ea5ac03-97c9-49ad-a09d-cb61c2ecc7da}*SharedItemsImports = 13
 		Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems*{c15017eb-b1ee-4418-b9cf-395347f2a1f6}*SharedItemsImports = 4
 	EndGlobalSection
@@ -31,6 +37,14 @@ Global
 		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C15017EB-B1EE-4418-B9CF-395347F2A1F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{522154EB-D0FA-490F-8F4E-00801F2221D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{522154EB-D0FA-490F-8F4E-00801F2221D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{522154EB-D0FA-490F-8F4E-00801F2221D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{522154EB-D0FA-490F-8F4E-00801F2221D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0423B7F4-8CF0-44D4-BD97-0E0750FC0F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0423B7F4-8CF0-44D4-BD97-0E0750FC0F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0423B7F4-8CF0-44D4-BD97-0E0750FC0F5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0423B7F4-8CF0-44D4-BD97-0E0750FC0F5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
