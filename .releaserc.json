@@ -1,0 +1,28 @@
+{
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/github",
+            {
+                "assets": [
+                    {
+                        "path": "HoneybeeRevit2021.zip",
+                        "name": "HoneybeeRevit2021.zip",
+                        "label": "HoneybeeRevit2021.zip"
+                    },
+                    {
+                        "path": "HoneybeeRevit2020.zip",
+                        "name": "HoneybeeRevit2020.zip",
+                        "label": "HoneybeeRevit2020.zip"
+                    },
+                    {
+                        "path": "HoneybeeRevit2019.zip",
+                        "name": "HoneybeeRevit2019.zip",
+                        "label": "HoneybeeRevit2019.zip"
+                    },
+                ]
+            }
+        ]
+    ]
+}
