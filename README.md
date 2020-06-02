@@ -1,4 +1,4 @@
-# honeybee-revit
+# Honeybee/Dragonfly for Revit
 
 <b>Honeyebee / Dragonfly plugins for Revit.</b>
 
