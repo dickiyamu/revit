@@ -1011,7 +1011,6 @@
                 Height="20"
                 VerticalAlignment="Bottom" />
         <Button Command="{Binding RunSimulation, Mode=OneWay}"
-                CommandParameter="{Binding ElementName=Win}"
                 Content="Run"
                 Margin="0,0,97,10"
                 Grid.Row="1"

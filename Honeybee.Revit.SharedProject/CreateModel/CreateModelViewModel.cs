@@ -45,7 +45,7 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowDetails { get; set; }
         public RelayCommand ExportModel { get; set; }
-        public RelayCommand<Window> RunSimulation { get; set; }
+        public RelayCommand RunSimulation { get; set; }
         public RelayCommand AddPlanting { get; set; }
         public RelayCommand AddFaces { get; set; }
         public RelayCommand ClearShades { get; set; }
@@ -208,16 +208,18 @@ namespace Honeybee.Revit.CreateModel
             ShowBoundaryConditions = new RelayCommand<SpatialObjectWrapper>(OnShowBoundaryConditions);
             ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
             ExportModel = new RelayCommand(OnExportModel);
-            RunSimulation = new RelayCommand<Window>(OnRunSimulation);
+            RunSimulation = new RelayCommand(OnRunSimulation);
             AddPlanting = new RelayCommand(OnAddPlanting);
             AddFaces = new RelayCommand(OnAddFaces);
             ClearShades = new RelayCommand(OnClearShades);
             ShowLog = new RelayCommand(OnShowLog);
         }
 
+        #region Event Handlers
+
         private void OnExportModel()
         {
-            ExportModel2();
+            ProcessExport();
         }
 
         private static void OnShowLog()
@@ -231,36 +233,22 @@ namespace Honeybee.Revit.CreateModel
                 Process.Start(logPath);
         }
 
-        private async void OnRunSimulation(Window obj)
+        private async void OnRunSimulation()
         {
             var modelName = Dragonfly ? "Dragonfly" : "Honeybee";
             StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", 100, true);
 
-            var modelPath = await Task.Run(() => ExportModel2());
+            var modelPath = await Task.Run(() => ProcessExport());
 
             StatusBarManager.SetStatus("Start Simulation...");
 
             var result = await Task.Run(() => Model.RunSimulation(Dragonfly, modelPath));
+            if (result == "Success!")
+                ShowResults();
 
             StatusBarManager.FinalizeProgress(true);
             StatusBarManager.SetStatus(result);
             StatusBarManager.LogButton.Visibility = Visibility.Visible;
-        }
-
-        private string ExportModel2()
-        {
-            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-                .Where(x => x.IsSelected)
-                .Select(x => x.Room2D)
-                .ToList();
-
-            if (selected.Any())
-            {
-                var modelPath = Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
-                return modelPath;
-            }
-
-            return null;
         }
 
         private void OnClearShades()
@@ -282,8 +270,6 @@ namespace Honeybee.Revit.CreateModel
         {
             so.IsExpanded = !so.IsExpanded;
         }
-
-        #region Event Handlers
 
         private void OnShowBoundaryConditions(SpatialObjectWrapper so)
         {
@@ -433,18 +419,21 @@ namespace Honeybee.Revit.CreateModel
             Cleanup();
         }
 
-        private static void OnUpdateStatusBar(UpdateStatusBarMessage obj)
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(() =>
-            {
-                StatusBarManager.SetStatus(obj.Message);
-                StatusBarManager.Logs.Add(obj.Message);
-            });
-        }
-
         #endregion
 
         #region Message Handlers
+
+        private static void OnUpdateStatusBar(UpdateStatusBarMessage msg)
+        {
+            if (string.IsNullOrWhiteSpace(msg.Message))
+                return;
+
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                StatusBarManager.SetStatus(msg.Message);
+                StatusBarManager.Logs.Add(msg.Message);
+            });
+        }
 
         private void OnAnnotationsCreated(AnnotationsCreated msg)
         {
@@ -513,6 +502,61 @@ namespace Honeybee.Revit.CreateModel
         #endregion
 
         #region Utilities
+
+        private void ShowResults()
+        {
+            if (Dragonfly)
+            {
+                var osmPath = StatusBarManager.Logs.FirstOrDefault(x => x.EndsWith(".sql"));
+                var rootDir = Path.GetDirectoryName(osmPath);
+                if (!Directory.Exists(rootDir))
+                    return;
+
+                if (AppSettings.Instance.StoredSettings.SimulationSettings.OpenStudioReport)
+                {
+                    var osReportPath = Path.Combine(rootDir, "002_OpenStudioResults\\report.html");
+                    Process.Start(osReportPath);
+                }
+
+                if (AppSettings.Instance.StoredSettings.SimulationSettings.HtmlReport)
+                {
+                    var htmlReportPath = Path.Combine(rootDir, "003_ViewData\\report.html");
+                    Process.Start(htmlReportPath);
+                }
+            }
+            else
+            {
+                var simulationDir = AppSettings.Instance.StoredSettings.SimulationSettings.SimulationFolder;
+
+                if (AppSettings.Instance.StoredSettings.SimulationSettings.OpenStudioReport)
+                {
+                    var osReportPath = Path.Combine(simulationDir, "reports\\openstudio_results_report.html");
+                    Process.Start(osReportPath);
+                }
+
+                if (AppSettings.Instance.StoredSettings.SimulationSettings.HtmlReport)
+                {
+                    var htmlReportPath = Path.Combine(simulationDir, "reports\\view_data_report.html");
+                    Process.Start(htmlReportPath);
+                }
+            }
+        }
+
+        private string ProcessExport()
+        {
+            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+                .Where(x => x.IsSelected)
+                .Select(x => x.Room2D)
+                .ToList();
+
+            if (selected.Any())
+            {
+                var modelPath = Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
+                return modelPath;
+            }
+
+            return null;
+        }
 
         private bool FilterDataGrid(object obj)
         {
