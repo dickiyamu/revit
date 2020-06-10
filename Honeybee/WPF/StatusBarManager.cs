@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
+using Honeybee.Core.WPF.Buttons;
 
 namespace Honeybee.Core.WPF
 {
@@ -12,7 +14,9 @@ namespace Honeybee.Core.WPF
     {
         public static ProgressBar ProgressBar = null;
         public static TextBlock StatusLabel = null;
+        public static ImageButton LogButton = null;
         public static double ProgressValue;
+        public static List<string> Logs = null;
 
         private delegate void UpdateProgressBarDelegate(DependencyProperty dp, object value);
         private delegate void UpdateStatusLabelDelegate(DependencyProperty dp, object value);
@@ -22,9 +26,29 @@ namespace Honeybee.Core.WPF
 
         public static void SetStatus(string message)
         {
-            if (StatusLabel == null) return;
+            if (StatusLabel == null)
+                return;
 
-            StatusLabel.Text = message;
+            if (_updateLabelDelegate == null)
+                _updateLabelDelegate = StatusLabel.SetValue;
+
+            Dispatcher.CurrentDispatcher.Invoke(_updateLabelDelegate, DispatcherPriority.Background, TextBlock.TextProperty, message);
+        }
+
+        public static void InitializeProgressIndeterminate(string statusText)
+        {
+            if (null == ProgressBar || null == StatusLabel) return;
+
+            ProgressBar.Visibility = Visibility.Visible;
+
+            _updateLabelDelegate = StatusLabel.SetValue;
+            Dispatcher.CurrentDispatcher.Invoke(_updateLabelDelegate, DispatcherPriority.Background, TextBlock.TextProperty, statusText);
+
+            _updatePbDelegate = ProgressBar.SetValue;
+            ProgressBar.IsIndeterminate = true;
+
+            Logs = new List<string>();
+            LogButton.Visibility = Visibility.Hidden;
         }
 
         /// <summary>
@@ -79,6 +103,16 @@ namespace Honeybee.Core.WPF
 
             ProgressValue = 0;
             ProgressBar.Visibility = Visibility.Hidden;
+            StatusLabel.Text = "Ready.";
+        }
+
+        public static void FinalizeProgressIndeterminate()
+        {
+            if (null == ProgressBar || null == StatusLabel) return;
+
+            ProgressValue = 0;
+            ProgressBar.Visibility = Visibility.Hidden;
+            ProgressBar.IsIndeterminate = false;
             StatusLabel.Text = "Ready.";
         }
     }

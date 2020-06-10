@@ -6,12 +6,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
-        Height="500" 
+        Height="500"
         Width="800"
         WindowStartupLocation="CenterScreen"
         BorderThickness="0,5,0,0"
         BorderBrush="#F5B34C"
-        Icon="../Resources/honeybee.ico"
+        Icon="/Honeybee.Core;Component/Resources/honeybee.ico"
         Title="Honeybee - Settings">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

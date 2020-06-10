@@ -3,18 +3,24 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Threading;
 using Honeybee.Core.Extensions;
 using Honeybee.Core.WPF;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
 using Honeybee.Revit.Schemas.Honeybee;
+using Path = System.IO.Path;
+// ReSharper disable PossibleNullReferenceException
 
 #endregion
 
@@ -28,7 +34,6 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand<Window> Cancel { get; set; }
         public RelayCommand<Window> Ok { get; set; }
         public RelayCommand Help { get; set; }
-        public RelayCommand<Window> WindowLoaded { get; set; }
         public RelayCommand ClearFilters { get; set; }
         public RelayCommand FilterChanged { get; set; }
         public RelayCommand PickSpatialObjects { get; set; }
@@ -41,14 +46,18 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ResetProgramType { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowDetails { get; set; }
-        public RelayCommand<Window> ExportHoneybee { get; set; }
-        public RelayCommand<Window> ExportDragonfly { get; set; }
+        //public RelayCommand<Window> ExportHoneybee { get; set; }
+        //public RelayCommand<Window> ExportDragonfly { get; set; }
+        public RelayCommand ExportModel { get; set; }
+        public RelayCommand<Window> RunSimulation { get; set; }
         public RelayCommand AddPlanting { get; set; }
         public RelayCommand AddFaces { get; set; }
         public RelayCommand ClearShades { get; set; }
+        public RelayCommand ShowLog { get; set; }
 
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
+        public SolidColorBrush BorderBrush { get; set; }
 
         private bool _isExpanded = true;
         // ReSharper disable once UnusedMember.Global
@@ -147,12 +156,35 @@ namespace Honeybee.Revit.CreateModel
             set { _contextShades = value; RaisePropertyChanged(() => ContextShades); }
         }
 
+        private bool _dragonfly;
+        public bool Dragonfly
+        {
+            get { return _dragonfly; }
+            set { _dragonfly = value; RaisePropertyChanged(() => Dragonfly); }
+        }
+
+        private AppSettings _settings;
+        public AppSettings Settings
+        {
+            get { return _settings; }
+            set { _settings = value; RaisePropertyChanged(() => Settings); }
+        }
+
         #endregion
 
-        public CreateModelViewModel(CreateModelModel model)
+        public CreateModelViewModel(CreateModelModel model, bool dragonfly)
         {
+            DispatcherHelper.Initialize();
+
             Model = model;
+            Dragonfly = dragonfly;
+            Settings = AppSettings.Instance;
             ContextShades = Model.GetContextShades().ToObservableCollection();
+
+            var color = dragonfly
+                ? (Color) ColorConverter.ConvertFromString("#00A651")
+                : (Color) ColorConverter.ConvertFromString("#F5B34C");
+            BorderBrush = new SolidColorBrush(color);
 
             var so = Model.GetSpatialObjects();
             Levels = so.Select(x => x.Level).Distinct().ToObservableCollection();
@@ -165,7 +197,6 @@ namespace Honeybee.Revit.CreateModel
             Cancel = new RelayCommand<Window>(OnCancel);
             Ok = new RelayCommand<Window>(OnOk);
             Help = new RelayCommand(OnHelp);
-            WindowLoaded = new RelayCommand<Window>(OnWindowLoaded);
             ClearFilters = new RelayCommand(OnClearFilters);
             FilterChanged = new RelayCommand(OnFilterChanged);
             PickSpatialObjects = new RelayCommand(OnPickSpatialObjects);
@@ -178,11 +209,62 @@ namespace Honeybee.Revit.CreateModel
             ResetProgramType = new RelayCommand(OnResetProgramType);
             ShowBoundaryConditions = new RelayCommand<SpatialObjectWrapper>(OnShowBoundaryConditions);
             ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
-            ExportHoneybee = new RelayCommand<Window>(OnExportHoneybee);
-            ExportDragonfly = new RelayCommand<Window>(OnExportDragonfly);
+            ExportModel = new RelayCommand(OnExportModel);
+            //ExportHoneybee = new RelayCommand<Window>(OnExportHoneybee);
+            //ExportDragonfly = new RelayCommand<Window>(OnExportDragonfly);
+            RunSimulation = new RelayCommand<Window>(OnRunSimulation);
             AddPlanting = new RelayCommand(OnAddPlanting);
             AddFaces = new RelayCommand(OnAddFaces);
             ClearShades = new RelayCommand(OnClearShades);
+            ShowLog = new RelayCommand(OnShowLog);
+        }
+
+        private void OnExportModel()
+        {
+            ExportModel2();
+        }
+
+        private static void OnShowLog()
+        {
+            var simulationDir = AppSettings.Instance.StoredSettings.SimulationSettings.SimulationFolder;
+            var logPath = Path.Combine(simulationDir, "simulation_log.txt");
+
+            File.WriteAllLines(logPath, StatusBarManager.Logs);
+
+            if (File.Exists(logPath))
+                Process.Start(logPath);
+        }
+
+        private async void OnRunSimulation(Window obj)
+        {
+            var modelName = Dragonfly ? "Dragonfly" : "Honeybee";
+            StatusBarManager.InitializeProgressIndeterminate($"Exporting {modelName} Model...");
+
+            var modelPath = await Task.Run(() => ExportModel2());
+
+            StatusBarManager.SetStatus("Start Simulation...");
+
+            var result = await Task.Run(() => Model.RunSimulation(Dragonfly, modelPath));
+
+            StatusBarManager.FinalizeProgressIndeterminate();
+            StatusBarManager.SetStatus(result);
+            StatusBarManager.LogButton.Visibility = Visibility.Visible;
+        }
+
+        private string ExportModel2()
+        {
+            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+                .Where(x => x.IsSelected)
+                .Select(x => x.Room2D)
+                .ToList();
+
+            if (selected.Any())
+            {
+                var modelPath = Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
+                return modelPath;
+            }
+
+            return null;
         }
 
         private void OnClearShades()
@@ -200,27 +282,35 @@ namespace Honeybee.Revit.CreateModel
             Model.SelectPlanting().ForEach(x => ContextShades.Add(x));
         }
 
-        private void OnExportDragonfly(Window win)
-        {
-            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-                .Where(x => x.IsSelected)
-                .Select(x => x.Room2D)
-                .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, true, ContextShades.ToList());
+        //private void OnExportDragonfly(Window win)
+        //{
+        //    var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+        //        .Where(x => x.IsSelected)
+        //        .Select(x => x.Room2D)
+        //        .ToList();
 
-            win.Close();
-        }
+        //    if (selected.Any())
+        //    {
+        //        Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
+        //    }   
 
-        private void OnExportHoneybee(Window win)
-        {
-            var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-                .Where(x => x.IsSelected)
-                .Select(x => x.Room2D)
-                .ToList();
-            if (selected.Any()) Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, false, ContextShades.ToList());
+        //    //win.Close();
+        //}
 
-            //win.Close();
-        }
+        //private void OnExportHoneybee(Window win)
+        //{
+        //    var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
+        //        .Where(x => x.IsSelected)
+        //        .Select(x => x.Room2D)
+        //        .ToList();
+
+        //    if (selected.Any())
+        //    {
+        //        Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
+        //    }
+
+        //    //win.Close();
+        //}
 
         private static void OnShowDetails(SpatialObjectWrapper so)
         {
@@ -332,7 +422,6 @@ namespace Honeybee.Revit.CreateModel
             var selected = Model.SelectRoomsSpaces();
             if (!selected.Any()) return;
 
-            //Model.WriteJournalComment($"Selected Rooms/Spaces: {string.Join(":::", selected.Select(x => x.Name))}.");
             SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>().ForEach(x => x.IsSelected = selected.Contains(x));
         }
 
@@ -369,14 +458,21 @@ namespace Honeybee.Revit.CreateModel
             Process.Start("");
         }
 
-        private void OnWindowLoaded(Window win)
+        public void OnWindowLoaded()
         {
-            StatusBarManager.ProgressBar = ((CreateModelView)win).ProgressBar;
-            StatusBarManager.StatusLabel = ((CreateModelView)win).StatusLabel;
-
             Messenger.Default.Register<SurfaceAdjacentRoomChanged>(this, OnSurfaceAdjacentRoomChanged);
             Messenger.Default.Register<TypeChanged>(this, OnTypeChanged);
             Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreated);
+            Messenger.Default.Register<UpdateStatusBarMessage>(this, OnUpdateStatusBar);
+        }
+
+        private static void OnUpdateStatusBar(UpdateStatusBarMessage obj)
+        {
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                StatusBarManager.SetStatus(obj.Message);
+                StatusBarManager.Logs.Add(obj.Message);
+            });
         }
 
         #endregion

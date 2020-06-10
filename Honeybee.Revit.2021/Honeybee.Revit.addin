@@ -2,7 +2,7 @@
 <RevitAddIns>
   <AddIn Type="Application">
     <Name>Honeybee.Revit</Name>
-    <Assembly>Honeybee.Revit\Honeybee.Revit.dll</Assembly>
+    <Assembly>Honeybee\Honeybee.Revit.2021.dll</Assembly>
     <AddInId>1a2faea3-cb50-4e75-900b-83c10420ecda</AddInId>
     <FullClassName>Honeybee.Revit.AppCommand</FullClassName>
     <VendorId>Ladybug Tools, LLC</VendorId>

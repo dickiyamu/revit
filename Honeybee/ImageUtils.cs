@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using NLog;
@@ -13,16 +14,15 @@ namespace Honeybee.Core
         /// Loads image resource from Embedded Resources. Used for creating Ribbon Icons.
         /// </summary>
         /// <param name="a">Assembly that the resource is embedded in.</param>
-        /// <param name="ns">Namespace under which the resource is stored.</param>
         /// <param name="name">Name of the resource.</param>
         /// <returns>BitmapImage object.</returns>
-        public static BitmapImage LoadImage(Assembly a, string ns, string name)
+        public static BitmapImage LoadImage(Assembly a, string name)
         {
             var img = new BitmapImage();
             try
             {
-                var prefix = ns + ".Resources.";
-                var stream = a.GetManifestResourceStream(prefix + name);
+                var resourceName = a.GetManifestResourceNames().FirstOrDefault(x => x.Contains(name));
+                var stream = a.GetManifestResourceStream(resourceName);
 
                 img.BeginInit();
                 img.StreamSource = stream;

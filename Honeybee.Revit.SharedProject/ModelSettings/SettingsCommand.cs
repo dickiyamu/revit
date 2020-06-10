@@ -21,10 +21,7 @@ namespace Honeybee.Revit.ModelSettings
             {
                 _logger.Info("Settings started.");
 
-                var uiApp = commandData.Application;
-                var uiDoc = uiApp.ActiveUIDocument;
-
-                var vm = new SettingsViewModel(0);
+                var vm = new SettingsViewModel();
                 var v = new SettingsView
                 {
                     DataContext = vm
@@ -47,7 +44,7 @@ namespace Honeybee.Revit.ModelSettings
         public static void CreateButton(RibbonPanel panel)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var unused = (PushButton)panel.AddItem(
+            var unused = (PushButton) panel.AddItem(
                 new PushButtonData(
                     "SettingsCommand",
                     "Settings",
@@ -55,7 +52,7 @@ namespace Honeybee.Revit.ModelSettings
                     MethodBase.GetCurrentMethod().DeclaringType?.FullName)
                 {
                     ToolTip = "Description...",
-                    LargeImage = ImageUtils.LoadImage(assembly, typeof(AppCommand).Namespace, "_32x32.settings.png")
+                    LargeImage = ImageUtils.LoadImage(assembly, "_32x32.settings.png")
                 });
         }
     }

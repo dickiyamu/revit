@@ -31,4 +31,14 @@ namespace Honeybee.Revit.CreateModel
             SpatialObject = sow;
         }
     }
+
+    public class UpdateStatusBarMessage
+    {
+        public string Message { get; set; }
+
+        public UpdateStatusBarMessage(string message)
+        {
+            Message = message;
+        }
+    }
 }

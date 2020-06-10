@@ -76,16 +76,6 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2019'))">
-      <HintPath>..\packages\Revit.2019.Assemblies.1.0.0\lib\RevitAPI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI" Condition="$(Configuration.Contains('2019'))">
-      <HintPath>..\packages\Revit.2019.Assemblies.1.0.0\lib\RevitAPIUI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2020'))">
       <HintPath>..\packages\Revit.2020.Assemblies.1.0.0\lib\RevitAPI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -113,6 +103,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -135,6 +126,7 @@
     <Compile Include="WPF\Buttons\ImageButton.cs" />
     <Compile Include="WPF\Buttons\ImageToggleButton.cs" />
     <Compile Include="WPF\DataGridExtension.cs" />
+    <Compile Include="WPF\Dialogs.cs" />
     <Compile Include="WPF\StatusBarManager.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -142,7 +134,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\honeybee.ico" />
+  </ItemGroup>
   <ItemGroup>
     <Page Include="Resources\Styles\DropDownButtonStyle.xaml">
       <SubType>Designer</SubType>
@@ -156,6 +150,41 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\delete.png" />
+    <Resource Include="Resources\24x24\deleteHover.png" />
+    <Resource Include="Resources\24x24\export.png" />
+    <Resource Include="Resources\24x24\exportHover.png" />
+    <Resource Include="Resources\24x24\pick.png" />
+    <Resource Include="Resources\24x24\pickFace.png" />
+    <Resource Include="Resources\24x24\pickFaceHover.png" />
+    <Resource Include="Resources\24x24\pickHover.png" />
+    <Resource Include="Resources\24x24\pickPlanting.png" />
+    <Resource Include="Resources\24x24\pickPlantingHover.png" />
+    <Resource Include="Resources\24x24\reset.png" />
+    <Resource Include="Resources\24x24\resetHover.png" />
+    <Resource Include="Resources\24x24\selectFile.png" />
+    <Resource Include="Resources\24x24\selectFileHover.png" />
+    <Resource Include="Resources\24x24\set.png" />
+    <Resource Include="Resources\24x24\setHover.png" />
+    <Resource Include="Resources\24x24\show.png" />
+    <Resource Include="Resources\24x24\showDetails.png" />
+    <Resource Include="Resources\24x24\showDetailsHover.png" />
+    <Resource Include="Resources\24x24\showHover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ModelSettings\roomHeightOverride.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x12\showRunSettings.png" />
+    <Resource Include="Resources\24x12\showRunSettingsHover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\showLog.png" />
+    <Resource Include="Resources\24x24\showLogHover.png" />
+    <Resource Include="Resources\24x24\showNested.png" />
+    <Resource Include="Resources\24x24\showNestedHover.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -5,6 +5,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Honeybee.Core.WPF;
 using Honeybee.Revit.ModelSettings.Geometry;
+using Honeybee.Revit.ModelSettings.Simulation;
 
 namespace Honeybee.Revit.ModelSettings
 {
@@ -35,6 +36,11 @@ namespace Honeybee.Revit.ModelSettings
                 {
                     Content = new GeometryControl {DataContext = new GeometryViewModel()},
                     Header = "Geometry"
+                },
+                new TabItem
+                {
+                    Content = new SimulationControl {DataContext = new SimulationViewModel()},
+                    Header = "Simulation"
                 }
             };
 

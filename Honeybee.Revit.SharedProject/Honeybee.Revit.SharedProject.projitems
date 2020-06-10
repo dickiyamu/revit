@@ -15,7 +15,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\AnnotationUpdater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Converters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\ConvexHull.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateDfModelCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateHbModelCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelRequestHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelView.xaml.cs">
@@ -24,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\FailureProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Messages.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\SelectionFilters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\AnnotationWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\LevelWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\SpatialObjectWrapper.cs" />
@@ -37,6 +39,12 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\OpenStudioWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Simulation\SimulationSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Simulation\SimulationControl.xaml.cs">
+      <DependentUpon>SimulationControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Simulation\SimulationViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Adiabatic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\BoundaryCondition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Building.cs" />
@@ -94,33 +102,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\FamilyUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Honeybee.Revit.addin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\delete.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\deleteHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\export.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\exportHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pick.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickFace.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickFaceHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickPlanting.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\pickPlantingHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\reset.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\resetHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\set.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\setHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\show.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\showDetails.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\showDetailsHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\24x24\showHover.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\honeybee.ico" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\ModelSettings\roomHeightOverride.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)CreateModel\R20\2020_BoundaryConditions.rfa" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\createModel.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\runSimulation.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\settings.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\1980_2004_registry.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2004_registry.json" />
@@ -142,5 +126,12 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ModelSettings\Simulation\SimulationControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\createDfModel.png" />
   </ItemGroup>
 </Project>

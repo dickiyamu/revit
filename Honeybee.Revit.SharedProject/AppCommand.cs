@@ -35,7 +35,12 @@ namespace Honeybee.Revit
             var panel = app.CreateRibbonPanel("Honeybee", "Honeybee");
 
             SettingsCommand.CreateButton(panel);
-            CreateModelCommand.CreateButton(panel);
+            var hbButton = CreateHbModelCommand.CreateButton();
+            var dfButton = CreateDfModelCommand.CreateButton();
+            var splitButton = new SplitButtonData("CreateModelCommand", "Split");
+            var sb = (SplitButton)panel.AddItem(splitButton);
+            sb.AddPushButton(hbButton);
+            sb.AddPushButton(dfButton);
 
             CreateModelHandler = new CreateModelRequestHandler();
             CreateModelEvent = ExternalEvent.Create(CreateModelHandler);

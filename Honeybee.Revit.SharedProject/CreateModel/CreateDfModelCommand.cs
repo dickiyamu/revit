@@ -19,7 +19,7 @@ namespace Honeybee.Revit.CreateModel
     [Transaction(TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
     [Journaling(JournalingMode.NoCommandData)]
-    public class CreateModelCommand : IExternalCommand
+    public class CreateDfModelCommand : IExternalCommand
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static CreateModelView View { get; set; }
@@ -42,7 +42,7 @@ namespace Honeybee.Revit.CreateModel
                 }
 
                 var m = new CreateModelModel(uiDoc);
-                var vm = new CreateModelViewModel(m);
+                var vm = new CreateModelViewModel(m, true);
                 var v = new CreateModelView
                 {
                     DataContext = vm
@@ -70,19 +70,20 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        public static void CreateButton(RibbonPanel panel)
+        public static PushButtonData CreateButton()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var unused = (PushButton)panel.AddItem(
-                new PushButtonData(
-                    "CreateModelCommand",
-                    "Create Model",
-                    assembly.Location,
-                    MethodBase.GetCurrentMethod().DeclaringType?.FullName)
-                {
-                    ToolTip = "Description...",
-                    LargeImage = ImageUtils.LoadImage(assembly, typeof(AppCommand).Namespace, "_32x32.createModel.png")
-                });
+            var data = new PushButtonData(
+                "CreateDfModelCommand",
+                "Dragonfly Model",
+                assembly.Location,
+                MethodBase.GetCurrentMethod().DeclaringType?.FullName)
+            {
+                ToolTip = "Description...",
+                LargeImage = ImageUtils.LoadImage(assembly, "_32x32.createDfModel.png")
+            };
+
+            return data;
         }
 
         private static void OnViewClosing(object sender, CancelEventArgs e)

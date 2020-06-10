@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using Honeybee.Revit.ModelSettings.Geometry;
+using Honeybee.Revit.ModelSettings.Simulation;
 using Newtonsoft.Json;
 
 namespace Honeybee.Revit
@@ -12,6 +13,13 @@ namespace Honeybee.Revit
         {
             get { return _geometrySettings; }
             set { _geometrySettings = value; RaisePropertyChanged(nameof(GeometrySettings)); }
+        }
+
+        private SimulationSettings _simulationSettings = new SimulationSettings();
+        public SimulationSettings SimulationSettings
+        {
+            get { return _simulationSettings; }
+            set { _simulationSettings = value; RaisePropertyChanged(nameof(SimulationSettings)); }
         }
 
         [JsonConstructor]

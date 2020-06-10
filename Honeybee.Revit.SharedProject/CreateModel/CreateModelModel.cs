@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using GalaSoft.MvvmLight.Messaging;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
@@ -17,6 +19,7 @@ using Honeybee.Revit.Schemas.Honeybee;
 using Newtonsoft.Json;
 using NLog;
 using HB = HoneybeeSchema;
+using OperationCanceledException = Autodesk.Revit.Exceptions.OperationCanceledException;
 using Surface = Honeybee.Revit.Schemas.Surface;
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
@@ -36,10 +39,6 @@ namespace Honeybee.Revit.CreateModel
             UiDoc = uiDoc;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         public List<SpatialObjectWrapper> GetSpatialObjects()
         {
             var objects = new FilteredElementCollector(Doc)
@@ -56,97 +55,6 @@ namespace Honeybee.Revit.CreateModel
             HB_AssignBoundaryConditions(objects);
 
             return objects;
-
-            //var stories = objects
-            //    .Select(x => x.Room2D)
-            //    .GroupBy(x => x.Level.Name)
-            //    .Select(x => new Story(x.Key, x.ToList(), new StoryPropertiesAbridged()))
-            //    .ToList();
-
-            //DF.Model.UnitsEnum dfUnits;
-            //var units = Doc.GetUnits();
-            //var unitType = units.GetFormatOptions(UnitType.UT_Length).DisplayUnits;
-            //switch (unitType)
-            //{
-            //    case DisplayUnitType.DUT_METERS:
-            //        dfUnits = DF.Model.UnitsEnum.Meters;
-            //        break;
-            //    case DisplayUnitType.DUT_CENTIMETERS:
-            //        dfUnits = DF.Model.UnitsEnum.Centimeters;
-            //        break;
-            //    case DisplayUnitType.DUT_MILLIMETERS:
-            //        dfUnits = DF.Model.UnitsEnum.Millimeters;
-            //        break;
-            //    case DisplayUnitType.DUT_FEET_FRACTIONAL_INCHES:
-            //        dfUnits = DF.Model.UnitsEnum.Millimeters;
-            //        break;
-            //    case DisplayUnitType.DUT_MILLIMETERS:
-            //        dfUnits = DF.Model.UnitsEnum.Millimeters;
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-
-            //var building = new Building("Building 1", stories, new BuildingPropertiesAbridged());
-            //var model = new Model("Model 1", new List<Building> {building}, new ModelProperties())
-            //{
-            //    Units = DF.Model.UnitsEnum.Feet,
-            //    Tolerance = 0.0001d
-            //};
-            //var dfModel = model.ToDragonfly();
-            //var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new DF.AnyOfJsonConverter());
-            //var jsonPath = Path.Combine(Path.GetTempPath(), "Dragonfly.json"); 
-            //if (File.Exists(jsonPath)) FileUtils.TryDeleteFile(jsonPath);
-            //File.WriteAllText(jsonPath, json);
-
-            //var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-            //if (path == null) return objects;
-
-            //string pyPath = null;
-            //foreach (var p in path.Split(';'))
-            //{
-            //    var fullPath = Path.Combine(p, "python.exe");
-            //    if (!File.Exists(fullPath)) continue;
-
-            //    pyPath = fullPath;
-            //    break;
-            //}
-
-            //if (string.IsNullOrWhiteSpace(pyPath)) return objects;
-
-            //var pyDir = Path.GetDirectoryName(pyPath);
-            //if (pyDir == null) return objects;
-
-            //var dfPath = Path.Combine(pyDir, "Scripts", "dragonfly.exe");
-            //if (!File.Exists(dfPath)) return objects;
-
-            //var jsonResult = RunCommand(pyPath, dfPath, jsonPath);
-            //JsonConverter[] converters =
-            //{
-            //    new DF.AnyOfJsonConverter(),
-            //    new ConstructionBaseConverter(),
-            //    new MaterialBaseConverter(),
-            //    new Point2DConverter(),
-            //    new BoundaryConditionBaseConverter(),
-            //    new WindowParameterBaseConverter()
-            //};
-            //var resultModel = JsonConvert.DeserializeObject<Model>(jsonResult, converters);
-
-            //foreach (var b in resultModel.Buildings)
-            //{
-            //    foreach (var s in b.UniqueStories)
-            //    {
-            //        foreach (var r in s.Room2Ds)
-            //        {
-            //            var room = objects.FirstOrDefault(x => Equals(x.Room2D, r));
-            //            if (room == null) continue;
-
-            //            room.Room2D.BoundaryConditions = r.BoundaryConditions ?? new List<BoundaryConditionBase>();
-            //            room.Room2D.FloorBoundary = r.FloorBoundary ?? new List<Point2D>();
-            //            room.Room2D.FloorHoles = r.FloorHoles ?? new List<List<Point2D>>();
-            //        }
-            //    }
-            //}
         }
 
         public string RunHoneybeeEnergyCommand(string command, IEnumerable<string> ids)
@@ -239,22 +147,6 @@ namespace Honeybee.Revit.CreateModel
             return result;
         }
 
-        //public string RunCommand(string pyPath, string dfPath, string jsonPath)
-        //{
-        //    var ps = PowerShell.Create();
-        //    ps.AddCommand(pyPath)
-        //        .AddParameter("-m")
-        //        .AddCommand(dfPath)
-        //        .AddArgument("edit")
-        //        .AddArgument("solve-adjacency")
-        //        .AddArgument(jsonPath);
-        //    var psObject = ps.Invoke();
-        //    var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
-        //    ps.Commands.Clear();
-
-        //    return result;
-        //}
-
         public void ShowBoundaryConditions(SpatialObjectWrapper so)
         {
             AppCommand.CreateModelHandler.Arg1 = so;
@@ -262,65 +154,17 @@ namespace Honeybee.Revit.CreateModel
             AppCommand.CreateModelEvent.Raise();
         }
 
-        private List<HB.ProgramType> GetProgramTypeSet(IEnumerable<Room2D> rooms, ProgramType bProgramType)
-        {
-            var pTypes = rooms
-                .GroupBy(x => x.Properties.Energy.ProgramType.Identifier)
-                .Select(x => x.Key)
-                .ToList();
-
-            if (!pTypes.Contains(bProgramType.Identifier))
-                pTypes.Add(bProgramType.Identifier);
-
-            var jsonProgramTypes = RunHoneybeeEnergyCommand("program-types-by-id", pTypes);
-            JsonConverter[] converters =
-            {
-                new HB.AnyOfJsonConverter()
-            };
-
-            return JsonConvert.DeserializeObject<List<HB.ProgramType>>(jsonProgramTypes, converters);
-        }
-
-        private HB.ConstructionSet GetDefaultConstructionSet()
-        {
-            var args = new List<string> {"Default Generic Construction Set", "--none-defaults", "False"};
-            var jsonConstructionSets = RunHoneybeeEnergyCommand2("construction-set-by-id", args);
-            JsonConverter[] converters =
-            {
-                new HB.AnyOfJsonConverter()
-            };
-
-            return JsonConvert.DeserializeObject<HB.ConstructionSet>(jsonConstructionSets, converters);
-        }
-
-        private List<HB.ConstructionSet> GetConstructionSets(IEnumerable<Room2D> rooms, ConstructionSet bConstructionSet)
-        {
-            var cSets = rooms
-                .GroupBy(x => x.Properties.Energy.ConstructionSet.Identifier)
-                .Select(x => x.Key)
-                .ToList();
-
-            if (!cSets.Contains(bConstructionSet.Identifier))
-                cSets.Add(bConstructionSet.Identifier);
-
-            var jsonConstructionSets = RunHoneybeeEnergyCommand("construction-sets-by-id", cSets);
-            JsonConverter[] converters =
-            {
-                new HB.AnyOfJsonConverter()
-            };
-
-            return JsonConvert.DeserializeObject<List<HB.ConstructionSet>>(jsonConstructionSets, converters);
-        }
-
-        public void SerializeRoom2D(
+        public string SerializeRoom2D(
             List<Room2D> rooms, 
             ProgramType bProgramType, 
             ConstructionSet bConstructionSet, 
-            bool dragonfly = true,
-            List<Shade> shades = null)
+            bool dragonfly,
+            List<Shade> shades)
         {
             try
             {
+                var modelFilePath = string.Empty;
+
                 var hbProgramTypes = GetProgramTypeSet(rooms, bProgramType);
                 var hbConstructionSets = GetConstructionSets(rooms, bConstructionSet);
                 var properties = new ModelProperties { Energy = new ModelEnergyProperties() };
@@ -363,16 +207,24 @@ namespace Honeybee.Revit.CreateModel
                     dfModel.Properties = properties.ToDragonfly();
 
                     var json = JsonConvert.SerializeObject(dfModel, Formatting.Indented, new HB.AnyOfJsonConverter());
-                    if (string.IsNullOrWhiteSpace(json)) return;
+                    if (string.IsNullOrWhiteSpace(json))
+                        return modelFilePath;
 
-                    const string filePath = @"C:\Users\ksobon\Desktop\Dragonfly.json";
-                    var dir = Path.GetDirectoryName(filePath);
-                    if (string.IsNullOrWhiteSpace(dir)) return;
+                    var simulationDir = AppSettings.Instance.StoredSettings.SimulationSettings.SimulationFolder;
+                    var filePath = Path.Combine(simulationDir, "Dragonfly.json");
+                    if (string.IsNullOrWhiteSpace(simulationDir))
+                        return modelFilePath;
 
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                    if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+                    if (!Directory.Exists(simulationDir))
+                        Directory.CreateDirectory(simulationDir);
+
+                    if (File.Exists(filePath))
+                        FileUtils.TryDeleteFile(filePath);
 
                     File.WriteAllText(filePath, json);
+                    modelFilePath = filePath;
+
+                    return modelFilePath;
                 }
                 else
                 {
@@ -397,21 +249,125 @@ namespace Honeybee.Revit.CreateModel
                     hbModel.Properties = properties.ToHoneybee();
 
                     var json = JsonConvert.SerializeObject(hbModel, Formatting.Indented, new HB.AnyOfJsonConverter());
-                    if (string.IsNullOrWhiteSpace(json)) return;
+                    if (string.IsNullOrWhiteSpace(json))
+                        return modelFilePath;
 
-                    const string filePath = @"C:\Users\ksobon\Desktop\Honeybee.json";
-                    var dir = Path.GetDirectoryName(filePath);
-                    if (string.IsNullOrWhiteSpace(dir)) return;
+                    var simulationDir = AppSettings.Instance.StoredSettings.SimulationSettings.SimulationFolder;
+                    var filePath = Path.Combine(simulationDir, "Honeybee.json");
+                    if (string.IsNullOrWhiteSpace(simulationDir))
+                        return modelFilePath;
 
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                    if (File.Exists(filePath)) FileUtils.TryDeleteFile(filePath);
+                    if (!Directory.Exists(simulationDir))
+                        Directory.CreateDirectory(simulationDir);
+
+                    if (File.Exists(filePath))
+                        FileUtils.TryDeleteFile(filePath);
 
                     File.WriteAllText(filePath, json);
+                    modelFilePath = filePath;
+
+                    return modelFilePath;
                 }
             }
             catch(Exception e)
             {
                 _logger.Fatal(e);
+                return string.Empty;
+            }
+        }
+
+        public string RunSimulation(bool dragonfly, string modelFilePath)
+        {
+            var simulationSettings = AppSettings.Instance.StoredSettings.SimulationSettings;
+            var simulationDir = Path.GetDirectoryName(modelFilePath);
+            var simulationParamPath = PrepSimulation(simulationDir);
+
+            var htmlReport = AppSettings.Instance.StoredSettings.SimulationSettings.HtmlReport;
+            var osReport = AppSettings.Instance.StoredSettings.SimulationSettings.OpenStudioReport;
+            var oswFilePath = htmlReport || osReport
+                ? PrepOswSimulation(simulationDir, htmlReport, osReport)
+                : string.Empty;
+
+            return RunDragonflySimulateCommand(dragonfly, simulationDir, modelFilePath,
+                simulationSettings.EpwFilePath, simulationParamPath, oswFilePath);
+        }
+
+        public string RunDragonflySimulateCommand(
+            bool dragonfly, 
+            string simulationDir, 
+            string modelFilePath, 
+            string epwFilePath, 
+            string simulationParamPath, 
+            string oswFilePath = "")
+        {
+            try
+            {
+                var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+                if (path == null)
+                    return string.Empty;
+
+                string pyPath = null;
+                foreach (var p in path.Split(';'))
+                {
+                    var fullPath = Path.Combine(p, "python.exe");
+                    if (!File.Exists(fullPath))
+                        continue;
+
+                    pyPath = fullPath;
+                    break;
+                }
+
+                if (string.IsNullOrWhiteSpace(pyPath))
+                    return string.Empty;
+
+                var pyDir = Path.GetDirectoryName(pyPath);
+                if (pyDir == null)
+                    return string.Empty;
+
+                var energyModel = dragonfly ? "dragonfly" : "honeybee";
+                var dfPath = Path.Combine(pyDir, "Scripts", $"{energyModel}-energy.exe");
+                if (!File.Exists(dfPath))
+                    return string.Empty;
+
+                var ps = PowerShell.Create();
+                ps.AddCommand(pyPath)
+                    .AddParameter("-m")
+                    .AddCommand(dfPath)
+                    .AddArgument("simulate")
+                    .AddArgument("model")
+                    .AddArgument("--folder")
+                    .AddArgument(simulationDir);
+
+                if (!string.IsNullOrWhiteSpace(oswFilePath))
+                {
+                    ps.AddArgument("--base-osw");
+                    ps.AddArgument(oswFilePath);
+                }
+
+                ps.AddArgument("--sim-par-json")
+                    .AddArgument(simulationParamPath)
+                    .AddArgument(modelFilePath)
+                    .AddArgument(epwFilePath);
+
+                ps.Streams.Error.DataAdded += ErrorOnDataAdded;
+
+                var outputCollection = new PSDataCollection<PSObject>();
+                outputCollection.DataAdded += OutputCollectionOnDataAdded;
+                var result = ps.BeginInvoke<PSObject, PSObject>(null, outputCollection);
+
+                while (result.IsCompleted == false)
+                {
+                    Thread.Sleep(1000);
+                }
+
+                ps.Streams.Error.DataAdded -= ErrorOnDataAdded;
+
+                return outputCollection.Any() ? "Success!" : "Failure!";
+            }
+            catch (Exception e)
+            {
+                _logger.Fatal(e);
+                return "Failure!";
             }
         }
 
@@ -423,7 +379,7 @@ namespace Honeybee.Revit.CreateModel
                 var selection = UiDoc.Selection.PickObjects(ObjectType.Element, new FilterRoomsSpaces(), "Please select Rooms/Spaces.");
                 return selection.Select(x => new SpatialObjectWrapper(Doc.GetElement(x.ElementId))).ToList();
             }
-            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 _logger.Info("Selection was cancelled.");
                 return result;
@@ -451,7 +407,7 @@ namespace Honeybee.Revit.CreateModel
 
                 return shades;
             }
-            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 _logger.Info("Selection was cancelled.");
                 return result;
@@ -477,7 +433,7 @@ namespace Honeybee.Revit.CreateModel
 
                 return shades;
             }
-            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 _logger.Info("Selection was cancelled.");
                 return result;
@@ -506,7 +462,103 @@ namespace Honeybee.Revit.CreateModel
             return shades;
         }
 
+        #region Event Handlers
+
+        private static void OutputCollectionOnDataAdded(object sender, DataAddedEventArgs e)
+        {
+            var record = ((PSDataCollection<PSObject>)sender)[e.Index];
+
+            Messenger.Default.Send(new UpdateStatusBarMessage(record.BaseObject.ToString()));
+        }
+
+        private static void ErrorOnDataAdded(object sender, DataAddedEventArgs e)
+        {
+            var record = ((PSDataCollection<ErrorRecord>)sender)[e.Index];
+
+            Messenger.Default.Send(new UpdateStatusBarMessage(record.Exception?.Message));
+        }
+
+        #endregion
+
         #region Utilities
+
+        private List<HB.ProgramType> GetProgramTypeSet(IEnumerable<Room2D> rooms, ProgramType bProgramType)
+        {
+            var pTypes = rooms
+                .GroupBy(x => x.Properties.Energy.ProgramType.Identifier)
+                .Select(x => x.Key)
+                .ToList();
+
+            if (!pTypes.Contains(bProgramType.Identifier))
+                pTypes.Add(bProgramType.Identifier);
+
+            var jsonProgramTypes = RunHoneybeeEnergyCommand("program-types-by-id", pTypes);
+            JsonConverter[] converters =
+            {
+                new HB.AnyOfJsonConverter()
+            };
+
+            return JsonConvert.DeserializeObject<List<HB.ProgramType>>(jsonProgramTypes, converters);
+        }
+
+        private HB.ConstructionSet GetDefaultConstructionSet()
+        {
+            var args = new List<string> { "Default Generic Construction Set", "--none-defaults", "False" };
+            var jsonConstructionSets = RunHoneybeeEnergyCommand2("construction-set-by-id", args);
+            JsonConverter[] converters =
+            {
+                new HB.AnyOfJsonConverter()
+            };
+
+            return JsonConvert.DeserializeObject<HB.ConstructionSet>(jsonConstructionSets, converters);
+        }
+
+        private List<HB.ConstructionSet> GetConstructionSets(IEnumerable<Room2D> rooms, ConstructionSet bConstructionSet)
+        {
+            var cSets = rooms
+                .GroupBy(x => x.Properties.Energy.ConstructionSet.Identifier)
+                .Select(x => x.Key)
+                .ToList();
+
+            if (!cSets.Contains(bConstructionSet.Identifier))
+                cSets.Add(bConstructionSet.Identifier);
+
+            var jsonConstructionSets = RunHoneybeeEnergyCommand("construction-sets-by-id", cSets);
+            JsonConverter[] converters =
+            {
+                new HB.AnyOfJsonConverter()
+            };
+
+            return JsonConvert.DeserializeObject<List<HB.ConstructionSet>>(jsonConstructionSets, converters);
+        }
+
+        private static string PrepSimulation(string simulationDir)
+        {
+            var simParameter = new HB.SimulationParameter();
+            var simParamPath = Path.Combine(simulationDir, "simulation_parameter.json");
+            File.WriteAllText(simParamPath, simParameter.ToJson());
+
+            return simParamPath;
+        }
+
+        private static string PrepOswSimulation(string simulationDir, bool htmlReport, bool openStudioReport)
+        {
+            var osw = new OpenStudioWorkflow();
+            var measurePath = Path.Combine(HB.Helper.EnergyLibrary.LadybugToolsRootFolder, "resources", "measures");
+            osw.MeasurePaths.Add(measurePath);
+
+            if (htmlReport)
+                osw.Steps.Add(new Step("OpenStudioResults"));
+
+            if (openStudioReport)
+                osw.Steps.Add(new Step("ViewData"));
+
+            var jsonString = JsonConvert.SerializeObject(osw);
+            var oswPath = Path.Combine(simulationDir, "workflow_user.osw");
+            File.WriteAllText(oswPath, jsonString);
+
+            return oswPath;
+        }
 
         private static List<Shade> ShadesFromTrees(Element e, View v)
         {
@@ -596,54 +648,5 @@ namespace Honeybee.Revit.CreateModel
         }
 
         #endregion
-    }
-
-    public class FilterRoomsSpaces : ISelectionFilter
-    {
-        public bool AllowElement(Element elem)
-        {
-            return elem.Category.Id.IntegerValue == BuiltInCategory.OST_Rooms.GetHashCode() ||
-                   elem.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaces.GetHashCode();
-        }
-
-        public bool AllowReference(Reference reference, XYZ position)
-        {
-            return false;
-        }
-    }
-
-    public class FilterPlanting : ISelectionFilter
-    {
-        public bool AllowElement(Element elem)
-        {
-            return elem.Category.Id.IntegerValue == BuiltInCategory.OST_Planting.GetHashCode();
-        }
-
-        public bool AllowReference(Reference reference, XYZ position)
-        {
-            return false;
-        }
-    }
-
-    public class FilterPlanarFace : ISelectionFilter
-    {
-        private readonly Document _doc;
-
-        public FilterPlanarFace(Document doc)
-        {
-            _doc = doc;
-        }
-
-        public bool AllowElement(Element elem)
-        {
-            return true;
-        }
-
-        public bool AllowReference(Reference reference, XYZ position)
-        {
-            var element = _doc.GetElement(reference);
-            var planarFace = element.GetGeometryObjectFromReference(reference) as PlanarFace;
-            return planarFace != null;
-        }
     }
 }

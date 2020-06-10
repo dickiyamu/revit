@@ -26,7 +26,7 @@
                             and might affect energy calculations.
                         </TextBlock>
                         <Border BorderBrush="Silver" BorderThickness="0,1,0,0" Margin="0,8"/>
-                        <Image Source="../../Resources/ModelSettings/roomHeightOverride.png" Width="500" Height="333"/>
+                        <Image Source="/Honeybee.Core;Component/Resources/ModelSettings/roomHeightOverride.png" Width="500" Height="333"/>
                     </StackPanel>
                 </StackPanel.ToolTip>
             </StackPanel>
