@@ -16,7 +16,7 @@ namespace Honeybee.Core.WPF
         public static TextBlock StatusLabel = null;
         public static ImageButton LogButton = null;
         public static double ProgressValue;
-        public static List<string> Logs = null;
+        public static List<string> Logs;
 
         private delegate void UpdateProgressBarDelegate(DependencyProperty dp, object value);
         private delegate void UpdateStatusLabelDelegate(DependencyProperty dp, object value);
@@ -35,28 +35,13 @@ namespace Honeybee.Core.WPF
             Dispatcher.CurrentDispatcher.Invoke(_updateLabelDelegate, DispatcherPriority.Background, TextBlock.TextProperty, message);
         }
 
-        public static void InitializeProgressIndeterminate(string statusText)
-        {
-            if (null == ProgressBar || null == StatusLabel) return;
-
-            ProgressBar.Visibility = Visibility.Visible;
-
-            _updateLabelDelegate = StatusLabel.SetValue;
-            Dispatcher.CurrentDispatcher.Invoke(_updateLabelDelegate, DispatcherPriority.Background, TextBlock.TextProperty, statusText);
-
-            _updatePbDelegate = ProgressBar.SetValue;
-            ProgressBar.IsIndeterminate = true;
-
-            Logs = new List<string>();
-            LogButton.Visibility = Visibility.Hidden;
-        }
-
         /// <summary>
         /// Initialize Progress Bar and set Status Label.
         /// </summary>
         /// <param name="statusText">Status Label initial value.</param>
         /// <param name="maximum">Max count for the Progress Bar.</param>
-        public static void InitializeProgress(string statusText, int maximum)
+        /// <param name="indeterminate"></param>
+        public static void InitializeProgress(string statusText, int maximum, bool indeterminate = false)
         {
             if (null == ProgressBar || null == StatusLabel) return;
 
@@ -69,6 +54,12 @@ namespace Honeybee.Core.WPF
             _updatePbDelegate = ProgressBar.SetValue;
             ProgressBar.Value = ProgressValue;
             ProgressBar.Maximum = maximum;
+
+            Logs = new List<string>();
+            LogButton.Visibility = Visibility.Hidden;
+
+            if (indeterminate)
+                ProgressBar.IsIndeterminate = true;
         }
 
         /// <summary>
@@ -97,23 +88,16 @@ namespace Honeybee.Core.WPF
         /// <summary>
         /// Clean up Progress bar by resetting Status Label.
         /// </summary>
-        public static void FinalizeProgress()
+        public static void FinalizeProgress(bool indeterminate = false)
         {
             if (null == ProgressBar || null == StatusLabel) return;
 
             ProgressValue = 0;
             ProgressBar.Visibility = Visibility.Hidden;
             StatusLabel.Text = "Ready.";
-        }
 
-        public static void FinalizeProgressIndeterminate()
-        {
-            if (null == ProgressBar || null == StatusLabel) return;
-
-            ProgressValue = 0;
-            ProgressBar.Visibility = Visibility.Hidden;
-            ProgressBar.IsIndeterminate = false;
-            StatusLabel.Text = "Ready.";
+            if (indeterminate)
+                ProgressBar.IsIndeterminate = false;
         }
     }
 }

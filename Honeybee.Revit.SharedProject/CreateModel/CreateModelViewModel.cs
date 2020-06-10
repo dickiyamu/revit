@@ -30,9 +30,7 @@ namespace Honeybee.Revit.CreateModel
     {
         #region Properties
 
-        public CreateModelModel Model { get; set; }
         public RelayCommand<Window> Cancel { get; set; }
-        public RelayCommand<Window> Ok { get; set; }
         public RelayCommand Help { get; set; }
         public RelayCommand ClearFilters { get; set; }
         public RelayCommand FilterChanged { get; set; }
@@ -46,8 +44,6 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ResetProgramType { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowBoundaryConditions { get; set; }
         public RelayCommand<SpatialObjectWrapper> ShowDetails { get; set; }
-        //public RelayCommand<Window> ExportHoneybee { get; set; }
-        //public RelayCommand<Window> ExportDragonfly { get; set; }
         public RelayCommand ExportModel { get; set; }
         public RelayCommand<Window> RunSimulation { get; set; }
         public RelayCommand AddPlanting { get; set; }
@@ -55,9 +51,11 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ClearShades { get; set; }
         public RelayCommand ShowLog { get; set; }
 
+        public CreateModelModel Model { get; set; }
         public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
         public SolidColorBrush BorderBrush { get; set; }
+        public string Title { get; set; }
 
         private bool _isExpanded = true;
         // ReSharper disable once UnusedMember.Global
@@ -178,12 +176,13 @@ namespace Honeybee.Revit.CreateModel
 
             Model = model;
             Dragonfly = dragonfly;
+            Title = Dragonfly ? "Dragonfly - Create Model" : "Honeybee - Create Model";
             Settings = AppSettings.Instance;
             ContextShades = Model.GetContextShades().ToObservableCollection();
 
             var color = dragonfly
-                ? (Color) ColorConverter.ConvertFromString("#00A651")
-                : (Color) ColorConverter.ConvertFromString("#F5B34C");
+                ? Color.FromRgb(0, 166, 81)
+                : Color.FromRgb(245, 179, 76);
             BorderBrush = new SolidColorBrush(color);
 
             var so = Model.GetSpatialObjects();
@@ -195,7 +194,6 @@ namespace Honeybee.Revit.CreateModel
             SpatialObjects.Filter = FilterDataGrid;
 
             Cancel = new RelayCommand<Window>(OnCancel);
-            Ok = new RelayCommand<Window>(OnOk);
             Help = new RelayCommand(OnHelp);
             ClearFilters = new RelayCommand(OnClearFilters);
             FilterChanged = new RelayCommand(OnFilterChanged);
@@ -210,8 +208,6 @@ namespace Honeybee.Revit.CreateModel
             ShowBoundaryConditions = new RelayCommand<SpatialObjectWrapper>(OnShowBoundaryConditions);
             ShowDetails = new RelayCommand<SpatialObjectWrapper>(OnShowDetails);
             ExportModel = new RelayCommand(OnExportModel);
-            //ExportHoneybee = new RelayCommand<Window>(OnExportHoneybee);
-            //ExportDragonfly = new RelayCommand<Window>(OnExportDragonfly);
             RunSimulation = new RelayCommand<Window>(OnRunSimulation);
             AddPlanting = new RelayCommand(OnAddPlanting);
             AddFaces = new RelayCommand(OnAddFaces);
@@ -238,7 +234,7 @@ namespace Honeybee.Revit.CreateModel
         private async void OnRunSimulation(Window obj)
         {
             var modelName = Dragonfly ? "Dragonfly" : "Honeybee";
-            StatusBarManager.InitializeProgressIndeterminate($"Exporting {modelName} Model...");
+            StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", 100, true);
 
             var modelPath = await Task.Run(() => ExportModel2());
 
@@ -246,7 +242,7 @@ namespace Honeybee.Revit.CreateModel
 
             var result = await Task.Run(() => Model.RunSimulation(Dragonfly, modelPath));
 
-            StatusBarManager.FinalizeProgressIndeterminate();
+            StatusBarManager.FinalizeProgress(true);
             StatusBarManager.SetStatus(result);
             StatusBarManager.LogButton.Visibility = Visibility.Visible;
         }
@@ -282,36 +278,6 @@ namespace Honeybee.Revit.CreateModel
             Model.SelectPlanting().ForEach(x => ContextShades.Add(x));
         }
 
-        //private void OnExportDragonfly(Window win)
-        //{
-        //    var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-        //        .Where(x => x.IsSelected)
-        //        .Select(x => x.Room2D)
-        //        .ToList();
-
-        //    if (selected.Any())
-        //    {
-        //        Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
-        //    }   
-
-        //    //win.Close();
-        //}
-
-        //private void OnExportHoneybee(Window win)
-        //{
-        //    var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-        //        .Where(x => x.IsSelected)
-        //        .Select(x => x.Room2D)
-        //        .ToList();
-
-        //    if (selected.Any())
-        //    {
-        //        Model.SerializeRoom2D(selected, BldgProgramType, BldgConstructionSet, Dragonfly, ContextShades.ToList());
-        //    }
-
-        //    //win.Close();
-        //}
-
         private static void OnShowDetails(SpatialObjectWrapper so)
         {
             so.IsExpanded = !so.IsExpanded;
@@ -328,7 +294,8 @@ namespace Honeybee.Revit.CreateModel
         {
             foreach (SpatialObjectWrapper so in SpatialObjects)
             {
-                if (!so.IsSelected) continue;
+                if (!so.IsSelected)
+                    continue;
 
                 so.Room2D.Properties.Energy.ConstructionSet.Vintage = BldgConstructionSet.Vintage;
                 so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
@@ -341,7 +308,8 @@ namespace Honeybee.Revit.CreateModel
         {
             foreach (SpatialObjectWrapper so in SpatialObjects)
             {
-                if (!so.IsSelected) continue;
+                if (!so.IsSelected)
+                    continue;
 
                 so.Room2D.Properties.Energy.ProgramType.Vintage = BldgProgramType.Vintage;
                 so.Room2D.Properties.Energy.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
@@ -356,7 +324,8 @@ namespace Honeybee.Revit.CreateModel
 
             foreach (SpatialObjectWrapper so in SpatialObjects)
             {
-                if (!so.IsSelected) continue;
+                if (!so.IsSelected)
+                    continue;
 
                 so.Room2D.Properties.Energy.ConstructionSet.Vintage = ConstructionSetTemp.Vintage;
                 so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = ConstructionSetTemp.ClimateZone;
@@ -373,7 +342,8 @@ namespace Honeybee.Revit.CreateModel
 
             foreach (SpatialObjectWrapper so in SpatialObjects)
             {
-                if (!so.IsSelected) continue;
+                if (!so.IsSelected)
+                    continue;
 
                 so.Room2D.Properties.Energy.ProgramType.Vintage = ProgramTypeTemp.Vintage;
                 so.Room2D.Properties.Energy.ProgramType.BuildingProgram = ProgramTypeTemp.BuildingProgram;
@@ -390,7 +360,8 @@ namespace Honeybee.Revit.CreateModel
 
             foreach (SpatialObjectWrapper so in SpatialObjects)
             {
-                if (so.IsConstructionSetOverriden) continue;
+                if (so.IsConstructionSetOverriden)
+                    continue;
 
                 so.Room2D.Properties.Energy.ConstructionSet.Vintage = BldgConstructionSet.Vintage;
                 so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
@@ -404,7 +375,8 @@ namespace Honeybee.Revit.CreateModel
 
             foreach (SpatialObjectWrapper so in SpatialObjects)
             {
-                if (so.IsProgramTypeOverriden) continue;
+                if (so.IsProgramTypeOverriden)
+                    continue;
 
                 so.Room2D.Properties.Energy.ProgramType.Vintage = BldgProgramType.Vintage;
                 so.Room2D.Properties.Energy.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
@@ -420,7 +392,8 @@ namespace Honeybee.Revit.CreateModel
         private void OnPickSpatialObjects()
         {
             var selected = Model.SelectRoomsSpaces();
-            if (!selected.Any()) return;
+            if (!selected.Any())
+                return;
 
             SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>().ForEach(x => x.IsSelected = selected.Contains(x));
         }
@@ -442,17 +415,6 @@ namespace Honeybee.Revit.CreateModel
             win.Close();
         }
 
-        private void OnOk(Window win)
-        {
-            //var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-            //    .Where(x => x.IsSelected)
-            //    .Select(x => x.Room2D)
-            //    .ToList();
-            //if (selected.Any()) Model.SerializeRoom2D(selected);
-
-            //win.Close();
-        }
-
         private static void OnHelp()
         {
             Process.Start("");
@@ -464,6 +426,11 @@ namespace Honeybee.Revit.CreateModel
             Messenger.Default.Register<TypeChanged>(this, OnTypeChanged);
             Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreated);
             Messenger.Default.Register<UpdateStatusBarMessage>(this, OnUpdateStatusBar);
+        }
+
+        public void OnWindowUnloaded()
+        {
+            Cleanup();
         }
 
         private static void OnUpdateStatusBar(UpdateStatusBarMessage obj)
@@ -482,7 +449,8 @@ namespace Honeybee.Revit.CreateModel
         private void OnAnnotationsCreated(AnnotationsCreated msg)
         {
             var index = SpatialObjectsModels.IndexOf(msg.SpatialObject);
-            if (index == -1) return;
+            if (index == -1)
+                return;
 
             SpatialObjectsModels[index] = msg.SpatialObject;
         }
@@ -492,10 +460,12 @@ namespace Honeybee.Revit.CreateModel
             // (Konrad) Find the Object Wrapper with matching Id.
             var found = SpatialObjectsModels.FirstOrDefault(x =>
                 x.Room2D.Annotations.FirstOrDefault(y => y.UniqueId == msg.Annotation.UniqueId) != null);
-            if (found == null) return;
+            if (found == null)
+                return;
 
             var index = found.Room2D.Annotations.IndexOf(msg.Annotation);
-            if (!(found.Room2D.BoundaryConditions[index] is Surface bc)) return;
+            if (!(found.Room2D.BoundaryConditions[index] is Surface bc))
+                return;
 
             // (Konrad) We only need to update the BoundaryCondition Adjacent Room properties.
             var newBc = new Tuple<string, string, string>(string.Empty, bc.BoundaryConditionObjects.Item1, msg.Annotation.AdjacentRoom);
@@ -547,8 +517,11 @@ namespace Honeybee.Revit.CreateModel
         private bool FilterDataGrid(object obj)
         {
             var so = obj as SpatialObjectWrapper;
-            if (so != null && (ShowRooms && so.ObjectType == SpatialObjectType.Room)) return true;
-            if (so != null && (ShowSpaces && so.ObjectType == SpatialObjectType.Space)) return true;
+            if (so != null && (ShowRooms && so.ObjectType == SpatialObjectType.Room))
+                return true;
+
+            if (so != null && (ShowSpaces && so.ObjectType == SpatialObjectType.Space))
+                return true;
 
             return false;
         }

@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using Honeybee.Core.WPF;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
-using NLog.Fluent;
 
 namespace Honeybee.Revit.CreateModel
 {
@@ -79,7 +78,13 @@ namespace Honeybee.Revit.CreateModel
             StatusBarManager.LogButton = LogButton;
 
             var vm = DataContext as CreateModelViewModel;
-            vm.OnWindowLoaded();
+            vm?.OnWindowLoaded();
+        }
+
+        private void CreateModelView_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            var vm = DataContext as CreateModelViewModel;
+            vm?.OnWindowUnloaded();
         }
     }
 }

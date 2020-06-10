@@ -15,12 +15,12 @@
         WindowStartupLocation="CenterScreen"
         BorderThickness="0,5,0,0"
         BorderBrush="{Binding BorderBrush}"
-        Icon="/Honeybee.Core;Component/Resources/honeybee.ico"
-        Title="Honeybee - Create Model"
+        Title="{Binding Title}"
         SizeToContent="Height"
         Width="1400"
         d:DesignHeight="450"
-        Loaded="CreateModelView_OnLoaded">
+        Loaded="CreateModelView_OnLoaded" 
+        Unloaded="CreateModelView_OnUnloaded">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -35,6 +35,8 @@
             <createModel:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
             <createModel:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <createModel:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+            <createModel:ResourceConverter x:Key="ResourceConverter" />
+            <createModel:StyleConverter x:Key="StyleConverter" />
             <Style TargetType="{x:Type wpf:DataGridExtension}">
                 <Setter Property="Background"
                         Value="White" />
@@ -56,7 +58,7 @@
                 <Setter Property="HorizontalContentAlignment"
                         Value="Center" />
             </Style>
-            <Style x:Key="ContentDataGridCentering"
+            <Style x:Key="ContentDataGridCenteringHb"
                    TargetType="{x:Type DataGridCell}">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -83,6 +85,33 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+            <Style x:Key="ContentDataGridCenteringDf"
+                   TargetType="{x:Type DataGridCell}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground"
+                        Value="Black" />
+                <Setter Property="BorderBrush"
+                        Value="LightGray" />
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Style.Triggers>
+                    <Trigger Property="IsSelected"
+                             Value="True">
+                        <Setter Property="Background"
+                                Value="#00A651" />
+                        <Setter Property="BorderBrush"
+                                Value="#00A651" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
             <ContextMenu x:Key="RowMenu"
                          DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                 <MenuItem Header="Zoom In" CommandParameter="{Binding}"
@@ -91,7 +120,8 @@
             <Style x:Key="DefaultRowStyle" TargetType="{x:Type DataGridRow}">
                 <Setter Property="IsSelected" Value="{Binding IsSelected}" />
                 <Setter Property="ContextMenu" Value="{StaticResource RowMenu}" />
-                <Setter Property="DetailsVisibility" Value="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <Setter Property="DetailsVisibility"
+                        Value="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
             </Style>
             <ObjectDataProvider x:Key="VintagesDataProvider"
                                 ObjectType="{x:Type enums:Vintages}"
@@ -121,10 +151,15 @@
             </Storyboard>-->
         </ResourceDictionary>
     </Window.Resources>
+    <Window.Icon>
+        <MultiBinding Converter="{StaticResource ResourceConverter}">
+            <Binding Path="Dragonfly" />
+            <Binding Source="icon" />
+        </MultiBinding>
+    </Window.Icon>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="32" />
             <RowDefinition Height="40" />
             <RowDefinition Height="25" />
         </Grid.RowDefinitions>
@@ -333,16 +368,16 @@
         </Popup>
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
                 <GroupBox Margin="10,5,10,0"
-                      VerticalAlignment="Stretch">
+                          VerticalAlignment="Stretch">
                     <GroupBox.Header>
                         <TextBlock FontWeight="Bold"
-                               Foreground="DarkSlateGray">
-                        <Run Text="Building Properties" />
+                                   Foreground="DarkSlateGray">
+                            <Run Text="Building Properties" />
                         </TextBlock>
                     </GroupBox.Header>
                     <Grid Margin="0,5,0,0">
@@ -353,100 +388,94 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Construction Set:"
-                               FontWeight="Bold" />
+                                   FontWeight="Bold" />
                             <Label
-                            Content="{Binding BldgConstructionSet.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='2013::ClimateZone4::SteelFramed'}" />
+                                Content="{Binding BldgConstructionSet.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='2013::ClimateZone4::SteelFramed'}" />
                             <b:ImageButton Command="{Binding OpenPopup, Mode=OneWay}"
-                                       CommandParameter="{Binding ElementName=BuildingConstructionSetPopup}"
-                                       MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
-                                       HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Cursor="Hand"
-                                       Width="22"
-                                       Height="22"
-                                       Margin="5,0,0,0" />
+                                           CommandParameter="{Binding ElementName=BuildingConstructionSetPopup}"
+                                           MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
+                                           HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           Width="22"
+                                           Height="22"
+                                           Margin="5,0,0,0" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
                             <Label Content="Program Type:"
-                               FontWeight="Bold" />
+                                   FontWeight="Bold" />
                             <Label
-                            Content="{Binding BldgProgramType.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='2013::MediumOffice::ClosedOffice'}" />
+                                Content="{Binding BldgProgramType.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='2013::MediumOffice::ClosedOffice'}" />
                             <b:ImageButton Command="{Binding OpenPopup, Mode=OneWay}"
-                                       CommandParameter="{Binding ElementName=BuildingProgramTypePopup}"
-                                       MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
-                                       HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Cursor="Hand"
-                                       Width="22"
-                                       Height="22"
-                                       Margin="5,0,0,0" />
+                                           CommandParameter="{Binding ElementName=BuildingProgramTypePopup}"
+                                           MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
+                                           HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           Width="22"
+                                           Height="22"
+                                           Margin="5,0,0,0" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" 
-                                Grid.Row="0" 
-                                Grid.Column="2">
-                            <Label Content="Context Shades:" 
-                               FontWeight="Bold" />
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Row="0"
+                                    Grid.Column="2">
+                            <Label Content="Context Shades:"
+                                   FontWeight="Bold" />
                             <Label Content="Selected [" />
-                            <Label Content="{Binding ContextShades.Count, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='0'}" 
-                               Padding="0" 
-                               VerticalContentAlignment="Center" />
+                            <Label
+                                Content="{Binding ContextShades.Count, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue='0'}"
+                                Padding="0"
+                                VerticalContentAlignment="Center" />
                             <Label Content="]" />
-                            <b:DropDownButton MainImage="/Honeybee.Core;Component/Resources/24x24/pick.png"
-                                          HoverImage="/Honeybee.Core;Component/Resources/24x24/pickHover.png"
-                                          Cursor="Hand"
-                                          HorizontalAlignment="Right"
-                                          VerticalAlignment="Center"
-                                          Margin="5,0,0,0"
-                                          Width="22"
-                                          Height="22"
-                                          ToolTip="Add Context Shading Elements">
+                            <b:DropDownButton HoverImage="/Honeybee.Core;Component/Resources/24x24/pickHover.png"
+                                              Cursor="Hand"
+                                              HorizontalAlignment="Right"
+                                              VerticalAlignment="Center"
+                                              Margin="5,0,0,0"
+                                              Width="22"
+                                              Height="22"
+                                              ToolTip="Add Context Shading Elements">
+                                <b:DropDownButton.MainImage>
+                                    <MultiBinding Converter="{StaticResource ResourceConverter}">
+                                        <Binding Path="Dragonfly" />
+                                        <Binding Source="pick" />
+                                    </MultiBinding>
+                                </b:DropDownButton.MainImage>
                                 <b:DropDownButton.Menu>
                                     <ContextMenu>
                                         <MenuItem Command="{Binding AddPlanting}"
-                                              Header="Select Planting" />
+                                                  Header="Select Planting" />
                                         <MenuItem Command="{Binding AddFaces}"
-                                              Header="Select Faces" />
+                                                  Header="Select Faces" />
                                     </ContextMenu>
                                 </b:DropDownButton.Menu>
                             </b:DropDownButton>
-                            <!--<b:ImageButton Command="{Binding AddPlanting, Mode=OneWay}"
-                                       MainImage="../Resources/24x24/pickPlanting.png"
-                                       HoverImage="../Resources/24x24/pickPlantingHover.png"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Cursor="Hand"
-                                       Width="22"
-                                       Height="22"
-                                       Margin="5,0,0,0" />
-                        <b:ImageButton Command="{Binding AddFaces, Mode=OneWay}"
-                                       MainImage="../Resources/24x24/pickFace.png"
-                                       HoverImage="../Resources/24x24/pickFaceHover.png"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Cursor="Hand"
-                                       Width="22"
-                                       Height="22"
-                                       Margin="5,0,0,0" />-->
                             <b:ImageButton Command="{Binding ClearShades, Mode=OneWay}"
-                                       MainImage="/Honeybee.Core;Component/Resources/24x24/delete.png"
-                                       HoverImage="/Honeybee.Core;Component/Resources/24x24/deleteHover.png"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Cursor="Hand"
-                                       Width="22"
-                                       Height="22"
-                                       Margin="5,0,0,0" />
+                                           HoverImage="/Honeybee.Core;Component/Resources/24x24/deleteHover.png"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           Width="22"
+                                           Height="22"
+                                           Margin="5,0,0,0">
+                                <b:ImageButton.MainImage>
+                                    <MultiBinding Converter="{StaticResource ResourceConverter}">
+                                        <Binding Path="Dragonfly" />
+                                        <Binding Source="delete" />
+                                    </MultiBinding>
+                                </b:ImageButton.MainImage>
+                            </b:ImageButton>
                         </StackPanel>
                     </Grid>
                 </GroupBox>
                 <GroupBox Margin="10,5,10,0"
-                      VerticalAlignment="Stretch">
+                          VerticalAlignment="Stretch">
                     <GroupBox.Header>
                         <TextBlock FontWeight="Bold"
-                               Foreground="DarkSlateGray">
-                        <Run Text="Room/Space Selections &amp; Property Overrides" />
+                                   Foreground="DarkSlateGray">
+                            <Run Text="Room/Space Selections &amp; Property Overrides" />
                         </TextBlock>
                     </GroupBox.Header>
                     <Grid>
@@ -454,20 +483,24 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="24" />
                         </Grid.RowDefinitions>
-                        <wpf:DataGridExtension
-                        ItemsSource="{Binding SpatialObjects}"
-                        CellStyle="{StaticResource ContentDataGridCentering}"
-                        RowStyle="{StaticResource DefaultRowStyle}"
-                        VerticalScrollBarVisibility="Auto"
-                        HorizontalScrollBarVisibility="Hidden"
-                        CanUserAddRows="False"
-                        CanUserResizeColumns="False"
-                        CanUserSortColumns="False"
-                        IsReadOnly="False"
-                        SelectionMode="Extended"
-                        SelectionUnit="FullRow"
-                        MaxHeight="400"
-                        Margin="10">
+                        <wpf:DataGridExtension ItemsSource="{Binding SpatialObjects}"
+                                               RowStyle="{StaticResource DefaultRowStyle}"
+                                               VerticalScrollBarVisibility="Auto"
+                                               HorizontalScrollBarVisibility="Hidden"
+                                               CanUserAddRows="False"
+                                               CanUserResizeColumns="False"
+                                               CanUserSortColumns="False"
+                                               IsReadOnly="False"
+                                               SelectionMode="Extended"
+                                               SelectionUnit="FullRow"
+                                               MaxHeight="400"
+                                               Margin="10">
+                            <wpf:DataGridExtension.CellStyle>
+                                <MultiBinding Converter="{StaticResource StyleConverter}">
+                                    <Binding RelativeSource="{RelativeSource Self}"/>
+                                    <Binding Path="Dragonfly"/>
+                                </MultiBinding>
+                            </wpf:DataGridExtension.CellStyle>
                             <wpf:DataGridExtension.GroupStyle>
                                 <GroupStyle>
                                     <GroupStyle.HeaderTemplate>
@@ -482,8 +515,9 @@
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                        <Expander IsExpanded="{Binding DataContext.IsExpanded, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type wpf:DataGridExtension}}, Mode=OneTime}" 
-                                                              Background="LightGray">
+                                                        <Expander
+                                                            IsExpanded="{Binding DataContext.IsExpanded, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type wpf:DataGridExtension}}, Mode=OneTime}"
+                                                            Background="LightGray">
                                                             <Expander.Header>
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <TextBlock Text="{Binding Name}" />
@@ -512,59 +546,59 @@
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <!-- Name -->
-                                            <TextBlock Grid.Row="0" 
-                                                   Grid.Column="0" 
-                                                   Text="Name: " 
-                                                   FontWeight="Bold" />
-                                            <TextBlock Grid.Row="0" 
-                                                   Grid.Column="1" 
-                                                   Text="{Binding Room2D.Name}" />
+                                            <TextBlock Grid.Row="0"
+                                                       Grid.Column="0"
+                                                       Text="Name: "
+                                                       FontWeight="Bold" />
+                                            <TextBlock Grid.Row="0"
+                                                       Grid.Column="1"
+                                                       Text="{Binding Room2D.Name}" />
                                             <!-- Floor Height -->
-                                            <TextBlock Grid.Row="1" 
-                                                   Grid.Column="0" 
-                                                   Text="Floor Height: " 
-                                                   FontWeight="Bold" />
-                                            <TextBlock Grid.Row="1" 
-                                                   Grid.Column="1" 
-                                                   Text="{Binding Room2D.FloorHeight, StringFormat={}{0:#,0.0}}" />
+                                            <TextBlock Grid.Row="1"
+                                                       Grid.Column="0"
+                                                       Text="Floor Height: "
+                                                       FontWeight="Bold" />
+                                            <TextBlock Grid.Row="1"
+                                                       Grid.Column="1"
+                                                       Text="{Binding Room2D.FloorHeight, StringFormat={}{0:#,0.0}}" />
                                             <!-- Floor to Ceiling Height -->
-                                            <TextBlock Grid.Row="2" 
-                                                   Grid.Column="0" 
-                                                   Text="Floor to Ceiling Height: " 
-                                                   FontWeight="Bold" />
-                                            <TextBox Grid.Row="2" 
-                                                 Grid.Column="1" 
-                                                 Text="{Binding Room2D.FloorToCeilingHeight, StringFormat={}{0:#,0.0}}" 
-                                                 VerticalContentAlignment="Center" 
-                                                 VerticalAlignment="Center"
-                                                 HorizontalAlignment="Left"
-                                                 HorizontalContentAlignment="Left"
-                                                 Width="100" />
+                                            <TextBlock Grid.Row="2"
+                                                       Grid.Column="0"
+                                                       Text="Floor to Ceiling Height: "
+                                                       FontWeight="Bold" />
+                                            <TextBox Grid.Row="2"
+                                                     Grid.Column="1"
+                                                     Text="{Binding Room2D.FloorToCeilingHeight, StringFormat={}{0:#,0.0}}"
+                                                     VerticalContentAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     HorizontalAlignment="Left"
+                                                     HorizontalContentAlignment="Left"
+                                                     Width="100" />
                                             <!-- Is Ground Contact -->
-                                            <TextBlock Grid.Row="3" 
-                                                   Grid.Column="0" 
-                                                   Text="Is Ground Contact: " 
-                                                   FontWeight="Bold" />
-                                            <CheckBox Grid.Row="3" 
-                                                  Grid.Column="1" 
-                                                  IsChecked="{Binding Room2D.IsGroundContact}" 
-                                                  VerticalContentAlignment="Center"/>
+                                            <TextBlock Grid.Row="3"
+                                                       Grid.Column="0"
+                                                       Text="Is Ground Contact: "
+                                                       FontWeight="Bold" />
+                                            <CheckBox Grid.Row="3"
+                                                      Grid.Column="1"
+                                                      IsChecked="{Binding Room2D.IsGroundContact}"
+                                                      VerticalContentAlignment="Center" />
                                             <!-- Is Top Exposed -->
-                                            <TextBlock Grid.Row="4" 
-                                                   Grid.Column="0" 
-                                                   Text="Is Top Exposed: " 
-                                                   FontWeight="Bold" />
-                                            <CheckBox Grid.Row="4" 
-                                                  Grid.Column="1" 
-                                                  IsChecked="{Binding Room2D.IsTopExposed}" 
-                                                  VerticalContentAlignment="Center"/>
+                                            <TextBlock Grid.Row="4"
+                                                       Grid.Column="0"
+                                                       Text="Is Top Exposed: "
+                                                       FontWeight="Bold" />
+                                            <CheckBox Grid.Row="4"
+                                                      Grid.Column="1"
+                                                      IsChecked="{Binding Room2D.IsTopExposed}"
+                                                      VerticalContentAlignment="Center" />
                                         </Grid>
                                     </DockPanel>
                                 </DataTemplate>
@@ -574,75 +608,87 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate DataType="{x:Type wrappers:SpatialObjectWrapper}">
                                             <CheckBox IsChecked="{Binding IsSelected}"
-                                                  IsHitTestVisible="False"
-                                                  Focusable="False"
-                                                  HorizontalAlignment="Center" />
+                                                      IsHitTestVisible="False"
+                                                      Focusable="False"
+                                                      HorizontalAlignment="Center" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Room/Space Name"
-                                                    Width="*"
-                                                    IsReadOnly="True">
+                                                        Width="*"
+                                                        IsReadOnly="True">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid x:Name="RoomNameGrid"
-                                              HorizontalAlignment="Stretch"
-                                              Background="Transparent">
+                                                  HorizontalAlignment="Stretch"
+                                                  Background="Transparent">
                                                 <StackPanel Orientation="Horizontal"
-                                                        HorizontalAlignment="Stretch">
+                                                            HorizontalAlignment="Stretch">
                                                     <Label Content="{Binding Name}" />
                                                     <b:ImageButton x:Name="ShowDetailsButton"
-                                                               Command="{Binding DataContext.ShowDetails, Mode=OneWay, ElementName=Win}"
-                                                               CommandParameter="{Binding }"
-                                                               MainImage="/Honeybee.Core;Component/Resources/24x24/showDetails.png"
-                                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/showDetailsHover.png"
-                                                               VerticalAlignment="Center"
-                                                               VerticalContentAlignment="Center"
-                                                               HorizontalAlignment="Center"
-                                                               Visibility="Collapsed"
-                                                               Cursor="Hand"
-                                                               Width="22"
-                                                               Height="22"
-                                                               Margin="5,0,0,0" />
+                                                                   Command="{Binding DataContext.ShowDetails, Mode=OneWay, ElementName=Win}"
+                                                                   CommandParameter="{Binding }"
+                                                                   MainImage="/Honeybee.Core;Component/Resources/24x24/showDetails.png"
+                                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/showDetailsHover.png"
+                                                                   VerticalAlignment="Center"
+                                                                   VerticalContentAlignment="Center"
+                                                                   HorizontalAlignment="Center"
+                                                                   Visibility="Collapsed"
+                                                                   Cursor="Hand"
+                                                                   Width="22"
+                                                                   Height="22"
+                                                                   Margin="5,0,0,0" />
                                                 </StackPanel>
                                             </Grid>
                                             <DataTemplate.Triggers>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding IsExpanded}" Value="True"/>
-                                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="True" />
+                                                        <Condition Binding="{Binding IsExpanded}" Value="True" />
+                                                        <Condition
+                                                            Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}"
+                                                            Value="True" />
                                                     </MultiDataTrigger.Conditions>
-                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Visible" />
+                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility"
+                                                            Value="Visible" />
                                                 </MultiDataTrigger>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding IsExpanded}" Value="True"/>
-                                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="False" />
+                                                        <Condition Binding="{Binding IsExpanded}" Value="True" />
+                                                        <Condition
+                                                            Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}"
+                                                            Value="False" />
                                                     </MultiDataTrigger.Conditions>
-                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Visible" />
+                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility"
+                                                            Value="Visible" />
                                                 </MultiDataTrigger>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding IsExpanded}" Value="False"/>
-                                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="True" />
+                                                        <Condition Binding="{Binding IsExpanded}" Value="False" />
+                                                        <Condition
+                                                            Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}"
+                                                            Value="True" />
                                                     </MultiDataTrigger.Conditions>
-                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Visible" />
+                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility"
+                                                            Value="Visible" />
                                                 </MultiDataTrigger>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding IsExpanded}" Value="False"/>
-                                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="False" />
+                                                        <Condition Binding="{Binding IsExpanded}" Value="False" />
+                                                        <Condition
+                                                            Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}"
+                                                            Value="False" />
                                                     </MultiDataTrigger.Conditions>
-                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility" Value="Collapsed" />
+                                                    <Setter TargetName="ShowDetailsButton" Property="Visibility"
+                                                            Value="Collapsed" />
                                                 </MultiDataTrigger>
                                             </DataTemplate.Triggers>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Level"
-                                                Binding="{Binding Level.Name}"
-                                                Width="150"
-                                                IsReadOnly="True">
+                                                    Binding="{Binding Level.Name}"
+                                                    Width="150"
+                                                    IsReadOnly="True">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style>
                                             <Setter Property="TextBlock.TextAlignment" Value="Left" />
@@ -651,207 +697,211 @@
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
                                 <DataGridTemplateColumn Header="Construction Set"
-                                                    Width="270"
-                                                    HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                                        Width="270"
+                                                        HeaderStyle="{StaticResource CenterGridHeaderStyle}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid x:Name="ConstructionSetGrid"
-                                              HorizontalAlignment="Stretch"
-                                              Width="270"
-                                              Background="Transparent">
+                                                  HorizontalAlignment="Stretch"
+                                                  Width="270"
+                                                  Background="Transparent">
                                                 <StackPanel Orientation="Horizontal"
-                                                        HorizontalAlignment="Stretch"
-                                                        Width="270">
+                                                            HorizontalAlignment="Stretch"
+                                                            Width="270">
                                                     <Label
-                                                    Content="{Binding Room2D.Properties.Energy.ConstructionSet.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                        Content="{Binding Room2D.Properties.Energy.ConstructionSet.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     <b:ImageButton x:Name="ConstructionSetAddButton"
-                                                               Command="{Binding DataContext.OpenPopup, Mode=OneWay, ElementName=Win}"
-                                                               CommandParameter="{Binding ElementName=ConstructionSetPopup}"
-                                                               MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
-                                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
-                                                               VerticalAlignment="Center"
-                                                               HorizontalAlignment="Center"
-                                                               Visibility="Collapsed"
-                                                               Cursor="Hand"
-                                                               Width="22"
-                                                               Height="22"
-                                                               Margin="5,0,0,0" />
+                                                                   Command="{Binding DataContext.OpenPopup, Mode=OneWay, ElementName=Win}"
+                                                                   CommandParameter="{Binding ElementName=ConstructionSetPopup}"
+                                                                   MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
+                                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"
+                                                                   Visibility="Collapsed"
+                                                                   Cursor="Hand"
+                                                                   Width="22"
+                                                                   Height="22"
+                                                                   Margin="5,0,0,0" />
                                                     <b:ImageButton x:Name="ConstructionSetResetButton"
-                                                               Command="{Binding DataContext.ResetConstructionSet, Mode=OneWay, ElementName=Win}"
-                                                               MainImage="/Honeybee.Core;Component/Resources/24x24/reset.png"
-                                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/resetHover.png"
-                                                               VerticalAlignment="Center"
-                                                               HorizontalAlignment="Center"
-                                                               Visibility="Collapsed"
-                                                               Cursor="Hand"
-                                                               Width="22"
-                                                               Height="22"
-                                                               Margin="0" />
+                                                                   Command="{Binding DataContext.ResetConstructionSet, Mode=OneWay, ElementName=Win}"
+                                                                   MainImage="/Honeybee.Core;Component/Resources/24x24/reset.png"
+                                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/resetHover.png"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"
+                                                                   Visibility="Collapsed"
+                                                                   Cursor="Hand"
+                                                                   Width="22"
+                                                                   Height="22"
+                                                                   Margin="0" />
                                                 </StackPanel>
                                             </Grid>
                                             <DataTemplate.Triggers>
                                                 <Trigger SourceName="ConstructionSetGrid" Property="IsMouseOver"
-                                                     Value="True">
+                                                         Value="True">
                                                     <Setter TargetName="ConstructionSetAddButton" Property="Visibility"
-                                                        Value="Visible" />
-                                                    <Setter TargetName="ConstructionSetResetButton" Property="Visibility"
-                                                        Value="Visible" />
+                                                            Value="Visible" />
+                                                    <Setter TargetName="ConstructionSetResetButton"
+                                                            Property="Visibility"
+                                                            Value="Visible" />
                                                 </Trigger>
                                                 <Trigger SourceName="ConstructionSetGrid" Property="IsMouseOver"
-                                                     Value="False">
+                                                         Value="False">
                                                     <Setter TargetName="ConstructionSetAddButton" Property="Visibility"
-                                                        Value="Collapsed" />
-                                                    <Setter TargetName="ConstructionSetResetButton" Property="Visibility"
-                                                        Value="Collapsed" />
+                                                            Value="Collapsed" />
+                                                    <Setter TargetName="ConstructionSetResetButton"
+                                                            Property="Visibility"
+                                                            Value="Collapsed" />
                                                 </Trigger>
                                             </DataTemplate.Triggers>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Program Type"
-                                                    Width="270"
-                                                    HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                                        Width="270"
+                                                        HeaderStyle="{StaticResource CenterGridHeaderStyle}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid x:Name="ProgramTypeGrid" HorizontalAlignment="Stretch" Width="270"
-                                              Background="Transparent">
+                                                  Background="Transparent">
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch"
-                                                        Width="270">
+                                                            Width="270">
                                                     <Label
-                                                    Content="{Binding Room2D.Properties.Energy.ProgramType.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                        Content="{Binding Room2D.Properties.Energy.ProgramType.Identifier, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     <b:ImageButton x:Name="ProgramTypeOverrideButton"
-                                                               Command="{Binding DataContext.OpenPopup, Mode=OneWay, ElementName=Win}"
-                                                               CommandParameter="{Binding ElementName=ProgramTypePopup}"
-                                                               MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
-                                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
-                                                               VerticalAlignment="Center"
-                                                               HorizontalAlignment="Center"
-                                                               Visibility="Collapsed"
-                                                               Cursor="Hand"
-                                                               Width="22"
-                                                               Height="22"
-                                                               Margin="5,0,0,0" />
+                                                                   Command="{Binding DataContext.OpenPopup, Mode=OneWay, ElementName=Win}"
+                                                                   CommandParameter="{Binding ElementName=ProgramTypePopup}"
+                                                                   MainImage="/Honeybee.Core;Component/Resources/24x24/set.png"
+                                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/setHover.png"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"
+                                                                   Visibility="Collapsed"
+                                                                   Cursor="Hand"
+                                                                   Width="22"
+                                                                   Height="22"
+                                                                   Margin="5,0,0,0" />
                                                     <b:ImageButton x:Name="ProgramTypeResetButton"
-                                                               Command="{Binding DataContext.ResetProgramType, Mode=OneWay, ElementName=Win}"
-                                                               MainImage="/Honeybee.Core;Component/Resources/24x24/reset.png"
-                                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/resetHover.png"
-                                                               VerticalAlignment="Center"
-                                                               HorizontalAlignment="Center"
-                                                               Visibility="Collapsed"
-                                                               Cursor="Hand"
-                                                               Width="22"
-                                                               Height="22"
-                                                               Margin="0" />
+                                                                   Command="{Binding DataContext.ResetProgramType, Mode=OneWay, ElementName=Win}"
+                                                                   MainImage="/Honeybee.Core;Component/Resources/24x24/reset.png"
+                                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/resetHover.png"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"
+                                                                   Visibility="Collapsed"
+                                                                   Cursor="Hand"
+                                                                   Width="22"
+                                                                   Height="22"
+                                                                   Margin="0" />
                                                 </StackPanel>
                                             </Grid>
                                             <DataTemplate.Triggers>
                                                 <Trigger SourceName="ProgramTypeGrid" Property="IsMouseOver"
-                                                     Value="True">
-                                                    <Setter TargetName="ProgramTypeOverrideButton" Property="Visibility"
-                                                        Value="Visible" />
+                                                         Value="True">
+                                                    <Setter TargetName="ProgramTypeOverrideButton"
+                                                            Property="Visibility"
+                                                            Value="Visible" />
                                                     <Setter TargetName="ProgramTypeResetButton" Property="Visibility"
-                                                        Value="Visible" />
+                                                            Value="Visible" />
                                                 </Trigger>
                                                 <Trigger SourceName="ProgramTypeGrid" Property="IsMouseOver"
-                                                     Value="False">
-                                                    <Setter TargetName="ProgramTypeOverrideButton" Property="Visibility"
-                                                        Value="Collapsed" />
+                                                         Value="False">
+                                                    <Setter TargetName="ProgramTypeOverrideButton"
+                                                            Property="Visibility"
+                                                            Value="Collapsed" />
                                                     <Setter TargetName="ProgramTypeResetButton" Property="Visibility"
-                                                        Value="Collapsed" />
+                                                            Value="Collapsed" />
                                                 </Trigger>
                                             </DataTemplate.Triggers>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Conditioned?"
-                                                    Width="155"
-                                                    HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                                        Width="155"
+                                                        HeaderStyle="{StaticResource CenterGridHeaderStyle}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid>
                                                 <CheckBox x:Name="HvacCheckbox"
-                                                      IsChecked="{Binding Room2D.Properties.Energy.Conditioned, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                      Visibility="{Binding Room2D.Properties.Energy.Conditioned, Converter={StaticResource BoolToVisibilityInverseConverter}}"
-                                                      VerticalAlignment="Center"
-                                                      HorizontalAlignment="Center"
-                                                      VerticalContentAlignment="Center"
-                                                      HorizontalContentAlignment="Center"
-                                                      Padding="0" />
+                                                          IsChecked="{Binding Room2D.Properties.Energy.Conditioned, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Visibility="{Binding Room2D.Properties.Energy.Conditioned, Converter={StaticResource BoolToVisibilityInverseConverter}}"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalContentAlignment="Center"
+                                                          HorizontalContentAlignment="Center"
+                                                          Padding="0" />
                                                 <ComboBox
-                                                ItemsSource="{Binding Source={StaticResource HvacTypesDataProvider}}"
-                                                Visibility="{Binding Room2D.Properties.Energy.Conditioned, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                SelectionChanged="Selector_OnSelectionChanged"
-                                                DisplayMemberPath="Name"
-                                                SelectedValue="{Binding Room2D.Properties.Energy.Hvac}"
-                                                Height="24"
-                                                Margin="5" />
+                                                    ItemsSource="{Binding Source={StaticResource HvacTypesDataProvider}}"
+                                                    Visibility="{Binding Room2D.Properties.Energy.Conditioned, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    SelectionChanged="Selector_OnSelectionChanged"
+                                                    DisplayMemberPath="Name"
+                                                    SelectedValue="{Binding Room2D.Properties.Energy.Hvac}"
+                                                    Height="24"
+                                                    Margin="5" />
                                             </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Boundary"
-                                                    Width="75"
-                                                    HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                                        Width="75"
+                                                        HeaderStyle="{StaticResource CenterGridHeaderStyle}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <b:ImageButton
-                                            Command="{Binding DataContext.ShowBoundaryConditions, Mode=OneWay, ElementName=Win}"
-                                            CommandParameter="{Binding }"
-                                            MainImage="/Honeybee.Core;Component/Resources/24x24/showNested.png"
-                                            HoverImage="/Honeybee.Core;Component/Resources/24x24/showNestedHover.png"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
-                                            Cursor="Hand"
-                                            Width="22"
-                                            Height="22"
-                                            Margin="5,0,0,0" />
+                                                Command="{Binding DataContext.ShowBoundaryConditions, Mode=OneWay, ElementName=Win}"
+                                                CommandParameter="{Binding }"
+                                                MainImage="/Honeybee.Core;Component/Resources/24x24/showNested.png"
+                                                HoverImage="/Honeybee.Core;Component/Resources/24x24/showNestedHover.png"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Cursor="Hand"
+                                                Width="22"
+                                                Height="22"
+                                                Margin="5,0,0,0" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                             </wpf:DataGridExtension.Columns>
                         </wpf:DataGridExtension>
                         <StackPanel Grid.Row="1"
-                                Margin="10,0"
-                                Orientation="Vertical">
+                                    Margin="10,0"
+                                    Orientation="Vertical">
                             <Grid>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Show only:"
-                                       Padding="0"
-                                       VerticalAlignment="Center" />
+                                           Padding="0"
+                                           VerticalAlignment="Center" />
                                     <CheckBox Content="Rooms"
-                                          IsChecked="{Binding ShowRooms}"
-                                          Padding="0"
-                                          VerticalAlignment="Center"
-                                          Margin="10,0,0,0" />
+                                              IsChecked="{Binding ShowRooms}"
+                                              Padding="0"
+                                              VerticalAlignment="Center"
+                                              Margin="10,0,0,0" />
                                     <Label Content="and/or"
-                                       Padding="0"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Margin="10,0,10,0" />
+                                           Padding="0"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           Margin="10,0,10,0" />
                                     <CheckBox Content="Spaces"
-                                          IsChecked="{Binding ShowSpaces}"
-                                          Padding="0"
-                                          VerticalAlignment="Center" />
+                                              IsChecked="{Binding ShowSpaces}"
+                                              Padding="0"
+                                              VerticalAlignment="Center" />
                                     <Label Content="Select By:"
-                                       VerticalAlignment="Center"
-                                       Padding="0"
-                                       Margin="25,0,0,0" />
+                                           VerticalAlignment="Center"
+                                           Padding="0"
+                                           Margin="25,0,0,0" />
                                     <ComboBox
-                                    ItemsSource="{Binding FilterType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                    VerticalAlignment="Center"
-                                    SelectedValuePath="Value"
-                                    DisplayMemberPath="Description"
-                                    SelectedValue="{Binding FilterType}"
-                                    SelectedIndex="0"
-                                    Margin="10,0,0,0"
-                                    Width="170" />
+                                        ItemsSource="{Binding FilterType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                        VerticalAlignment="Center"
+                                        SelectedValuePath="Value"
+                                        DisplayMemberPath="Description"
+                                        SelectedValue="{Binding FilterType}"
+                                        SelectedIndex="0"
+                                        Margin="10,0,0,0"
+                                        Width="170" />
                                     <ComboBox ItemsSource="{Binding Levels}"
-                                          VerticalAlignment="Center"
-                                          SelectedItem="{Binding SelectedLevel}"
-                                          Visibility="{Binding FilterType, Converter={StaticResource FilterTypeToVisibilityConverter}, FallbackValue=Visible}"
-                                          DisplayMemberPath="Name"
-                                          Margin="10,0,0,0"
-                                          Width="170">
+                                              VerticalAlignment="Center"
+                                              SelectedItem="{Binding SelectedLevel}"
+                                              Visibility="{Binding FilterType, Converter={StaticResource FilterTypeToVisibilityConverter}, FallbackValue=Visible}"
+                                              DisplayMemberPath="Name"
+                                              Margin="10,0,0,0"
+                                              Width="170">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="SelectionChanged">
                                                 <i:InvokeCommandAction Command="{Binding FilterChanged}" />
@@ -860,24 +910,36 @@
                                     </ComboBox>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal"
-                                        FlowDirection="RightToLeft">
+                                            FlowDirection="RightToLeft">
                                     <b:ImageButton Command="{Binding ClearFilters, Mode=OneWay}"
-                                               MainImage="/Honeybee.Core;Component/Resources/24x24/delete.png"
-                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/deleteHover.png"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Center"
-                                               Cursor="Hand"
-                                               Width="24"
-                                               Height="24"
-                                               Margin="5,0,5,0" />
+                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/deleteHover.png"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Width="24"
+                                                   Height="24"
+                                                   Margin="5,0,5,0">
+                                        <b:ImageButton.MainImage>
+                                            <MultiBinding Converter="{StaticResource ResourceConverter}">
+                                                <Binding Path="Dragonfly" />
+                                                <Binding Source="delete" />
+                                            </MultiBinding>
+                                        </b:ImageButton.MainImage>
+                                    </b:ImageButton>
                                     <b:ImageButton Command="{Binding PickSpatialObjects, Mode=OneWay}"
-                                               MainImage="/Honeybee.Core;Component/Resources/24x24/pick.png"
-                                               HoverImage="/Honeybee.Core;Component/Resources/24x24/pickHover.png"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Center"
-                                               Cursor="Hand"
-                                               Width="24"
-                                               Height="24" />
+                                                   HoverImage="/Honeybee.Core;Component/Resources/24x24/pickHover.png"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   Width="24"
+                                                   Height="24">
+                                        <b:ImageButton.MainImage>
+                                            <MultiBinding Converter="{StaticResource ResourceConverter}">
+                                                <Binding Path="Dragonfly" />
+                                                <Binding Source="pick" />
+                                            </MultiBinding>
+                                        </b:ImageButton.MainImage>
+                                    </b:ImageButton>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -925,41 +987,25 @@
         </Grid>
         <b:ImageButton Grid.Row="1"
                        Command="{Binding ExportModel, Mode=OneWay}"
-                       MainImage="/Honeybee.Core;Component/Resources/24x24/export.png"
                        HoverImage="/Honeybee.Core;Component/Resources/24x24/exportHover.png"
                        VerticalAlignment="Center"
-                       HorizontalAlignment="Right"
+                       HorizontalAlignment="Left"
                        Cursor="Hand"
                        Width="22"
                        Height="22"
-                       Margin="0,0,12,0" />
-        <!--<b:DropDownButton Grid.Row="1"
-                          MainImage="/Honeybee.Core;Component/Resources/24x24/export.png"
-                          HoverImage="/Honeybee.Core;Component/Resources/24x24/exportHover.png"
-                          Cursor="Hand"
-                          HorizontalAlignment="Right"
-                          VerticalAlignment="Center"
-                          Margin="0,0,12,0"
-                          Width="24"
-                          Height="24"
-                          ToolTip="Export"
-                          Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
-            <b:DropDownButton.Menu>
-                <ContextMenu>
-                    <MenuItem Command="{Binding ExportDragonfly}"
-                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
-                              Header="Export Dragonfly" />
-                    <MenuItem Command="{Binding ExportHoneybee}"
-                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
-                              Header="Export Honeybee" />
-                </ContextMenu>
-            </b:DropDownButton.Menu>
-        </b:DropDownButton>-->
+                       Margin="12,0,0,0">
+            <b:ImageButton.MainImage>
+                <MultiBinding Converter="{StaticResource ResourceConverter}" FallbackValue="/Honeybee.Core;Component/Resources/24x24/export.png">
+                    <Binding Path="Dragonfly" />
+                    <Binding Source="export" />
+                </MultiBinding>
+            </b:ImageButton.MainImage>
+        </b:ImageButton>
         <Button Command="{Binding Cancel, Mode=OneWay}"
                 CommandParameter="{Binding ElementName=Win}"
                 Content="Close"
                 Margin="0,0,12,10"
-                Grid.Row="2"
+                Grid.Row="1"
                 HorizontalAlignment="Right"
                 Width="75"
                 Height="20"
@@ -968,7 +1014,7 @@
                 CommandParameter="{Binding ElementName=Win}"
                 Content="Run"
                 Margin="0,0,97,10"
-                Grid.Row="2"
+                Grid.Row="1"
                 HorizontalAlignment="Right"
                 Width="75"
                 Height="20"
@@ -976,12 +1022,12 @@
         <Button Content="?"
                 Command="{Binding Help, Mode=OneWay}"
                 Margin="0,0,182,10"
-                Grid.Row="2"
+                Grid.Row="1"
                 HorizontalAlignment="Right"
                 Width="37"
                 Height="20"
                 VerticalAlignment="Bottom" />
-        <StatusBar Grid.Row="3"
+        <StatusBar Grid.Row="2"
                    Height="25"
                    HorizontalAlignment="Stretch"
                    Name="StatusBar"
@@ -1016,8 +1062,8 @@
             </StatusBarItem>
         </StatusBar>
         <b:ImageButton x:Name="LogButton"
-                       Grid.Row="3" 
-                       Grid.Column="0" 
+                       Grid.Row="2"
+                       Grid.Column="0"
                        Command="{Binding ShowLog, Mode=OneWay}"
                        MainImage="/Honeybee.Core;Component/Resources/24x24/showLog.png"
                        HoverImage="/Honeybee.Core;Component/Resources/24x24/showLogHover.png"

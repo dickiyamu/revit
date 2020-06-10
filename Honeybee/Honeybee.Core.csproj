@@ -186,5 +186,15 @@
     <Resource Include="Resources\24x24\showNested.png" />
     <Resource Include="Resources\24x24\showNestedHover.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\pickDf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\deleteDf.png" />
+    <Resource Include="Resources\24x24\exportDf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\dragonfly.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
