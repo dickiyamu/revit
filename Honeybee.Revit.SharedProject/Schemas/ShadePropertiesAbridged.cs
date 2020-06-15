@@ -5,9 +5,11 @@ namespace Honeybee.Revit.Schemas
 {
     public class ShadePropertiesAbridged : ISchema<DF.ContextShadePropertiesAbridged, HB.ShadePropertiesAbridged>
     {
+        public ShadeEnergyProperties Energy { get; set; } = new ShadeEnergyProperties();
+
         public DF.ContextShadePropertiesAbridged ToDragonfly()
         {
-            return new DF.ContextShadePropertiesAbridged();
+            return new DF.ContextShadePropertiesAbridged(Energy.ToDragonfly());
         }
 
         public HB.ShadePropertiesAbridged ToHoneybee()

@@ -30,7 +30,7 @@ namespace Honeybee.Revit.Schemas
         public ModelProperties Properties { get; set; }
 
         [JsonProperty("context_shades")]
-        public List<Shade> ContextShades { get; set; } = new List<Shade>();
+        public List<Shade> ContextShades { get; set; }
 
         [JsonProperty("north_angle")]
         public double NorthAngle { get; set; }
@@ -58,11 +58,12 @@ namespace Honeybee.Revit.Schemas
             ContextShades = shades;
         }
 
-        public Model(string displayName, List<Building> buildings, ModelProperties properties)
+        public Model(string displayName, List<Building> buildings, ModelProperties properties, List<Shade> shades)
         {
             DisplayName = displayName;
             Buildings = buildings;
             Properties = properties;
+            ContextShades = shades;
         }
 
         public DF.Model ToDragonfly()

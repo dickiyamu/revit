@@ -88,6 +88,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Room2DEnergyPropertiesAbridged.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Room2DPropertiesAbridged.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\ShadeConstruction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\ShadeEnergyProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\ShadePropertiesAbridged.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Story.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\StoryEnergyPropertiesAbridged.cs" />

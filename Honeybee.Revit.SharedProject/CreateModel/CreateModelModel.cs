@@ -176,6 +176,8 @@ namespace Honeybee.Revit.CreateModel
                 hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
                 hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));
 
+                var contextShades = shades ?? GetContextShades();
+
                 if (dragonfly)
                 {
                     var stories = rooms
@@ -198,7 +200,7 @@ namespace Honeybee.Revit.CreateModel
                             }
                         });
 
-                    var model = new Model("Model 1", new List<Building> { building }, new ModelProperties())
+                    var model = new Model("Model 1", new List<Building> { building }, new ModelProperties(), contextShades)
                     {
                         Units = HB.Units.Feet,
                         Tolerance = 0.0001d
@@ -228,7 +230,7 @@ namespace Honeybee.Revit.CreateModel
                 }
                 else
                 {
-                    var contextShades = shades ?? GetContextShades();
+                    
                     var model = new Model("Model 1", new List<HB.Room>(), new ModelProperties(), contextShades)
                     {
                         Units = HB.Units.Feet,

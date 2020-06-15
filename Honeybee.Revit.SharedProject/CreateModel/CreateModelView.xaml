@@ -58,6 +58,7 @@
                 <Setter Property="HorizontalContentAlignment"
                         Value="Center" />
             </Style>
+            <!-- ReSharper disable once Xaml.RedundantResource -->
             <Style x:Key="ContentDataGridCenteringHb"
                    TargetType="{x:Type DataGridCell}">
                 <Setter Property="Template">
@@ -85,6 +86,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+            <!-- ReSharper disable once Xaml.RedundantResource -->
             <Style x:Key="ContentDataGridCenteringDf"
                    TargetType="{x:Type DataGridCell}">
                 <Setter Property="Template">
@@ -916,8 +918,8 @@
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    Cursor="Hand"
-                                                   Width="24"
-                                                   Height="24"
+                                                   Width="22"
+                                                   Height="22"
                                                    Margin="5,0,5,0">
                                         <b:ImageButton.MainImage>
                                             <MultiBinding Converter="{StaticResource ResourceConverter}">
@@ -931,8 +933,8 @@
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    Cursor="Hand"
-                                                   Width="24"
-                                                   Height="24">
+                                                   Width="22"
+                                                   Height="22">
                                         <b:ImageButton.MainImage>
                                             <MultiBinding Converter="{StaticResource ResourceConverter}">
                                                 <Binding Path="Dragonfly" />
@@ -993,9 +995,10 @@
                        Cursor="Hand"
                        Width="22"
                        Height="22"
-                       Margin="12,0,0,0">
+                       Margin="12,0,0,0"
+                       ToolTip="Export model">
             <b:ImageButton.MainImage>
-                <MultiBinding Converter="{StaticResource ResourceConverter}" FallbackValue="/Honeybee.Core;Component/Resources/24x24/export.png">
+                <MultiBinding Converter="{StaticResource ResourceConverter}">
                     <Binding Path="Dragonfly" />
                     <Binding Source="export" />
                 </MultiBinding>
