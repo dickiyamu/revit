@@ -5,7 +5,7 @@
     <Assembly>Honeybee\Honeybee.Revit.2019.dll</Assembly>
     <AddInId>1a2faea3-cb50-4e75-900b-83c10420ecda</AddInId>
     <FullClassName>Honeybee.Revit.AppCommand</FullClassName>
-    <VendorId>Ladybug Tools, LLC</VendorId>
+    <VendorId>LadybugTools</VendorId>
     <VendorDescription>Ladybug Tools, LLC is a company owned by Mostapha and Chris</VendorDescription>
   </AddIn>
 </RevitAddIns>

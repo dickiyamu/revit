@@ -1,8 +1,12 @@
-﻿using Autodesk.Revit.DB.Events;
+﻿using System;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using Honeybee.Core;
 using Honeybee.Revit.CreateModel;
 using Honeybee.Revit.ModelSettings;
+using Honeybee.Revit.SharedProject.Utilities;
 using NLog;
 
 namespace Honeybee.Revit
@@ -15,7 +19,7 @@ namespace Honeybee.Revit
         public static ExternalEvent CreateModelEvent { get; set; }
         public static AnnotationUpdater AnnotationUpdater { get; set; }
 
-        //internal Document ActiveDoc { get; set; }
+        internal Document ActiveDoc { get; set; }
 
         public Result OnStartup(UIControlledApplication app)
         {
@@ -24,12 +28,13 @@ namespace Honeybee.Revit
             _logger = LogManager.GetCurrentClassLogger();
 
             //// (Konrad) Setup Document events.
-            //app.ControlledApplication.DocumentOpened += OnDocumentOpened;
-            //app.ControlledApplication.DocumentCreated += OnDocumentCreated;
-            //app.ViewActivated += OnViewActivated;
-            app.ControlledApplication.FailuresProcessing += FailureProcessor.CheckFailure;
+            app.ControlledApplication.DocumentOpened += OnDocumentOpened;
+            app.ControlledApplication.DocumentCreated += OnDocumentCreated;
+            app.ControlledApplication.DocumentSaving += OnDocumentSaving;
             app.ControlledApplication.DocumentSynchronizingWithCentral += OnDocumentSynchronizingWithCentral;
             app.ControlledApplication.DocumentSynchronizedWithCentral += OnDocumentSynchronizedWithCentral;
+            app.ControlledApplication.FailuresProcessing += FailureProcessor.CheckFailure;
+            app.ViewActivated += OnViewActivated;
 
             app.CreateRibbonTab("Honeybee");
             var panel = app.CreateRibbonPanel("Honeybee", "Honeybee");
@@ -59,71 +64,102 @@ namespace Honeybee.Revit
         private static void OnDocumentSynchronizingWithCentral(object sender, DocumentSynchronizingWithCentralEventArgs e)
         {
             FailureProcessor.IsSynchronizing = true;
+
+            var doc = e.Document;
+            if (doc == null) return;
+
+            try
+            {
+                SchemaUtils.SaveSchema(doc);
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal(ex);
+            }
         }
 
-        //private void OnViewActivated(object sender, ViewActivatedEventArgs e)
-        //{
-        //    var doc = e.CurrentActiveView.Document;
-        //    if (doc == null || doc.IsFamilyDocument || !DocumentChanged(doc)) return;
+        private void OnViewActivated(object sender, ViewActivatedEventArgs e)
+        {
+            var doc = e.CurrentActiveView.Document;
+            if (doc == null || doc.IsFamilyDocument || !DocumentChanged(doc)) return;
 
-        //    var uiApp = (UIApplication)sender;
-        //    if (uiApp != null)
-        //    {
-        //        CheckIn(doc);
-        //    }
-        //}
+            var uiApp = (UIApplication)sender;
+            if (uiApp != null)
+            {
+                CheckIn(doc);
+            }
+        }
 
-        //private void OnDocumentOpened(object sender, DocumentOpenedEventArgs e)
-        //{
-        //    try
-        //    {
-        //        var doc = e.Document;
-        //        if (doc == null || e.IsCancelled() || doc.IsFamilyDocument) return;
+        private void OnDocumentOpened(object sender, DocumentOpenedEventArgs e)
+        {
+            try
+            {
+                var doc = e.Document;
+                if (doc == null || e.IsCancelled() || doc.IsFamilyDocument) return;
 
-        //        CheckIn(doc);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.Fatal(ex);
-        //    }
-        //}
+                CheckIn(doc);
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal(ex);
+            }
+        }
 
-        //private void OnDocumentCreated(object sender, DocumentCreatedEventArgs e)
-        //{
-        //    try
-        //    {
-        //        var doc = e.Document;
-        //        if (doc == null || e.IsCancelled() || doc.IsFamilyDocument) return;
+        private void OnDocumentCreated(object sender, DocumentCreatedEventArgs e)
+        {
+            try
+            {
+                var doc = e.Document;
+                if (doc == null || e.IsCancelled() || doc.IsFamilyDocument) return;
 
-        //        CheckIn(doc);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.Fatal(ex);
-        //    }
-        //}
+                CheckIn(doc);
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal(ex);
+            }
+        }
+
+        private static void OnDocumentSaving(object sender, DocumentSavingEventArgs e)
+        {
+            var doc = e.Document;
+            if (doc == null) return;
+
+            try
+            {
+                SchemaUtils.SaveSchema(doc);
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal(ex);
+            }
+        }
 
         public Result OnShutdown(UIControlledApplication app)
         {
-            //app.ControlledApplication.DocumentOpened -= OnDocumentOpened;
-            //app.ControlledApplication.DocumentCreated -= OnDocumentCreated;
-            //app.ViewActivated -= OnViewActivated;
-            app.ControlledApplication.FailuresProcessing -= FailureProcessor.CheckFailure;
+            app.ControlledApplication.DocumentOpened -= OnDocumentOpened;
+            app.ControlledApplication.DocumentCreated -= OnDocumentCreated;
+            app.ControlledApplication.DocumentSaving -= OnDocumentSaving;
             app.ControlledApplication.DocumentSynchronizingWithCentral -= OnDocumentSynchronizingWithCentral;
             app.ControlledApplication.DocumentSynchronizedWithCentral -= OnDocumentSynchronizedWithCentral;
+            app.ControlledApplication.FailuresProcessing -= FailureProcessor.CheckFailure;
+            app.ViewActivated -= OnViewActivated;
 
             return Result.Succeeded;
         }
 
 
-        //private void CheckIn(Document doc)
-        //{
-        //    AnnotationUpdater.Register(doc);
-        //}
+        private void CheckIn(Document doc)
+        {
+            ActiveDoc = doc;
 
-        //private bool DocumentChanged(Document doc)
-        //{
-        //    return ActiveDoc.GetHashCode() != doc.GetHashCode();
-        //}
+            var settings = SchemaUtils.LoadSchema(doc);
+            AppSettings.Instance.StoredSettings = settings ?? new StoredSettings();
+        }
+
+        private bool DocumentChanged(Document doc)
+        {
+            return ActiveDoc.GetHashCode() != doc.GetHashCode();
+        }
     }
 }

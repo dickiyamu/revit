@@ -98,6 +98,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\WindowConstructionAbridged.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\WindowParameterBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StoredSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\SchemaUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\CurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\DoubleExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\FamilyUtils.cs" />

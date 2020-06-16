@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using Honeybee.Core;
 using Honeybee.Revit.ModelSettings.Geometry;
 using Honeybee.Revit.ModelSettings.Simulation;
 using Newtonsoft.Json;
@@ -29,12 +29,12 @@ namespace Honeybee.Revit
 
         public string Serialize()
         {
-            throw new NotImplementedException();
+            return Json.Serialize(this);
         }
 
         public static StoredSettings Deserialize(string json)
         {
-            throw new NotImplementedException();
+            return Json.Deserialize<StoredSettings>(json);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
