@@ -10,6 +10,7 @@ namespace Honeybee.Revit.SharedProject.Utilities
     public static class SchemaUtils
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public static Guid SchemaId = new Guid("be3b098e-7c16-4465-92be-82624abe7f15");
         public static Schema Schema = Schema.Lookup(SchemaId);
         public static string FieldName = "Settings";
@@ -45,10 +46,12 @@ namespace Honeybee.Revit.SharedProject.Utilities
             var builder = new SchemaBuilder(SchemaId);
             builder.SetReadAccessLevel(AccessLevel.Public);
             builder.SetWriteAccessLevel(AccessLevel.Application);
-            builder.SetApplicationGUID(new Guid("1a2faea3-cb50-4e75-900b-83c10420ecda")); // comes from *.addin file
+            // (Konrad) Must match *.addin value set for ApplicationGUID.
+            builder.SetApplicationGUID(new Guid("1a2faea3-cb50-4e75-900b-83c10420ecda"));
 
             // (Konrad) No spaces allowed in vendor id.
-            builder.SetVendorId("LadybugTools"); // cannot have spaces
+            // Must match *.addin value set for VendorId.
+            builder.SetVendorId("LadybugTools");
             builder.SetDocumentation("Honeybee Revit plugin.");
 
             // (Konrad) No periods allowed in schema name.
@@ -94,6 +97,8 @@ namespace Honeybee.Revit.SharedProject.Utilities
             return updated;
         }
 
+        #region Utilities
+
         private static DataStorage GetDataStorage(Document doc)
         {
             var storage = new FilteredElementCollector(doc)
@@ -107,5 +112,7 @@ namespace Honeybee.Revit.SharedProject.Utilities
 
             return storage;
         }
+
+        #endregion
     }
 }

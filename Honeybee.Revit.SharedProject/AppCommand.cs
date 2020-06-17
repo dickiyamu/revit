@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region References
+
+using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
@@ -8,6 +10,8 @@ using Honeybee.Revit.CreateModel;
 using Honeybee.Revit.ModelSettings;
 using Honeybee.Revit.SharedProject.Utilities;
 using NLog;
+
+#endregion
 
 namespace Honeybee.Revit
 {
@@ -27,7 +31,7 @@ namespace Honeybee.Revit
             NLogUtils.CreateConfiguration();
             _logger = LogManager.GetCurrentClassLogger();
 
-            //// (Konrad) Setup Document events.
+            // (Konrad) Setup Document events.
             app.ControlledApplication.DocumentOpened += OnDocumentOpened;
             app.ControlledApplication.DocumentCreated += OnDocumentCreated;
             app.ControlledApplication.DocumentSaving += OnDocumentSaving;
@@ -50,11 +54,26 @@ namespace Honeybee.Revit
             CreateModelHandler = new CreateModelRequestHandler();
             CreateModelEvent = ExternalEvent.Create(CreateModelHandler);
 
-            // (Konrad) Register an updater that will watch Project Information for changes.
+            // (Konrad) Register an updater that will watch annotations for changes.
             AnnotationUpdater = new AnnotationUpdater(app.ActiveAddInId);
 
             return Result.Succeeded;
         }
+
+        public Result OnShutdown(UIControlledApplication app)
+        {
+            app.ControlledApplication.DocumentOpened -= OnDocumentOpened;
+            app.ControlledApplication.DocumentCreated -= OnDocumentCreated;
+            app.ControlledApplication.DocumentSaving -= OnDocumentSaving;
+            app.ControlledApplication.DocumentSynchronizingWithCentral -= OnDocumentSynchronizingWithCentral;
+            app.ControlledApplication.DocumentSynchronizedWithCentral -= OnDocumentSynchronizedWithCentral;
+            app.ControlledApplication.FailuresProcessing -= FailureProcessor.CheckFailure;
+            app.ViewActivated -= OnViewActivated;
+
+            return Result.Succeeded;
+        }
+
+        #region Event Handlers
 
         private static void OnDocumentSynchronizedWithCentral(object sender, DocumentSynchronizedWithCentralEventArgs e)
         {
@@ -135,19 +154,9 @@ namespace Honeybee.Revit
             }
         }
 
-        public Result OnShutdown(UIControlledApplication app)
-        {
-            app.ControlledApplication.DocumentOpened -= OnDocumentOpened;
-            app.ControlledApplication.DocumentCreated -= OnDocumentCreated;
-            app.ControlledApplication.DocumentSaving -= OnDocumentSaving;
-            app.ControlledApplication.DocumentSynchronizingWithCentral -= OnDocumentSynchronizingWithCentral;
-            app.ControlledApplication.DocumentSynchronizedWithCentral -= OnDocumentSynchronizedWithCentral;
-            app.ControlledApplication.FailuresProcessing -= FailureProcessor.CheckFailure;
-            app.ViewActivated -= OnViewActivated;
+        #endregion
 
-            return Result.Succeeded;
-        }
-
+        #region Utilities
 
         private void CheckIn(Document doc)
         {
@@ -161,5 +170,7 @@ namespace Honeybee.Revit
         {
             return ActiveDoc.GetHashCode() != doc.GetHashCode();
         }
+
+        #endregion
     }
 }

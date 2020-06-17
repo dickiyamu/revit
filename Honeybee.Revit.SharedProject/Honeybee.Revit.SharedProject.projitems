@@ -23,6 +23,7 @@
       <DependentUpon>CreateModelView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreateModel\EnergyModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\FailureProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Messages.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\SelectionFilters.cs" />

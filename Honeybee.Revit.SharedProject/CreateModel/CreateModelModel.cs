@@ -19,8 +19,6 @@ using Honeybee.Revit.Schemas.Honeybee;
 using Newtonsoft.Json;
 using NLog;
 using HB = HoneybeeSchema;
-using OperationCanceledException = Autodesk.Revit.Exceptions.OperationCanceledException;
-using Surface = Honeybee.Revit.Schemas.Surface;
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 
 #endregion
@@ -176,7 +174,7 @@ namespace Honeybee.Revit.CreateModel
                 hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
                 hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));
 
-                var contextShades = shades ?? GetContextShades();
+                var contextShades = shades ?? GetContextShades(new List<string>());
 
                 if (dragonfly)
                 {
@@ -381,7 +379,7 @@ namespace Honeybee.Revit.CreateModel
                 var selection = UiDoc.Selection.PickObjects(ObjectType.Element, new FilterRoomsSpaces(), "Please select Rooms/Spaces.");
                 return selection.Select(x => new SpatialObjectWrapper(Doc.GetElement(x.ElementId))).ToList();
             }
-            catch (OperationCanceledException)
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             {
                 _logger.Info("Selection was cancelled.");
                 return result;
@@ -393,23 +391,27 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        public List<Shade> SelectFaces()
+        public List<Shade> SelectFaces(out List<string> faceIds)
         {
+            faceIds = new List<string>();
             var result = new List<Shade>();
             try
             {
                 var selection = UiDoc.Selection.PickObjects(ObjectType.Face, new FilterPlanarFace(Doc), "Please select Planar Faces only.");
                 var shades = new List<Shade>();
-                foreach (var tree in selection)
+                foreach (var reference in selection)
                 {
-                    var e = Doc.GetElement(tree);
-                    var geometry = e.GetGeometryObjectFromReference(tree) as PlanarFace;
+                    var e = Doc.GetElement(reference);
+                    var geometry = e.GetGeometryObjectFromReference(reference) as PlanarFace;
                     shades.Add(new Shade(new Face3D(geometry)));
+
+                    var faceId = reference.ConvertToStableRepresentation(Doc);
+                    faceIds.Add(faceId);
                 }
 
                 return shades;
             }
-            catch (OperationCanceledException)
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             {
                 _logger.Info("Selection was cancelled.");
                 return result;
@@ -421,8 +423,9 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        public List<Shade> SelectPlanting()
+        public List<Shade> SelectPlanting(out List<string> elementIds)
         {
+            elementIds = new List<string>();
             var result = new List<Shade>();
             try
             {
@@ -430,12 +433,14 @@ namespace Honeybee.Revit.CreateModel
                 var shades = new List<Shade>();
                 foreach (var reference in selection)
                 {
-                    shades.AddRange(ShadesFromTrees(Doc.GetElement(reference), Doc.ActiveView));
+                    var e = Doc.GetElement(reference);
+                    shades.AddRange(ShadesFromTrees(e, Doc.ActiveView));
+                    elementIds.Add(e.UniqueId);
                 }
 
                 return shades;
             }
-            catch (OperationCanceledException)
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             {
                 _logger.Info("Selection was cancelled.");
                 return result;
@@ -447,10 +452,37 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        public List<Shade> GetContextShades()
+        public List<Shade> GetContextShades(List<string> shadeIds)
         {
             var shades = new List<Shade>();
-            var trees = new FilteredElementCollector(Doc).OfCategory(BuiltInCategory.OST_Planting).WhereElementIsNotElementType();
+            var trees = new List<Element>();
+            if (shadeIds.Any())
+            {
+                foreach (var shadeId in shadeIds)
+                {
+                    if (shadeId.Contains(":"))
+                    {
+                        // (Konrad) This string is a stable representation of a face.
+                        var indexRef = Reference.ParseFromStableRepresentation(Doc, shadeId);
+                        var e = Doc.GetElement(shadeId.Split(':').First());
+                        var geometry = e.GetGeometryObjectFromReference(indexRef) as PlanarFace;
+                        shades.Add(new Shade(new Face3D(geometry)));
+                    }
+                    else
+                    {
+                        trees.Add(Doc.GetElement(shadeId));
+                    }
+                }
+            }
+            else
+            {
+                trees = new FilteredElementCollector(Doc)
+                    .OfCategory(BuiltInCategory.OST_Planting)
+                    .WhereElementIsNotElementType()
+                    .ToElements()
+                    .ToList();
+            }
+            
             var view = new FilteredElementCollector(Doc)
                 .OfClass(typeof(View))
                 .Cast<View>()
@@ -600,7 +632,7 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < boundaryCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[i];
-                    if (currentBc is Surface)
+                    if (currentBc is Schemas.Surface)
                         continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.
@@ -616,7 +648,7 @@ namespace Honeybee.Revit.CreateModel
                 for (var i = 0; i < holeCurves.Count; i++)
                 {
                     var currentBc = so.Room2D.BoundaryConditions[boundaryCurves.Count + i];
-                    if (currentBc is Surface)
+                    if (currentBc is Schemas.Surface)
                         continue;
 
                     // (Konrad) Adiabatic can only be assigned to Boundaries that don't have a Window.

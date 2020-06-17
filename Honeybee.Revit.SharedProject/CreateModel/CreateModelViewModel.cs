@@ -178,7 +178,7 @@ namespace Honeybee.Revit.CreateModel
             Dragonfly = dragonfly;
             Title = Dragonfly ? "Dragonfly - Create Model" : "Honeybee - Create Model";
             Settings = AppSettings.Instance;
-            ContextShades = Model.GetContextShades().ToObservableCollection();
+            ContextShades = Model.GetContextShades(Settings.StoredSettings.EnergyModelSettings.Shades).ToObservableCollection();
 
             var color = dragonfly
                 ? Color.FromRgb(0, 166, 81)
@@ -222,9 +222,9 @@ namespace Honeybee.Revit.CreateModel
             ProcessExport();
         }
 
-        private static void OnShowLog()
+        private void OnShowLog()
         {
-            var simulationDir = AppSettings.Instance.StoredSettings.SimulationSettings.SimulationFolder;
+            var simulationDir = Settings.StoredSettings.SimulationSettings.SimulationFolder;
             var logPath = Path.Combine(simulationDir, "simulation_log.txt");
 
             File.WriteAllLines(logPath, StatusBarManager.Logs);
@@ -254,16 +254,19 @@ namespace Honeybee.Revit.CreateModel
         private void OnClearShades()
         {
             ContextShades.Clear();
+            Settings.StoredSettings.EnergyModelSettings.Shades.Clear();
         }
 
         private void OnAddFaces()
         {
-            Model.SelectFaces().ForEach(x => ContextShades.Add(x));
+            Model.SelectFaces(out var faceIds).ForEach(x => ContextShades.Add(x));
+            Settings.StoredSettings.EnergyModelSettings.Shades.AddRange(faceIds);
         }
 
         private void OnAddPlanting()
         {
-            Model.SelectPlanting().ForEach(x => ContextShades.Add(x));
+            Model.SelectPlanting(out var shadingIds).ForEach(x => ContextShades.Add(x));
+            Settings.StoredSettings.EnergyModelSettings.Shades.AddRange(shadingIds);
         }
 
         private static void OnShowDetails(SpatialObjectWrapper so)
