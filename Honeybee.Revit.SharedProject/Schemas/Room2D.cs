@@ -30,7 +30,7 @@ namespace Honeybee.Revit.Schemas
         }
 
         [JsonProperty("identifier")]
-        public string Identifier { get; set; } = $"Room_{Guid.NewGuid()}";
+        public string Identifier { get; set; }
 
         [JsonProperty("display_name")]
         public string DisplayName { get; set; }
@@ -83,6 +83,7 @@ namespace Honeybee.Revit.Schemas
 
         public Room2D(RVT.SpatialElement e)
         {
+            Identifier = $"Room_{e.UniqueId}";
             DisplayName = e.Name;
 
             var offset = e.get_Parameter(RVT.BuiltInParameter.ROOM_LOWER_OFFSET).AsDouble();

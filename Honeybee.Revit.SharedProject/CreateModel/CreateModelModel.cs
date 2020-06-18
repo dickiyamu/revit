@@ -39,13 +39,34 @@ namespace Honeybee.Revit.CreateModel
 
         public List<SpatialObjectWrapper> GetSpatialObjects()
         {
+            var storedObjects = AppSettings.Instance.StoredSettings.EnergyModelSettings.Rooms;
             var objects = new FilteredElementCollector(Doc)
                 .OfClass(typeof(SpatialElement))
                 .WhereElementIsNotElementType()
                 .Cast<SpatialElement>()
                 //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("318"))
                 .Where(x => (x is Room || x is Space) && x.Area > 0)
-                .Select(x => new SpatialObjectWrapper(x))
+                .Select(x =>
+                {
+                    if (!storedObjects.Any())
+                        return new SpatialObjectWrapper(x);
+
+                    var index = storedObjects.FindIndex(y => y.Room2D?.Identifier == $"Room_{x.UniqueId}");
+                    if (index == -1)
+                        return new SpatialObjectWrapper(x);
+
+                    var storedSo = storedObjects[index];
+                    var so = new SpatialObjectWrapper(x);
+                    so.IsConstructionSetOverriden = storedSo.IsConstructionSetOverriden;
+                    so.IsProgramTypeOverriden = storedSo.IsProgramTypeOverriden;
+                    so.Room2D.FloorToCeilingHeight = storedSo.Room2D.FloorToCeilingHeight;
+                    so.Room2D.IsTopExposed = storedSo.Room2D.IsTopExposed;
+                    so.Room2D.IsGroundContact = storedSo.Room2D.IsGroundContact;
+                    so.Room2D.Properties.Energy.ConstructionSet = storedSo.Room2D.Properties.Energy.ConstructionSet;
+                    so.Room2D.Properties.Energy.ProgramType = storedSo.Room2D.Properties.Energy.ProgramType;
+
+                    return so;
+                })
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
@@ -174,7 +195,7 @@ namespace Honeybee.Revit.CreateModel
                 hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
                 hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));
 
-                var contextShades = shades ?? GetContextShades(new List<string>());
+                var contextShades = shades ?? GetContextShades();
 
                 if (dragonfly)
                 {
@@ -276,28 +297,12 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        public string RunSimulation(bool dragonfly, string modelFilePath)
-        {
-            var simulationSettings = AppSettings.Instance.StoredSettings.SimulationSettings;
-            var simulationDir = Path.GetDirectoryName(modelFilePath);
-            var simulationParamPath = PrepSimulation(simulationDir);
-
-            var htmlReport = AppSettings.Instance.StoredSettings.SimulationSettings.HtmlReport;
-            var osReport = AppSettings.Instance.StoredSettings.SimulationSettings.OpenStudioReport;
-            var oswFilePath = htmlReport || osReport
-                ? PrepOswSimulation(simulationDir, htmlReport, osReport)
-                : string.Empty;
-
-            return RunDragonflySimulateCommand(dragonfly, simulationDir, modelFilePath,
-                simulationSettings.EpwFilePath, simulationParamPath, oswFilePath);
-        }
-
         public string RunDragonflySimulateCommand(
-            bool dragonfly, 
-            string simulationDir, 
-            string modelFilePath, 
-            string epwFilePath, 
-            string simulationParamPath, 
+            bool dragonfly,
+            string simulationDir,
+            string modelFilePath,
+            string epwFilePath,
+            string simulationParamPath,
             string oswFilePath = "")
         {
             try
@@ -369,6 +374,22 @@ namespace Honeybee.Revit.CreateModel
                 _logger.Fatal(e);
                 return "Failure!";
             }
+        }
+
+        public string RunSimulation(bool dragonfly, string modelFilePath)
+        {
+            var simulationSettings = AppSettings.Instance.StoredSettings.SimulationSettings;
+            var simulationDir = Path.GetDirectoryName(modelFilePath);
+            var simulationParamPath = PrepSimulation(simulationDir);
+
+            var htmlReport = AppSettings.Instance.StoredSettings.SimulationSettings.HtmlReport;
+            var osReport = AppSettings.Instance.StoredSettings.SimulationSettings.OpenStudioReport;
+            var oswFilePath = htmlReport || osReport
+                ? PrepOswSimulation(simulationDir, htmlReport, osReport)
+                : string.Empty;
+
+            return RunDragonflySimulateCommand(dragonfly, simulationDir, modelFilePath,
+                simulationSettings.EpwFilePath, simulationParamPath, oswFilePath);
         }
 
         public List<SpatialObjectWrapper> SelectRoomsSpaces()
@@ -452,25 +473,39 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        public List<Shade> GetContextShades(List<string> shadeIds)
+        public List<Shade> GetContextShades()
         {
             var shades = new List<Shade>();
             var trees = new List<Element>();
+            var shadeIds = AppSettings.Instance.StoredSettings.EnergyModelSettings.Shades;
             if (shadeIds.Any())
             {
-                foreach (var shadeId in shadeIds)
+                // (Konrad) Iterate over the list backwards so we can remove missing ids.
+                for (var i = shadeIds.Count - 1; i >= 0; i--)
                 {
-                    if (shadeId.Contains(":"))
+                    var shadeId = shadeIds[i];
+                    if (shadeId.Contains(':'))
                     {
-                        // (Konrad) This string is a stable representation of a face.
-                        var indexRef = Reference.ParseFromStableRepresentation(Doc, shadeId);
-                        var e = Doc.GetElement(shadeId.Split(':').First());
-                        var geometry = e.GetGeometryObjectFromReference(indexRef) as PlanarFace;
-                        shades.Add(new Shade(new Face3D(geometry)));
+                        try
+                        {
+                            // (Konrad) This string is a stable representation of a face.
+                            var indexRef = Reference.ParseFromStableRepresentation(Doc, shadeId);
+                            var e = Doc.GetElement(shadeId.Split(':').First());
+                            var geometry = e.GetGeometryObjectFromReference(indexRef) as PlanarFace;
+                            shades.Add(new Shade(new Face3D(geometry)));
+                        }
+                        catch (Exception)
+                        {
+                            shadeIds.RemoveAt(i);
+                        }
                     }
                     else
                     {
-                        trees.Add(Doc.GetElement(shadeId));
+                        var tree = Doc.GetElement(shadeId);
+                        if (tree == null)
+                            shadeIds.RemoveAt(i);
+                        else
+                            trees.Add(tree);
                     }
                 }
             }
@@ -488,10 +523,7 @@ namespace Honeybee.Revit.CreateModel
                 .Cast<View>()
                 .FirstOrDefault(x => x.ViewType == ViewType.ThreeD && !x.IsTemplate);
 
-            foreach (var tree in trees)
-            {
-                shades.AddRange(ShadesFromTrees(tree, view));
-            }
+            trees.ForEach(x => shades.AddRange(ShadesFromTrees(x, view)));
 
             return shades;
         }

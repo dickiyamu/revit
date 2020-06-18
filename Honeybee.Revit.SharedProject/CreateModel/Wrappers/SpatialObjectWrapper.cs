@@ -3,17 +3,26 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
 using Honeybee.Revit.Schemas;
+using Newtonsoft.Json;
 
 namespace Honeybee.Revit.CreateModel.Wrappers
 {
     public class SpatialObjectWrapper : INotifyPropertyChanged
     {
+        [JsonIgnore]
         internal Element Self { get; set; }
+
+        [JsonIgnore]
         public string Name { get; }
+
+        [JsonIgnore]
         public SpatialObjectType ObjectType { get; set; }
+
+        [JsonIgnore]
         public LevelWrapper Level { get; set; }
 
         private bool _isExpanded;
+        [JsonIgnore]
         public bool IsExpanded
         {
             get { return _isExpanded; }
@@ -42,10 +51,16 @@ namespace Honeybee.Revit.CreateModel.Wrappers
         }
 
         private bool _isSelected;
+        [JsonIgnore]
         public bool IsSelected
         {
             get { return _isSelected; }
             set { _isSelected = value; RaisePropertyChanged(nameof(IsSelected)); }
+        }
+
+        [JsonConstructor]
+        public SpatialObjectWrapper()
+        {
         }
 
         public SpatialObjectWrapper(Element e)

@@ -19,7 +19,6 @@ using Honeybee.Core.WPF;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
 using Honeybee.Revit.Schemas.Honeybee;
-using Path = System.IO.Path;
 // ReSharper disable PossibleNullReferenceException
 
 #endregion
@@ -30,7 +29,7 @@ namespace Honeybee.Revit.CreateModel
     {
         #region Properties
 
-        public RelayCommand<Window> Cancel { get; set; }
+        public RelayCommand<Window> Close { get; set; }
         public RelayCommand Help { get; set; }
         public RelayCommand ClearFilters { get; set; }
         public RelayCommand FilterChanged { get; set; }
@@ -119,14 +118,14 @@ namespace Honeybee.Revit.CreateModel
             }
         }
 
-        private ConstructionSet _bldgConstructionSet = new ConstructionSet();
+        private ConstructionSet _bldgConstructionSet;
         public ConstructionSet BldgConstructionSet
         {
             get { return _bldgConstructionSet; }
             set { _bldgConstructionSet = value; RaisePropertyChanged(() => BldgConstructionSet); }
         }
 
-        private ProgramType _bldgProgramType = new ProgramType();
+        private ProgramType _bldgProgramType;
         public ProgramType BldgProgramType
         {
             get { return _bldgProgramType; }
@@ -178,7 +177,9 @@ namespace Honeybee.Revit.CreateModel
             Dragonfly = dragonfly;
             Title = Dragonfly ? "Dragonfly - Create Model" : "Honeybee - Create Model";
             Settings = AppSettings.Instance;
-            ContextShades = Model.GetContextShades(Settings.StoredSettings.EnergyModelSettings.Shades).ToObservableCollection();
+            ContextShades = Model.GetContextShades().ToObservableCollection();
+            BldgConstructionSet = new ConstructionSet(Settings.StoredSettings.EnergyModelSettings.BldgConstructionSet);
+            BldgProgramType = new ProgramType(Settings.StoredSettings.EnergyModelSettings.BldgProgramType);
 
             var color = dragonfly
                 ? Color.FromRgb(0, 166, 81)
@@ -193,7 +194,7 @@ namespace Honeybee.Revit.CreateModel
             SpatialObjects.GroupDescriptions.Add(new PropertyGroupDescription("Level", new LevelToNameConverter()));
             SpatialObjects.Filter = FilterDataGrid;
 
-            Cancel = new RelayCommand<Window>(OnCancel);
+            Close = new RelayCommand<Window>(OnClose);
             Help = new RelayCommand(OnHelp);
             ClearFilters = new RelayCommand(OnClearFilters);
             FilterChanged = new RelayCommand(OnFilterChanged);
@@ -356,6 +357,8 @@ namespace Honeybee.Revit.CreateModel
                 so.Room2D.Properties.Energy.ConstructionSet.ClimateZone = BldgConstructionSet.ClimateZone;
                 so.Room2D.Properties.Energy.ConstructionSet.ConstructionType = BldgConstructionSet.ConstructionType;
             }
+
+            Settings.StoredSettings.EnergyModelSettings.BldgConstructionSet = BldgConstructionSet.Identifier;
         }
 
         private void OnCloseBuildingProgramTypePopup(Popup popup)
@@ -371,6 +374,8 @@ namespace Honeybee.Revit.CreateModel
                 so.Room2D.Properties.Energy.ProgramType.BuildingProgram = BldgProgramType.BuildingProgram;
                 so.Room2D.Properties.Energy.ProgramType.RoomProgram = BldgProgramType.RoomProgram;
             }
+
+            Settings.StoredSettings.EnergyModelSettings.BldgProgramType = BldgProgramType.Identifier;
         }
 
         private static void OnOpenPopup(Popup popup)
@@ -399,8 +404,11 @@ namespace Honeybee.Revit.CreateModel
             SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>().ForEach(x => x.IsSelected = false);
         }
 
-        private static void OnCancel(Window win)
+        private void OnClose(Window win)
         {
+            Settings.StoredSettings.EnergyModelSettings.Rooms = SpatialObjects.SourceCollection
+                .Cast<SpatialObjectWrapper>().ToList();
+
             win.Close();
         }
 

@@ -1004,7 +1004,7 @@
                 </MultiBinding>
             </b:ImageButton.MainImage>
         </b:ImageButton>
-        <Button Command="{Binding Cancel, Mode=OneWay}"
+        <Button Command="{Binding Close, Mode=OneWay}"
                 CommandParameter="{Binding ElementName=Win}"
                 Content="Close"
                 Margin="0,0,12,10"

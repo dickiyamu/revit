@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using Honeybee.Core;
 using Honeybee.Revit.Schemas.Converters;
 using Honeybee.Revit.Schemas.Enumerations;
 using Newtonsoft.Json;
@@ -71,7 +73,22 @@ namespace Honeybee.Revit.Schemas
             get { return _constructionType; }
             set { _constructionType = value; RaisePropertyChanged(nameof(ConstructionType)); RaisePropertyChanged(nameof(Identifier)); }
         }
-        
+
+        [JsonConstructor]
+        public ConstructionSet()
+        {
+        }
+
+        public ConstructionSet(string identifier)
+        {
+            var separator = new [] {"::"};
+            var parts = identifier.Split(separator, StringSplitOptions.None);
+
+            Vintage = Enumeration.FromDisplayName<Vintages>(parts[0]);
+            ClimateZone = Enumeration.FromDisplayName<ClimateZones>(parts[1]);
+            ConstructionType = Enumeration.FromDisplayName<ConstructionTypes>(parts[2]);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged(string propertyName)
         {

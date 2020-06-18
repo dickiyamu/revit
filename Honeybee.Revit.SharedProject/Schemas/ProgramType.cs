@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Honeybee.Core;
@@ -159,6 +160,21 @@ namespace Honeybee.Revit.Schemas
                 return AppSettings.Instance.RoomsPre1980[BuildingProgram.DisplayName]
                     .Select(Enumeration.FromDisplayName<RoomPrograms>).ToObservableCollection();
             }
+        }
+
+        [JsonConstructor]
+        public ProgramType()
+        {
+        }
+
+        public ProgramType(string identifier)
+        {
+            var separator = new[] { "::" };
+            var parts = identifier.Split(separator, StringSplitOptions.None);
+
+            Vintage = Enumeration.FromDisplayName<Vintages>(parts[0]);
+            BuildingProgram = Enumeration.FromDisplayName<BuildingPrograms>(parts[1]);
+            RoomProgram = Enumeration.FromDisplayName<RoomPrograms>(parts[2]);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

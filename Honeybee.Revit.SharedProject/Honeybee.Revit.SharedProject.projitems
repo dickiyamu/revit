@@ -62,6 +62,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\ListOfPoint2DConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\MaterialBaseConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\ProgramTypeConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\Room2DSettingsConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Converters\WindowParameterBaseConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\BuildingPrograms.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Enumerations\ClimateZones.cs" />
