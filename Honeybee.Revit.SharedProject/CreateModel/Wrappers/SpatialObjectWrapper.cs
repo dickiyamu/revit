@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
@@ -58,6 +59,14 @@ namespace Honeybee.Revit.CreateModel.Wrappers
             set { _isSelected = value; RaisePropertyChanged(nameof(IsSelected)); }
         }
 
+        private List<string> _messages = new List<string>();
+        [JsonIgnore]
+        public List<string> Messages
+        {
+            get { return _messages; }
+            set { _messages = value; RaisePropertyChanged(nameof(Messages)); }
+        }
+
         [JsonConstructor]
         public SpatialObjectWrapper()
         {
@@ -74,9 +83,16 @@ namespace Honeybee.Revit.CreateModel.Wrappers
 
             Level = new LevelWrapper(e.Document.GetElement(e.LevelId) as Level);
 
-            Room2D = ObjectType == SpatialObjectType.Room 
-                ? new Room2D(e as Room) 
-                : new Room2D(e as Space);
+            if (ObjectType == SpatialObjectType.Room)
+            {
+                Room2D = new Room2D(e as Room, out var roomMsg);
+                Messages = roomMsg;
+            }
+            else
+            {
+                Room2D = new Room2D(e as Space, out var spaceMsg);
+                Messages = spaceMsg;
+            }
         }
 
         public override bool Equals(object obj)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -85,6 +86,38 @@ namespace Honeybee.Revit.CreateModel
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class MessagesToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null || !(value is List<string> messages)) return Visibility.Visible;
+
+            return messages.Any() ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ListToStringConverter : IValueConverter
+    {
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (targetType != typeof(string))
+                throw new InvalidOperationException("The target must be a String");
+
+            return string.Join(", ", ((List<string>)value)?.ToArray() ?? throw new InvalidOperationException());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

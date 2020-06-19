@@ -37,6 +37,8 @@
             <createModel:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
             <createModel:ResourceConverter x:Key="ResourceConverter" />
             <createModel:StyleConverter x:Key="StyleConverter" />
+            <createModel:ListToStringConverter x:Key="ListToStringConverter"/>
+            <createModel:MessagesToVisibilityConverter x:Key="MessagesToVisibilityConverter"/>
             <Style TargetType="{x:Type wpf:DataGridExtension}">
                 <Setter Property="Background"
                         Value="White" />
@@ -59,8 +61,7 @@
                         Value="Center" />
             </Style>
             <!-- ReSharper disable once Xaml.RedundantResource -->
-            <Style x:Key="ContentDataGridCenteringHb"
-                   TargetType="{x:Type DataGridCell}">
+            <Style x:Key="ContentDataGridCenteringHb" TargetType="{x:Type DataGridCell}">
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type DataGridCell}">
@@ -77,12 +78,9 @@
                 <Setter Property="BorderThickness"
                         Value="1" />
                 <Style.Triggers>
-                    <Trigger Property="IsSelected"
-                             Value="True">
-                        <Setter Property="Background"
-                                Value="#F5B34C" />
-                        <Setter Property="BorderBrush"
-                                Value="#F5B34C" />
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="#F5B34C" />
+                        <Setter Property="BorderBrush" Value="#F5B34C" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -122,8 +120,13 @@
             <Style x:Key="DefaultRowStyle" TargetType="{x:Type DataGridRow}">
                 <Setter Property="IsSelected" Value="{Binding IsSelected}" />
                 <Setter Property="ContextMenu" Value="{StaticResource RowMenu}" />
-                <Setter Property="DetailsVisibility"
-                        Value="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <Setter Property="DetailsVisibility" Value="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <!--<Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=Messages, Converter={StaticResource MessagesToBoolConverter}}" Value="True">
+                        <Setter Property="IsHitTestVisible" Value="False"/>
+                        <Setter Property="Foreground" Value="LightGray"/>
+                    </DataTrigger>
+                </Style.Triggers>-->
             </Style>
             <ObjectDataProvider x:Key="VintagesDataProvider"
                                 ObjectType="{x:Type enums:Vintages}"
@@ -485,7 +488,7 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="24" />
                         </Grid.RowDefinitions>
-                        <wpf:DataGridExtension ItemsSource="{Binding SpatialObjects}"
+                        <wpf:DataGridExtension ItemsSource="{Binding SpatialObjects, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                RowStyle="{StaticResource DefaultRowStyle}"
                                                VerticalScrollBarVisibility="Auto"
                                                HorizontalScrollBarVisibility="Hidden"
@@ -553,6 +556,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <!-- Name -->
                                             <TextBlock Grid.Row="0"
@@ -601,6 +605,15 @@
                                                       Grid.Column="1"
                                                       IsChecked="{Binding Room2D.IsTopExposed}"
                                                       VerticalContentAlignment="Center" />
+                                            <!-- Errors -->
+                                            <TextBlock Grid.Row="5"
+                                                       Grid.Column="0"
+                                                       Text="Errors: "
+                                                       Foreground="Red"
+                                                       FontWeight="Bold" />
+                                            <TextBlock Grid.Row="5"
+                                                       Grid.Column="1"
+                                                       Text="{Binding Messages, Converter={StaticResource ListToStringConverter}}"/>
                                         </Grid>
                                     </DockPanel>
                                 </DataTemplate>
@@ -687,17 +700,20 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Level"
-                                                    Binding="{Binding Level.Name}"
-                                                    Width="150"
-                                                    IsReadOnly="True">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style>
-                                            <Setter Property="TextBlock.TextAlignment" Value="Left" />
-                                            <Setter Property="TextBlock.Padding" Value="4,2" />
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="Messages"
+                                                        Width="75"
+                                                        HeaderStyle="{StaticResource CenterGridHeaderStyle}">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="{x:Type wrappers:SpatialObjectWrapper}">
+                                            <Image Width="22" 
+                                                   Height="22"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Visibility="{Binding Messages, Converter={StaticResource MessagesToVisibilityConverter}}"
+                                                   Source="/Honeybee.Core;Component/Resources/24x24/errors.png" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Construction Set"
                                                         Width="270"
                                                         HeaderStyle="{StaticResource CenterGridHeaderStyle}">

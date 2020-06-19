@@ -81,8 +81,9 @@ namespace Honeybee.Revit.Schemas
         {
         }
 
-        public Room2D(RVT.SpatialElement e)
+        public Room2D(RVT.SpatialElement e, out List<string> messages)
         {
+            messages = new List<string>();
             Identifier = $"Room_{e.UniqueId}";
             DisplayName = e.Name;
 
@@ -127,7 +128,10 @@ namespace Honeybee.Revit.Schemas
                         // They don't account for base offset.
                         var boundaryCurve = bs.GetCurve().Offset(offset);
                         if (boundaryCurve.Length < tolerance)
+                        {
+                            messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
                             continue; // Exclude tiny curves, they don't produce faces.
+                        }
 
                         var face = FindFace(faces, roomGeo, boundaryCurve);
                         if (face == null)
@@ -580,10 +584,11 @@ namespace Honeybee.Revit.Schemas
             var familyWidthInstance = insert.get_Parameter(RVT.BuiltInParameter.FAMILY_WIDTH_PARAM)?.AsDouble() ?? 0;
             var familyWidthType = winType.get_Parameter(RVT.BuiltInParameter.FAMILY_WIDTH_PARAM)?.AsDouble() ?? 0;
             var famWidth = familyWidthInstance > 0 ? familyWidthInstance : familyWidthType;
-            var roughWidthInstance = insert.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_WIDTH_PARAM)?.AsDouble() ?? 0;
-            var roughWidthType = winType.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_WIDTH_PARAM)?.AsDouble() ?? 0;
-            var rWidth = roughWidthInstance > 0 ? roughWidthInstance : roughWidthType;
-            var width = rWidth > 0 ? rWidth : famWidth > 0 ? famWidth : furnWidth;
+            //var roughWidthInstance = insert.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_WIDTH_PARAM)?.AsDouble() ?? 0;
+            //var roughWidthType = winType.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_WIDTH_PARAM)?.AsDouble() ?? 0;
+            //var rWidth = roughWidthInstance > 0 ? roughWidthInstance : roughWidthType;
+            //var width = rWidth > 0 ? rWidth : famWidth > 0 ? famWidth : furnWidth;
+            var width = famWidth > 0 ? famWidth : furnWidth;
 
             var furnitureHeightInstance = insert.get_Parameter(RVT.BuiltInParameter.FURNITURE_HEIGHT)?.AsDouble() ?? 0;
             var furnitureHeightType = winType.get_Parameter(RVT.BuiltInParameter.FURNITURE_HEIGHT)?.AsDouble() ?? 0;
@@ -591,10 +596,11 @@ namespace Honeybee.Revit.Schemas
             var familyHeightInstance = insert.get_Parameter(RVT.BuiltInParameter.FAMILY_HEIGHT_PARAM)?.AsDouble() ?? 0;
             var familyHeightType = winType.get_Parameter(RVT.BuiltInParameter.FAMILY_HEIGHT_PARAM)?.AsDouble() ?? 0;
             var famHeight = familyHeightInstance > 0 ? familyHeightInstance : familyHeightType;
-            var roughHeightInstance = insert.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_HEIGHT_PARAM)?.AsDouble() ?? 0;
-            var roughHeightType = winType.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_HEIGHT_PARAM)?.AsDouble() ?? 0;
-            var rHeight = roughWidthInstance > 0 ? roughHeightInstance : roughHeightType;
-            var height = rHeight > 0 ? rHeight : famHeight > 0 ? famHeight : furnHeight;
+            //var roughHeightInstance = insert.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_HEIGHT_PARAM)?.AsDouble() ?? 0;
+            //var roughHeightType = winType.get_Parameter(RVT.BuiltInParameter.FAMILY_ROUGH_HEIGHT_PARAM)?.AsDouble() ?? 0;
+            //var rHeight = roughWidthInstance > 0 ? roughHeightInstance : roughHeightType;
+            //var height = rHeight > 0 ? rHeight : famHeight > 0 ? famHeight : furnHeight;
+            var height = famHeight > 0 ? famHeight : furnHeight;
 
             var winArea = width * height;
 

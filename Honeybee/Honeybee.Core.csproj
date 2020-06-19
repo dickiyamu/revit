@@ -200,5 +200,9 @@
   <ItemGroup>
     <Resource Include="Resources\dragonfly.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\24x24\errors.png" />
+    <Resource Include="Resources\24x24\errorsHover.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -51,7 +51,6 @@ namespace Honeybee.Revit.CreateModel
         public RelayCommand ShowLog { get; set; }
 
         public CreateModelModel Model { get; set; }
-        public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels { get; set; }
         public ListCollectionView SpatialObjects { get; set; }
         public SolidColorBrush BorderBrush { get; set; }
         public string Title { get; set; }
@@ -69,6 +68,14 @@ namespace Honeybee.Revit.CreateModel
                 }
                 return false;
             }
+        }
+
+        private ObservableCollection<SpatialObjectWrapper> _spatialObjectsModels =
+            new ObservableCollection<SpatialObjectWrapper>();
+        public ObservableCollection<SpatialObjectWrapper> SpatialObjectsModels
+        {
+            get { return _spatialObjectsModels; }
+            set { _spatialObjectsModels = value; RaisePropertyChanged(() => SpatialObjectsModels); }
         }
 
         private FilterType _filterType = FilterType.None;
@@ -186,9 +193,6 @@ namespace Honeybee.Revit.CreateModel
                 : Color.FromRgb(245, 179, 76);
             BorderBrush = new SolidColorBrush(color);
 
-            var so = Model.GetSpatialObjects();
-            Levels = so.Select(x => x.Level).Distinct().ToObservableCollection();
-            SpatialObjectsModels = so.ToObservableCollection();
             SpatialObjects = new ListCollectionView(SpatialObjectsModels);
             SpatialObjects.GroupDescriptions.Clear();
             SpatialObjects.GroupDescriptions.Add(new PropertyGroupDescription("Level", new LevelToNameConverter()));
@@ -423,6 +427,8 @@ namespace Honeybee.Revit.CreateModel
             Messenger.Default.Register<TypeChanged>(this, OnTypeChanged);
             Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreated);
             Messenger.Default.Register<UpdateStatusBarMessage>(this, OnUpdateStatusBar);
+
+            Initialize();
         }
 
         public void OnWindowUnloaded()
@@ -514,6 +520,19 @@ namespace Honeybee.Revit.CreateModel
 
         #region Utilities
 
+        public async void Initialize()
+        {
+            var modelName = Dragonfly ? "Dragonfly" : "Honeybee";
+            StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", 100, true);
+
+            var (so, lw) = await Task.Run(() => Model.GetSpatialObjects());
+
+            Levels = lw.ToObservableCollection();
+            so.ForEach(x => SpatialObjectsModels.Add(x));
+            
+            StatusBarManager.FinalizeProgress(true);
+        }
+
         private void ShowResults()
         {
             if (Dragonfly)
@@ -556,7 +575,7 @@ namespace Honeybee.Revit.CreateModel
         private string ProcessExport()
         {
             var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
-                .Where(x => x.IsSelected)
+                .Where(x => x.IsSelected && !x.Messages.Any())
                 .Select(x => x.Room2D)
                 .ToList();
 

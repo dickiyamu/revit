@@ -37,17 +37,21 @@ namespace Honeybee.Revit.CreateModel
             UiDoc = uiDoc;
         }
 
-        public List<SpatialObjectWrapper> GetSpatialObjects()
+        public Tuple<List<SpatialObjectWrapper>, List<LevelWrapper>> GetSpatialObjects()
         {
+            var allLevels = new HashSet<LevelWrapper>();
             var storedObjects = AppSettings.Instance.StoredSettings.EnergyModelSettings.Rooms;
             var objects = new FilteredElementCollector(Doc)
                 .OfClass(typeof(SpatialElement))
                 .WhereElementIsNotElementType()
                 .Cast<SpatialElement>()
-                //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("318"))
-                .Where(x => (x is Room || x is Space) && x.Area > 0)
+                //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("1-094"))
+                .Where(x => (x is Room || x is Space) && x.Area > 0 && x.Level.Name.Contains("1"))
+                //.Where(x => (x is Room || x is Space) && x.Area > 0)
                 .Select(x =>
                 {
+                    Messenger.Default.Send(new UpdateStatusBarMessage($"Processing Room: {x.Name}..."));
+
                     if (!storedObjects.Any())
                         return new SpatialObjectWrapper(x);
 
@@ -65,6 +69,8 @@ namespace Honeybee.Revit.CreateModel
                     so.Room2D.Properties.Energy.ConstructionSet = storedSo.Room2D.Properties.Energy.ConstructionSet;
                     so.Room2D.Properties.Energy.ProgramType = storedSo.Room2D.Properties.Energy.ProgramType;
 
+                    allLevels.Add(so.Level);
+
                     return so;
                 })
                 .OrderBy(x => x.Level.Elevation)
@@ -73,7 +79,7 @@ namespace Honeybee.Revit.CreateModel
             DF_AssignBoundaryConditions(objects);
             HB_AssignBoundaryConditions(objects);
 
-            return objects;
+            return new Tuple<List<SpatialObjectWrapper>, List<LevelWrapper>>(objects, allLevels.ToList());
         }
 
         public string RunHoneybeeEnergyCommand(string command, IEnumerable<string> ids)
