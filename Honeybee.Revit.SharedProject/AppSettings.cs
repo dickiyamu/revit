@@ -32,6 +32,17 @@ namespace Honeybee.Revit
             set { _storedSettings = value; RaisePropertyChanged(nameof(StoredSettings)); }
         }
 
+        public bool CanRunSimulation()
+        {
+            var epwFilePath = StoredSettings.SimulationSettings.EpwFilePath;
+            if (string.IsNullOrWhiteSpace(epwFilePath)) return false;
+
+            var simulationDir = StoredSettings.SimulationSettings.SimulationFolder;
+            if (string.IsNullOrWhiteSpace(simulationDir)) return false;
+
+            return true;
+        }
+
         private AppSettings()
         {
             try

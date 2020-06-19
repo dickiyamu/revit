@@ -13,6 +13,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using GalaSoft.MvvmLight.Messaging;
 using Honeybee.Core;
+using Honeybee.Core.WPF;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Honeybee.Revit.Schemas;
 using Honeybee.Revit.Schemas.Honeybee;
@@ -37,49 +38,62 @@ namespace Honeybee.Revit.CreateModel
             UiDoc = uiDoc;
         }
 
-        public Tuple<List<SpatialObjectWrapper>, List<LevelWrapper>> GetSpatialObjects()
+        public Tuple<List<SpatialObjectWrapper>, List<LevelWrapper>> GetSpatialObjects(bool dragonfly)
         {
             var allLevels = new HashSet<LevelWrapper>();
             var storedObjects = AppSettings.Instance.StoredSettings.EnergyModelSettings.Rooms;
-            var objects = new FilteredElementCollector(Doc)
+            var spatialObjects = new FilteredElementCollector(Doc)
                 .OfClass(typeof(SpatialElement))
                 .WhereElementIsNotElementType()
                 .Cast<SpatialElement>()
                 //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("1-094"))
                 .Where(x => (x is Room || x is Space) && x.Area > 0 && x.Level.Name.Contains("1"))
                 //.Where(x => (x is Room || x is Space) && x.Area > 0)
-                .Select(x =>
-                {
-                    Messenger.Default.Send(new UpdateStatusBarMessage($"Processing Room: {x.Name}..."));
-
-                    if (!storedObjects.Any())
-                        return new SpatialObjectWrapper(x);
-
-                    var index = storedObjects.FindIndex(y => y.Room2D?.Identifier == $"Room_{x.UniqueId}");
-                    if (index == -1)
-                        return new SpatialObjectWrapper(x);
-
-                    var storedSo = storedObjects[index];
-                    var so = new SpatialObjectWrapper(x);
-                    so.IsConstructionSetOverriden = storedSo.IsConstructionSetOverriden;
-                    so.IsProgramTypeOverriden = storedSo.IsProgramTypeOverriden;
-                    so.Room2D.FloorToCeilingHeight = storedSo.Room2D.FloorToCeilingHeight;
-                    so.Room2D.IsTopExposed = storedSo.Room2D.IsTopExposed;
-                    so.Room2D.IsGroundContact = storedSo.Room2D.IsGroundContact;
-                    so.Room2D.Properties.Energy.ConstructionSet = storedSo.Room2D.Properties.Energy.ConstructionSet;
-                    so.Room2D.Properties.Energy.ProgramType = storedSo.Room2D.Properties.Energy.ProgramType;
-
-                    allLevels.Add(so.Level);
-
-                    return so;
-                })
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
-            DF_AssignBoundaryConditions(objects);
-            HB_AssignBoundaryConditions(objects);
+            var modelName = dragonfly ? "Dragonfly" : "Honeybee";
+            StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", spatialObjects.Count);
 
-            return new Tuple<List<SpatialObjectWrapper>, List<LevelWrapper>>(objects, allLevels.ToList());
+            var result = new List<SpatialObjectWrapper>();
+            foreach(var se in spatialObjects)
+            {
+                StatusBarManager.StepForward($"Processing Room: {se.Name}...");
+
+                if (!storedObjects.Any())
+                {
+                    result.Add(new SpatialObjectWrapper(se));
+                    continue;
+                }
+
+                var index = storedObjects.FindIndex(y => y.Room2D?.Identifier == $"Room_{se.UniqueId}");
+                if (index == -1)
+                {
+                    result.Add(new SpatialObjectWrapper(se));
+                    continue;
+                }
+
+                var storedSo = storedObjects[index];
+                var so = new SpatialObjectWrapper(se);
+                so.IsConstructionSetOverriden = storedSo.IsConstructionSetOverriden;
+                so.IsProgramTypeOverriden = storedSo.IsProgramTypeOverriden;
+                so.Room2D.FloorToCeilingHeight = storedSo.Room2D.FloorToCeilingHeight;
+                so.Room2D.IsTopExposed = storedSo.Room2D.IsTopExposed;
+                so.Room2D.IsGroundContact = storedSo.Room2D.IsGroundContact;
+                so.Room2D.Properties.Energy.ConstructionSet = storedSo.Room2D.Properties.Energy.ConstructionSet;
+                so.Room2D.Properties.Energy.ProgramType = storedSo.Room2D.Properties.Energy.ProgramType;
+
+                allLevels.Add(so.Level);
+
+                result.Add(so);
+            }
+
+            DF_AssignBoundaryConditions(result);
+            HB_AssignBoundaryConditions(result);
+
+            StatusBarManager.FinalizeProgress(true);
+
+            return new Tuple<List<SpatialObjectWrapper>, List<LevelWrapper>>(result, allLevels.ToList());
         }
 
         public string RunHoneybeeEnergyCommand(string command, IEnumerable<string> ids)

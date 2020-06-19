@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
@@ -240,13 +241,13 @@ namespace Honeybee.Revit.CreateModel
 
         private async void OnRunSimulation()
         {
+            Debug.WriteLine(Thread.CurrentThread.ManagedThreadId);
+
             var modelName = Dragonfly ? "Dragonfly" : "Honeybee";
             StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", 100, true);
-
             var modelPath = await Task.Run(() => ProcessExport());
 
             StatusBarManager.SetStatus("Start Simulation...");
-
             var result = await Task.Run(() => Model.RunSimulation(Dragonfly, modelPath));
             if (result == "Success!")
                 ShowResults();
@@ -427,8 +428,6 @@ namespace Honeybee.Revit.CreateModel
             Messenger.Default.Register<TypeChanged>(this, OnTypeChanged);
             Messenger.Default.Register<AnnotationsCreated>(this, OnAnnotationsCreated);
             Messenger.Default.Register<UpdateStatusBarMessage>(this, OnUpdateStatusBar);
-
-            Initialize();
         }
 
         public void OnWindowUnloaded()
@@ -520,17 +519,13 @@ namespace Honeybee.Revit.CreateModel
 
         #region Utilities
 
-        public async void Initialize()
+        public void Initialize()
         {
-            var modelName = Dragonfly ? "Dragonfly" : "Honeybee";
-            StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", 100, true);
+            Debug.WriteLine(Thread.CurrentThread.ManagedThreadId);
 
-            var (so, lw) = await Task.Run(() => Model.GetSpatialObjects());
-
+            var (so, lw) = Model.GetSpatialObjects(Dragonfly);
             Levels = lw.ToObservableCollection();
             so.ForEach(x => SpatialObjectsModels.Add(x));
-            
-            StatusBarManager.FinalizeProgress(true);
         }
 
         private void ShowResults()
@@ -574,6 +569,8 @@ namespace Honeybee.Revit.CreateModel
 
         private string ProcessExport()
         {
+            Debug.WriteLine(Thread.CurrentThread.ManagedThreadId);
+
             var selected = SpatialObjects.SourceCollection.Cast<SpatialObjectWrapper>()
                 .Where(x => x.IsSelected && !x.Messages.Any())
                 .Select(x => x.Room2D)

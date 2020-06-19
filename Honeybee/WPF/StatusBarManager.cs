@@ -7,9 +7,6 @@ using Honeybee.Core.WPF.Buttons;
 
 namespace Honeybee.Core.WPF
 {
-    /// <summary>
-    /// Class used to initialize and step through the progress bar.
-    /// </summary>
     public static class StatusBarManager
     {
         public static ProgressBar ProgressBar = null;
@@ -35,12 +32,6 @@ namespace Honeybee.Core.WPF
             Dispatcher.CurrentDispatcher.Invoke(_updateLabelDelegate, DispatcherPriority.Background, TextBlock.TextProperty, message);
         }
 
-        /// <summary>
-        /// Initialize Progress Bar and set Status Label.
-        /// </summary>
-        /// <param name="statusText">Status Label initial value.</param>
-        /// <param name="maximum">Max count for the Progress Bar.</param>
-        /// <param name="indeterminate"></param>
         public static void InitializeProgress(string statusText, int maximum, bool indeterminate = false)
         {
             if (null == ProgressBar || null == StatusLabel) return;
@@ -62,9 +53,6 @@ namespace Honeybee.Core.WPF
                 ProgressBar.IsIndeterminate = true;
         }
 
-        /// <summary>
-        /// Iterate Progress Bar by one.
-        /// </summary>
         public static void StepForward()
         {
             if (null == ProgressBar || null == StatusLabel) return;
@@ -73,9 +61,6 @@ namespace Honeybee.Core.WPF
             Dispatcher.CurrentDispatcher.Invoke(_updatePbDelegate, DispatcherPriority.Background, RangeBase.ValueProperty, ProgressValue);
         }
 
-        /// <summary>
-        /// Iterate Progress Bar by one.
-        /// </summary>
         public static void StepForward(string status)
         {
             if (null == ProgressBar || null == StatusLabel) return;
@@ -85,9 +70,6 @@ namespace Honeybee.Core.WPF
             Dispatcher.CurrentDispatcher.Invoke(_updateLabelDelegate, DispatcherPriority.Background, TextBlock.TextProperty, status);
         }
 
-        /// <summary>
-        /// Clean up Progress bar by resetting Status Label.
-        /// </summary>
         public static void FinalizeProgress(bool indeterminate = false)
         {
             if (null == ProgressBar || null == StatusLabel) return;

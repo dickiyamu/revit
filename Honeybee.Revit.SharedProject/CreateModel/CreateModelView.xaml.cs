@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Honeybee.Core.WPF;
@@ -85,6 +86,19 @@ namespace Honeybee.Revit.CreateModel
         {
             var vm = DataContext as CreateModelViewModel;
             vm?.OnWindowUnloaded();
+        }
+
+        private void CreateModelView_OnContentRendered(object sender, EventArgs e)
+        {
+            var vm = DataContext as CreateModelViewModel;
+            vm?.Initialize();
+        }
+
+        private void CreateModelView_OnActivated(object sender, EventArgs e)
+        {
+            StatusBarManager.ProgressBar = ProgressBar;
+            StatusBarManager.StatusLabel = StatusLabel;
+            StatusBarManager.LogButton = LogButton;
         }
     }
 }

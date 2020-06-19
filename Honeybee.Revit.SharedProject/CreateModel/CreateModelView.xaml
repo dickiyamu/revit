@@ -20,7 +20,9 @@
         Width="1400"
         d:DesignHeight="450"
         Loaded="CreateModelView_OnLoaded" 
-        Unloaded="CreateModelView_OnUnloaded">
+        Unloaded="CreateModelView_OnUnloaded"
+        ContentRendered="CreateModelView_OnContentRendered"
+        Activated="CreateModelView_OnActivated">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -37,9 +39,10 @@
             <createModel:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
             <createModel:ResourceConverter x:Key="ResourceConverter" />
             <createModel:StyleConverter x:Key="StyleConverter" />
-            <createModel:ListToStringConverter x:Key="ListToStringConverter"/>
-            <createModel:MessagesToVisibilityConverter x:Key="MessagesToVisibilityConverter"/>
-            <Style TargetType="{x:Type wpf:DataGridExtension}">
+            <createModel:ListToStringConverter x:Key="ListToStringConverter" />
+            <createModel:MessagesToVisibilityConverter x:Key="MessagesToVisibilityConverter" />
+            <createModel:ValidateRunButtonConverter x:Key="ValidateRunButtonConverter" />
+                <Style TargetType="{x:Type wpf:DataGridExtension}">
                 <Setter Property="Background"
                         Value="White" />
                 <Setter Property="AutoGenerateColumns"
@@ -1036,7 +1039,14 @@
                 HorizontalAlignment="Right"
                 Width="75"
                 Height="20"
-                VerticalAlignment="Bottom" />
+                VerticalAlignment="Bottom">
+            <Button.IsEnabled>
+                <MultiBinding Converter="{StaticResource ValidateRunButtonConverter}">
+                    <Binding Path="Settings.StoredSettings.SimulationSettings.EpwFilePath"/>
+                    <Binding Path="Settings.StoredSettings.SimulationSettings.SimulationFolder"/>
+                </MultiBinding>
+            </Button.IsEnabled>
+        </Button>
         <Button Content="?"
                 Command="{Binding Help, Mode=OneWay}"
                 Margin="0,0,182,10"

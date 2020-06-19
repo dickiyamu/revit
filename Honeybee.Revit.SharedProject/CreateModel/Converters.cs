@@ -109,6 +109,22 @@ namespace Honeybee.Revit.CreateModel
         }
     }
 
+    public class ValidateRunButtonConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var epwPath = (string) values[0];
+            var simDir = (string) values[1];
+
+            return !string.IsNullOrWhiteSpace(epwPath) && !string.IsNullOrWhiteSpace(simDir);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class ListToStringConverter : IValueConverter
     {
 
