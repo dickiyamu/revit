@@ -79,16 +79,6 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2020'))">
-      <HintPath>..\packages\Revit.2020.Assemblies.1.0.0\lib\RevitAPI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI" Condition="$(Configuration.Contains('2020'))">
-      <HintPath>..\packages\Revit.2020.Assemblies.1.0.0\lib\RevitAPIUI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="RevitAPI" Condition="$(Configuration.Contains('2018'))">
       <HintPath>..\packages\Revit-2018.1-x64.Base.1.0.0\lib\net46\RevitAPI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
