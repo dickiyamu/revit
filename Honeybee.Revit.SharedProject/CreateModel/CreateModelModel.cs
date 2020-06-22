@@ -47,8 +47,8 @@ namespace Honeybee.Revit.CreateModel
                 .WhereElementIsNotElementType()
                 .Cast<SpatialElement>()
                 //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("1-094"))
-                .Where(x => (x is Room || x is Space) && x.Area > 0 && x.Level.Name.Contains("1"))
-                //.Where(x => (x is Room || x is Space) && x.Area > 0)
+                //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Level.Name.Contains("1"))
+                .Where(x => (x is Room || x is Space) && x.Area > 0)
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
