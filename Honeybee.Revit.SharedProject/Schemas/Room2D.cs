@@ -21,6 +21,8 @@ namespace Honeybee.Revit.Schemas
 {
     public class Room2D : IBaseObject, ISchema<DF.Room2D, HB.Room>
     {
+        #region Properties
+
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         [JsonProperty("type")]
@@ -76,6 +78,10 @@ namespace Honeybee.Revit.Schemas
         [JsonIgnore]
         internal List<AnnotationWrapper> Annotations { get; set; } = new List<AnnotationWrapper>();
 
+        #endregion
+
+        #region Constructors
+
         [JsonConstructor]
         public Room2D()
         {
@@ -91,7 +97,7 @@ namespace Honeybee.Revit.Schemas
             if (e.Document.GetElement(e.LevelId) is RVT.Level level)
             {
                 // (Konrad) Room might be attached to Level and have negative offset.
-                FloorHeight = level.Elevation + offset; 
+                FloorHeight = level.Elevation + offset;
                 LevelName = level.Name;
             }
 
@@ -149,8 +155,8 @@ namespace Honeybee.Revit.Schemas
                         boundary.AddRange(boundaryPts);
                         windows.AddRange(boundaryPts.Select(x =>
                             Math.Abs(glazingRatio) < tolerance
-                                ? (WindowParameterBase) null
-                                : new SimpleWindowRatio {WindowRatio = glazingRatio}));
+                                ? (WindowParameterBase)null
+                                : new SimpleWindowRatio { WindowRatio = glazingRatio }));
                     }
 
                     continue;
@@ -164,7 +170,7 @@ namespace Honeybee.Revit.Schemas
                     var segmentPts = GeometryUtils.GetPoints(boundaryCurve);
 
                     hole.AddRange(segmentPts);
-                    windows.AddRange(segmentPts.Select(segmentPt => (WindowParameterBase) null));
+                    windows.AddRange(segmentPts.Select(segmentPt => (WindowParameterBase)null));
                 }
 
                 holes.Add(hole);
@@ -227,6 +233,10 @@ namespace Honeybee.Revit.Schemas
             IsGroundContact = IsTouchingGround(e);
         }
 
+        #endregion
+
+        #region Converters
+
         public DF.Room2D ToDragonfly()
         {
             return new DF.Room2D(
@@ -259,6 +269,8 @@ namespace Honeybee.Revit.Schemas
                 1 // multiplier
             );
         }
+
+        #endregion
 
         public override bool Equals(object obj)
         {
@@ -302,7 +314,7 @@ namespace Honeybee.Revit.Schemas
             return height;
         }
 
-        private static List<Face> PlanarizeCylindricalFace(RVT.Face face)
+        private static IEnumerable<Face> PlanarizeCylindricalFace(RVT.Face face)
         {
             var cLoop = face.GetEdgesAsCurveLoops().First().ToList();
             if (cLoop.Count < 4 || cLoop.Count(x => x is RVT.Arc) != 2)
@@ -404,7 +416,6 @@ namespace Honeybee.Revit.Schemas
                     IsTopExposed = true;
 
                     GetGlazingFromRoof(roof, face, ref glazingPoints, ref glazingAreas);
-                    //GetGlazingFromWindows(roof, face, ref glazingPoints, ref glazingAreas);
                 }
             }
         }
@@ -638,7 +649,9 @@ namespace Honeybee.Revit.Schemas
             var shortCurveTolerance = doc.Application.ShortCurveTolerance;
             var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var cGrid = wall.CurtainGrid;
-            var panels = cGrid.GetPanelIds().Select(x => doc.GetElement(x));
+            var panels = new List<RVT.Element>();
+
+            ExtractPanelsRecursively(doc, cGrid, ref panels);
 
             foreach (var panel in panels)
             {
@@ -687,7 +700,12 @@ namespace Honeybee.Revit.Schemas
             return (area < 0 ? -area : area);
         }
 
-        private static bool GetHull(List<RVT.XYZ> pts, List<RVT.UV> uvs, double shortCurveTolerance, out List<RVT.XYZ> hullPts, out List<RVT.UV> hullUvs)
+        private static bool GetHull(
+            List<RVT.XYZ> pts, 
+            List<RVT.UV> uvs, 
+            double shortCurveTolerance, 
+            out List<RVT.XYZ> hullPts, 
+            out List<RVT.UV> hullUvs)
         {
             hullPts = new List<RVT.XYZ>();
             hullUvs = new List<RVT.UV>();
@@ -763,14 +781,51 @@ namespace Honeybee.Revit.Schemas
             }
         }
 
-        private static bool GetPointsOnFace(RVT.Face face, List<RVT.XYZ> pts, out List<RVT.XYZ> ptsOnFace, out List<RVT.UV> uvsOnFace)
+        private static bool GetPointsOnFace(
+            RVT.Face face, 
+            List<RVT.XYZ> pts, 
+            out List<RVT.XYZ> ptsOnFace, 
+            out List<RVT.UV> uvsOnFace)
         {
             var onFace = new HashSet<RVT.XYZ>();
             var onFaceUvs = new HashSet<RVT.UV>();
             foreach (var pt in pts)
             {
                 var intResult = face.Project(pt);
-                if (intResult == null) continue;
+                if (intResult == null)
+                {
+                    // (Konrad) In case that projection onto a Face failed, we can try extracting
+                    // a list of edge curves, and finding the closest point on an edge of the Face.
+                    // This makes sense when Face is just a small sub-part of the large Wall that is
+                    // generating the boundary. 
+                    var distance = double.MaxValue;
+                    RVT.XYZ closestPt = null;
+                    foreach (var cl in face.GetEdgesAsCurveLoops())
+                    {
+                        foreach (var curve in cl)
+                        {
+                            var curveIntResult = curve.Project(pt);
+                            var intDistance = curveIntResult.Distance;
+                            if (intDistance >= distance)
+                                continue;
+
+                            closestPt = curveIntResult.XYZPoint;
+                            distance = intDistance;
+                        }
+                    }
+
+                    if (closestPt != null)
+                    {
+                        var closestPtIntersectionResult = face.Project(closestPt);
+                        if (closestPtIntersectionResult != null)
+                        {
+                            if (onFace.Add(closestPtIntersectionResult.XYZPoint))
+                                onFaceUvs.Add(closestPtIntersectionResult.UVPoint.Negate());
+                        }
+                    }
+
+                    continue;
+                }
 
                 if (onFace.Add(intResult.XYZPoint))
                     onFaceUvs.Add(intResult.UVPoint.Negate());
@@ -797,7 +852,7 @@ namespace Honeybee.Revit.Schemas
             return pts;
         }
 
-        private static List<RVT.Solid> GetSolidGeometry(RVT.Element e)
+        private static IEnumerable<RVT.Solid> GetSolidGeometry(RVT.Element e)
         {
             // (Konrad) We don't put these methods into "using" statements because
             // GC wants to collect the solid as soon as the scope is done, causing
@@ -834,6 +889,42 @@ namespace Honeybee.Revit.Schemas
             }
         }
 
+        /// <summary>
+        /// Extracts Curtain Wall Panels using a recursive method since Curtain Wall Panels
+        /// can host other Curtain Walls, resulting in nested Panels.
+        /// </summary>
+        /// <param name="doc">Document.</param>
+        /// <param name="cGrid">Curtain Grid.</param>
+        /// <param name="panels">Reference list of Elements to store Panels.</param>
+        private static void ExtractPanelsRecursively(RVT.Document doc, RVT.CurtainGrid cGrid, ref List<RVT.Element> panels)
+        {
+            foreach (var id in cGrid.GetPanelIds())
+            {
+                if (!(doc.GetElement(id) is RVT.Panel panel))
+                {
+                    // (Konrad) If Panel was replaced with a Door it will be a FamilyInstance.
+                    if (doc.GetElement(id) is RVT.FamilyInstance fi)
+                        panels.Add(fi);
+
+                    continue;
+                }
+
+                // (Konrad) Curtain Walls that were nested into a Panel will have this property set.
+                var hostId = panel.FindHostPanel();
+                if (hostId != null)
+                {
+                    if (doc.GetElement(hostId) is RVT.Wall wall && wall.WallType.Kind == RVT.WallKind.Curtain)
+                    {
+                        ExtractPanelsRecursively(doc, wall.CurtainGrid, ref panels);
+
+                        continue;
+                    }
+                }
+
+                panels.Add(panel);
+            }
+        }
+
         private static void ExtractPtsRecursively(RVT.GeometryElement geo, ref List<RVT.XYZ> pts, bool includeLines = false)
         {
             foreach (var g in geo)
@@ -857,12 +948,15 @@ namespace Honeybee.Revit.Schemas
                 }
 
                 var faceGeo = g as RVT.Face;
-                if (faceGeo != null) ProcessFace(faceGeo, ref pts);
+                if (faceGeo != null)
+                    ProcessFace(faceGeo, ref pts);
 
                 var meshGeo = g as RVT.Mesh;
-                if (meshGeo != null) pts.AddRange(meshGeo.Vertices);
+                if (meshGeo != null)
+                    pts.AddRange(meshGeo.Vertices);
 
-                if (!includeLines) continue;
+                if (!includeLines)
+                    continue;
 
                 var lineGeo = g as RVT.Curve;
                 if (lineGeo != null && lineGeo.IsBound)
@@ -917,7 +1011,7 @@ namespace Honeybee.Revit.Schemas
             }
         }
 
-        private static List<List<RVT.Curve>> GroupCurves(List<RVT.Curve> curves)
+        private static IEnumerable<List<RVT.Curve>> GroupCurves(List<RVT.Curve> curves)
         {
             var groupedCurves = new List<List<RVT.Curve>>();
             var queue = new List<RVT.Curve>();
@@ -961,139 +1055,6 @@ namespace Honeybee.Revit.Schemas
 
             return groupedCurves;
         }
-
-        //private static List<List<Point2D>> GetHoles(IList<IList<RVT.BoundarySegment>> bs)
-        //{
-        //    var holes = new List<List<Point2D>>();
-        //    for (var i = 1; i < bs.Count; i++)
-        //    {
-        //        // (Konrad) All loops starting from index 1 are floor holes.
-        //        var holeBoundary = bs[i];
-        //        holes.Add(GetPoints(holeBoundary));
-        //    }
-
-        //    return holes;
-        //}
-
-        //private static List<Point2D> GetBoundary(IEnumerable<IList<RVT.BoundarySegment>> bs)
-        //{
-        //    var boundary = new List<Point2D>();
-        //    var outerBoundary = bs.FirstOrDefault();
-        //    if (outerBoundary == null) return boundary;
-
-        //    boundary.AddRange(GetPoints(outerBoundary));
-
-        //    return boundary;
-        //}
-
-        //private static double GetCeilingHeight(RVT.SpatialElement se)
-        //{
-        //    try
-        //    {
-        //        var view = new RVT.FilteredElementCollector(se.Document)
-        //            .OfClass(typeof(RVT.View3D))
-        //            .Cast<RVT.View3D>()
-        //            .FirstOrDefault(x => !x.IsTemplate);
-        //        if (view == null)
-        //            return se.GetUnboundHeight();
-
-        //        var basePt = se.GetLocationPoint();
-        //        if (basePt == null)
-        //            return se.GetUnboundHeight();
-
-        //        var direction = new RVT.XYZ(0, 0, 1);
-        //        var filter = new RVT.ElementClassFilter(typeof(RVT.Ceiling));
-        //        var refIntersector = new RVT.ReferenceIntersector(filter, RVT.FindReferenceTarget.Face, view);
-        //        var refWithContext = refIntersector.FindNearest(basePt, direction);
-        //        if (refWithContext == null)
-        //        {
-        //            // (Konrad) There is no Ceiling. What about a Floor (exposed ceiling)?
-        //            basePt += new RVT.XYZ(0, 0, 0.1); // floor/bottom of room intersect let's move point up
-        //            filter = new RVT.ElementClassFilter(typeof(RVT.Floor));
-        //            refIntersector = new RVT.ReferenceIntersector(filter, RVT.FindReferenceTarget.Face, view);
-        //            refWithContext = refIntersector.FindNearest(basePt, direction);
-        //        }
-
-        //        if (refWithContext == null)
-        //        {
-        //            // (Konrad) There is no Floor. What about Roof (exposed ceiling on top floor)?
-        //            filter = new RVT.ElementClassFilter(typeof(RVT.RoofBase));
-        //            refIntersector = new RVT.ReferenceIntersector(filter, RVT.FindReferenceTarget.Face, view);
-        //            refWithContext = refIntersector.FindNearest(basePt, direction);
-        //        }
-
-        //        if (refWithContext == null)
-        //            return se.GetUnboundHeight();
-
-        //        var reference = refWithContext.GetReference();
-        //        var intersection = reference.GlobalPoint;
-        //        var line = RVT.Line.CreateBound(basePt, intersection);
-        //        var height = line.Length;
-
-        //        return height;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.Fatal(e);
-        //        return 0d;
-        //    }
-        //}
-
-        //private static List<Point2D> GetPoints(IEnumerable<RVT.BoundarySegment> segments)
-        //{
-        //    var curves = new List<Point2D>();
-        //    foreach (var bs in segments)
-        //    {
-        //        var curve = bs.GetCurve();
-        //        switch (curve)
-        //        {
-        //            case RVT.Line line:
-        //                curves.Add(new Point2D(line.GetEndPoint(0)));
-        //                break;
-        //            case RVT.Arc arc:
-        //                curves.Add(new Point2D(arc.Evaluate(0, true)));
-        //                curves.Add(new Point2D(arc.Evaluate(0.25, true)));
-        //                curves.Add(new Point2D(arc.Evaluate(0.5, true)));
-        //                curves.Add(new Point2D(arc.Evaluate(0.75, true)));
-        //                break;
-        //            case RVT.CylindricalHelix unused:
-        //            case RVT.Ellipse unused1:
-        //            case RVT.HermiteSpline unused2:
-        //            case RVT.NurbSpline unused3:
-        //                break;
-        //        }
-        //    }
-
-        //    return curves;
-        //}
-
-        //private static List<WindowParameterBase> GetWindowParameters(IList<IList<RVT.BoundarySegment>> bs, RVT.Document doc)
-        //{
-        //    var wParams = new List<WindowParameterBase>();
-        //    var outerBoundary = bs.FirstOrDefault();
-        //    if (outerBoundary == null) return wParams;
-
-        //    for (var i = 0; i < bs.Count; i++)
-        //    {
-        //        var loop = bs[i];
-        //        for (var k = 0; k < loop.Count; k++)
-        //        {
-        //            var segment = bs[i][k];
-        //            var bElement = doc.GetElement(segment.ElementId);
-        //            if (bElement == null) continue;
-
-        //            if (bElement is RVT.Wall wall)
-        //            {
-        //                var inserts = wall.FindInserts(true, false, true, true)
-        //                    .Select(doc.GetElement)
-        //                    .Where(x => x.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Windows.GetHashCode())
-        //                    .ToList();
-        //            }
-        //        }
-        //    }
-
-        //    return wParams;
-        //}
 
         #endregion
     }

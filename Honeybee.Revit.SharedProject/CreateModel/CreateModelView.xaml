@@ -642,7 +642,7 @@
                                                   Background="Transparent">
                                                 <StackPanel Orientation="Horizontal"
                                                             HorizontalAlignment="Stretch">
-                                                    <Label Content="{Binding Name}" />
+                                                    <Label Content="{Binding Name}" IsHitTestVisible="False" />
                                                     <b:ImageButton x:Name="ShowDetailsButton"
                                                                    Command="{Binding DataContext.ShowDetails, Mode=OneWay, ElementName=Win}"
                                                                    CommandParameter="{Binding }"
