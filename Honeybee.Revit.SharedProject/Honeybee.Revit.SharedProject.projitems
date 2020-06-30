@@ -6,7 +6,7 @@
     <SharedGUID>7ea5ac03-97c9-49ad-a09d-cb61c2ecc7da</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Honeybee.Revit.SharedProject</Import_RootNamespace>
+    <Import_RootNamespace>Honeybee.Revit</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AppCommand.cs" />
@@ -30,12 +30,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\AnnotationWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\LevelWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CreateModel\Wrappers\SpatialObjectWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\Controls\GlazingControl.xaml.cs">
+      <DependentUpon>GlazingControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometryControl.xaml.cs">
       <DependentUpon>GeometryControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometryModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometrySettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\GeometryViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\Wrappers\PanelTypeWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelSettings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
@@ -119,6 +125,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ModelSettings\Geometry\Controls\GlazingControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

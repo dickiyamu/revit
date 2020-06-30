@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel;
-using Honeybee.Core;
 using Honeybee.Revit.CreateModel;
 using Honeybee.Revit.ModelSettings.Geometry;
 using Honeybee.Revit.ModelSettings.Simulation;
 using Honeybee.Revit.Schemas.Converters;
 using Newtonsoft.Json;
-using RestSharp.Deserializers;
 
 namespace Honeybee.Revit
 {
@@ -39,14 +37,12 @@ namespace Honeybee.Revit
 
         public string Serialize()
         {
-            //return Json.Serialize(this);
             return JsonConvert.SerializeObject(this, Formatting.None, new Room2DSettingsConverter());
         }
 
         public static StoredSettings Deserialize(string json)
         {
             return JsonConvert.DeserializeObject<StoredSettings>(json, new Room2DSettingsConverter());
-            //return Json.Deserialize<StoredSettings>(json);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

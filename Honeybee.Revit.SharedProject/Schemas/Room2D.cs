@@ -643,7 +643,11 @@ namespace Honeybee.Revit.Schemas
             return null;
         }
 
-        private static void GetGlazingFromCurtainWall(RVT.Wall wall, RVT.Face face, ref List<List<RVT.XYZ>> glazingPts, ref List<double> glazingAreas)
+        private static void GetGlazingFromCurtainWall(
+            RVT.Wall wall, 
+            RVT.Face face, 
+            ref List<List<RVT.XYZ>> glazingPts, 
+            ref List<double> glazingAreas)
         {
             var doc = wall.Document;
             var shortCurveTolerance = doc.Application.ShortCurveTolerance;
@@ -903,8 +907,12 @@ namespace Honeybee.Revit.Schemas
                 if (!(doc.GetElement(id) is RVT.Panel panel))
                 {
                     // (Konrad) If Panel was replaced with a Door it will be a FamilyInstance.
-                    if (doc.GetElement(id) is RVT.FamilyInstance fi)
+                    if (doc.GetElement(id) is RVT.FamilyInstance fi &&
+                        AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
+                            x.UniqueId == doc.GetElement(fi.GetTypeId()).UniqueId))
+                    {
                         panels.Add(fi);
+                    }
 
                     continue;
                 }
@@ -921,7 +929,11 @@ namespace Honeybee.Revit.Schemas
                     }
                 }
 
-                panels.Add(panel);
+                if (AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
+                    x.UniqueId == doc.GetElement(panel.GetTypeId()).UniqueId))
+                {
+                    panels.Add(panel);
+                }
             }
         }
 

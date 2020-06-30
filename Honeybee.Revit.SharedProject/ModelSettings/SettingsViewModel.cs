@@ -11,6 +11,7 @@ namespace Honeybee.Revit.ModelSettings
 {
     public class SettingsViewModel : ViewModelBase
     {
+        public SettingsModel Model { get; set; }
         public RelayCommand<Window> WindowLoaded { get; set; }
         public RelayCommand<Window> Close { get; set; }
         public RelayCommand Help { get; set; }
@@ -24,8 +25,9 @@ namespace Honeybee.Revit.ModelSettings
             set { _selectedTab = value; RaisePropertyChanged(() => SelectedTab); }
         }
 
-        public SettingsViewModel(int selectedTab = 0)
+        public SettingsViewModel(SettingsModel model, int selectedTab = 0)
         {
+            Model = model;
             WindowLoaded = new RelayCommand<Window>(OnWindowLoaded);
             Close = new RelayCommand<Window>(OnClose);
             Help = new RelayCommand(OnHelp);
@@ -34,7 +36,7 @@ namespace Honeybee.Revit.ModelSettings
             {
                 new TabItem
                 {
-                    Content = new GeometryControl {DataContext = new GeometryViewModel()},
+                    Content = new GeometryControl {DataContext = new GeometryViewModel(new GeometryModel(Model.UiDoc))},
                     Header = "Geometry"
                 },
                 new TabItem

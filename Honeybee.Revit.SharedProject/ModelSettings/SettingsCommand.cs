@@ -21,7 +21,11 @@ namespace Honeybee.Revit.ModelSettings
             {
                 _logger.Info("Settings started.");
 
-                var vm = new SettingsViewModel();
+                var uiApp = commandData.Application;
+                var uiDoc = uiApp.ActiveUIDocument;
+
+                var m = new SettingsModel(uiDoc);
+                var vm = new SettingsViewModel(m);
                 var v = new SettingsView
                 {
                     DataContext = vm

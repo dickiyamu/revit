@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using Honeybee.Revit.ModelSettings.Geometry.Wrappers;
 
 namespace Honeybee.Revit.ModelSettings.Geometry
 {
@@ -16,6 +18,13 @@ namespace Honeybee.Revit.ModelSettings.Geometry
         {
             get { return _tolerance; }
             set { _tolerance = value; RaisePropertyChanged(nameof(Tolerance)); }
+        }
+
+        private ObservableCollection<PanelTypeWrapper> _glazingTypes = new ObservableCollection<PanelTypeWrapper>();
+        public ObservableCollection<PanelTypeWrapper> GlazingTypes
+        {
+            get { return _glazingTypes; }
+            set { _glazingTypes = value; RaisePropertyChanged(nameof(GlazingTypes)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -1,0 +1,46 @@
+﻿<UserControl x:Name="Control"
+             x:Class="Honeybee.Revit.ModelSettings.Geometry.Controls.GlazingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:b="clr-namespace:Honeybee.Core.WPF.Buttons;assembly=Honeybee.Core"
+             mc:Ignorable="d"
+             d:DesignHeight="22"
+             d:DesignWidth="400"
+             Height="22">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="pack://application:,,,/Honeybee.Core;component/Resources/Styles/ImageButtonStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Border CornerRadius="12" Background="#F5B34C">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding Name, FallbackValue=Name}"
+                       VerticalContentAlignment="Center"
+                       HorizontalContentAlignment="Center" 
+                       Margin="10,0,5,0"
+                       Padding="0"
+                       FontWeight="Bold"/>
+                <b:ImageButton DataContext="{Binding ElementName=Control}"
+                               Command="{Binding ButtonCommand, Mode=OneWay}"
+                               CommandParameter="{Binding ElementName=Control, Path=DataContext}"
+                               MainImage="/Honeybee.Core;Component/Resources/24x24/reset.png"
+                               HoverImage="/Honeybee.Core;Component/Resources/24x24/resetHover.png"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Cursor="Hand"
+                               Width="22"
+                               Height="22"
+                               Margin="5,0,5,0" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

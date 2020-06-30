@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Honeybee.Revit.ModelSettings.Geometry.Controls"
              mc:Ignorable="d"
              d:DesignHeight="700"
              d:DesignWidth="800">
@@ -36,8 +37,45 @@
                          VerticalContentAlignment="Center"
                          HorizontalContentAlignment="Center"
                          Margin="5,0"
+                         Padding="0"
                          Width="100"
-                         Text="{Binding Settings.StoredSettings.GeometrySettings.Tolerance}"/>
+                         Height="22"
+                         Text="{Binding Settings.StoredSettings.GeometrySettings.Tolerance, FallbackValue=0.001}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Glazing"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox x:Name="GlazingTypesComboBox"
+                              ItemsSource="{Binding GlazingTypes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              SelectionChanged="GlazingTypesComboBox_OnSelectionChanged"
+                              DisplayMemberPath="Name"
+                              Width="200"
+                              Height="22"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Top"
+                              HorizontalContentAlignment="Left"
+                              VerticalContentAlignment="Center"
+                              Margin="5,0" />
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="1">
+                        <ItemsControl ItemsSource="{Binding Settings.StoredSettings.GeometrySettings.GlazingTypes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type controls:GlazingControl}">
+                                    <controls:GlazingControl Margin="0,2,0,0" 
+                                                             ButtonCommand="{Binding DataContext.RemoveGlazingType, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </StackPanel>
         </StackPanel>
     </Grid>
