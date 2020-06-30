@@ -19,14 +19,16 @@ namespace Honeybee.Revit.SharedProject.Utilities
         {
             try
             {
-                if (Schema == null) Schema = CreateSchema();
+                if (Schema == null)
+                    Schema = CreateSchema();
+
                 if (Schema != null)
                 {
                     var storage = GetDataStorage(doc);
-                    if (storage == null)
+                    var entity = storage?.GetEntity(Schema);
+                    if (entity?.Schema == null)
                         return null;
 
-                    var entity = storage.GetEntity(Schema);
                     var json = entity.Get<string>(Schema.GetField(FieldName));
                     var settings = StoredSettings.Deserialize(json);
 
@@ -70,18 +72,18 @@ namespace Honeybee.Revit.SharedProject.Utilities
                 trans.Start("Store Settings");
                 try
                 {
-                    if (Schema == null) Schema = CreateSchema();
+                    Schema = Schema ?? CreateSchema();
                     if (Schema != null)
                     {
-                        var savedData = GetDataStorage(doc);
-                        if (savedData != null)
-                            doc.Delete(savedData.Id);
+                        var savedData = GetDataStorage(doc) ?? DataStorage.Create(doc);
+                        var entity = savedData.GetEntity(Schema);
+                        if (entity.Schema == null)
+                            entity = new Entity(Schema);
 
-                        var storage = DataStorage.Create(doc);
-                        var entity = new Entity(SchemaId);
-                        entity.Set<string>(FieldName, AppSettings.Instance.StoredSettings.Serialize());
+                        var field = Schema.GetField(FieldName);
+                        entity.Set<string>(field, AppSettings.Instance.StoredSettings.Serialize());
+                        savedData.SetEntity(entity);
 
-                        storage.SetEntity(entity);
                         updated = true;
                     }
 
