@@ -207,10 +207,6 @@ namespace Honeybee.Revit.CreateModel
                 var hbProgramTypes = GetProgramTypeSet(rooms, bProgramType);
                 var hbConstructionSets = GetConstructionSets(rooms, bConstructionSet);
                 var properties = new ModelProperties { Energy = new ModelEnergyProperties() };
-                var globalConstructionSet = GetDefaultConstructionSet();
-
-                properties.Energy.ConstructionSets.Add(globalConstructionSet);
-                properties.Energy.GlobalConstructionSet = "Default Generic Construction Set";
 
                 hbProgramTypes.ForEach(x => properties.Energy.ProgramTypes.Add(x));
                 hbConstructionSets.ForEach(x => properties.Energy.ConstructionSets.Add(x));

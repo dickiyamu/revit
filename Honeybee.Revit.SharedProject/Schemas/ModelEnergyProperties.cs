@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
 using DF = DragonflySchema;
 using HB = HoneybeeSchema;
 
@@ -14,13 +13,8 @@ namespace Honeybee.Revit.Schemas
 
         public List<ConstructionBase> Constructions { get; set; } = new List<ConstructionBase>();
         public List<MaterialBase> Materials { get; set; } = new List<MaterialBase>();
-
-        [JsonProperty("global_construction_set")]
-        public string GlobalConstructionSet { get; set; }
-
         public List<HB.AnyOf<HB.ConstructionSetAbridged, HB.ConstructionSet>> ConstructionSets { get; set; } = new List<HB.AnyOf<HB.ConstructionSetAbridged, HB.ConstructionSet>>();
         public List<HB.AnyOf<HB.ProgramTypeAbridged, HB.ProgramType>> ProgramTypes { get; set; } = new List<HB.AnyOf<HB.ProgramTypeAbridged, HB.ProgramType>>();
-
         public List<HB.IdealAirSystemAbridged> Hvacs { get; set; } = null;
         public List<HB.AnyOf<HB.ScheduleRulesetAbridged, HB.ScheduleFixedIntervalAbridged>> Schedules { get; set; } = null;
         public List<HB.ScheduleTypeLimit> ScheduleTypeLimits { get; set; } = null;
