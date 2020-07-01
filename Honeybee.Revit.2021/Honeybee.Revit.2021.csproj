@@ -48,8 +48,8 @@
     <Reference Include="CommonServiceLocator, Version=2.0.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.2\lib\net47\CommonServiceLocator.dll</HintPath>
     </Reference>
-    <Reference Include="DragonflySchema, Version=1.5.15.30468, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DragonflySchema.1.5.15.30468\lib\net45\DragonflySchema.dll</HintPath>
+    <Reference Include="DragonflySchema, Version=1.5.24.30619, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DragonflySchema.1.5.24.30619\lib\net45\DragonflySchema.dll</HintPath>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight, Version=5.4.1.0, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.dll</HintPath>

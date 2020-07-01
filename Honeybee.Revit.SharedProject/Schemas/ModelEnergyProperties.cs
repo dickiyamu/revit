@@ -28,7 +28,6 @@ namespace Honeybee.Revit.Schemas
         public DF.ModelEnergyProperties ToDragonfly()
         {
             return new DF.ModelEnergyProperties(
-                GlobalConstructionSet,
                 ConstructionSets,
                 Constructions.ToDragonfly(),
                 Materials.ToHoneybee(),
