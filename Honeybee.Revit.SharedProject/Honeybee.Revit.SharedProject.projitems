@@ -117,12 +117,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\createModel.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\runSimulation.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\settings.png" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\1980_2004_registry.json" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2004_registry.json" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2007_registry.json" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2010_registry.json" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2013_registry.json" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\pre_1980_registry.json" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CreateModel\CreateModelView.xaml">
@@ -148,5 +142,13 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\32x32\createDfModel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\1980_2004_data.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2004_data.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2007_data.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2010_data.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\2013_data.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\Schema\pre_1980_data.json" />
   </ItemGroup>
 </Project>

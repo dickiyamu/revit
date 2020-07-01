@@ -74,6 +74,7 @@ namespace Honeybee.Revit.Schemas
                 Properties.ToDragonfly(),
                 DisplayName,
                 null, // user data
+                null, // version
                 ContextShades.Select(x => x.ToDragonfly()).ToList(),
                 Units,
                 Tolerance,
@@ -88,6 +89,7 @@ namespace Honeybee.Revit.Schemas
                 Properties.ToHoneybee(),
                 DisplayName,
                 null, // user data
+                null, //version
                 Rooms,
                 null, // orphaned faces
                 ContextShades.Select(x => x.ToHoneybee()).ToList(),
