@@ -482,29 +482,18 @@ namespace Honeybee.Revit.Schemas
                 if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Windows.GetHashCode())
                 {
                     var winPts = GetGeometryPoints(insert);
-                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
+
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
 
                     var winArea = GetWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
-                    if (hullArea < winArea * 0.5) continue;
+                    if (hullArea < winArea * 0.5)
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
-
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
-
-                            hPts[i] = offsetPt;
-                        }
-                    }
+                    ValidatePoints(face, tolerance, ref hPts);
 
                     if (hPts.Count < 3) continue;
 
@@ -544,25 +533,13 @@ namespace Honeybee.Revit.Schemas
                         winPts.Add(curve.GetEndPoint(1));
                     }
 
-                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
 
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
-
-                            hPts[i] = offsetPt;
-                        }
-                    }
+                    ValidatePoints(face, tolerance, ref hPts);
 
                     if (hPts.Count < 3) continue;
 
@@ -600,31 +577,21 @@ namespace Honeybee.Revit.Schemas
                 if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Windows.GetHashCode())
                 {
                     var winPts = GetGeometryPoints(insert);
-                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
+
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
 
                     var winArea = GetWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
-                    if (hullArea < winArea * 0.5) continue;
+                    if (hullArea < winArea * 0.5)
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
+                    ValidatePoints(face, tolerance, ref hPts);
 
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
-
-                            hPts[i] = offsetPt;
-                        }
-                    }
-
-                    if (hPts.Count < 3) continue;
+                    if (hPts.Count < 3)
+                        continue;
 
                     glazingAreas.Add(PolygonArea(hUvs));
                     glazingPts.Add(hPts);
@@ -632,30 +599,44 @@ namespace Honeybee.Revit.Schemas
                 else if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Doors.GetHashCode())
                 {
                     var doorPts = GetGeometryPoints(insert);
-                    if (!GetPointsOnFace(face, doorPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var unused)) continue;
+                    if (!GetPointsOnFace(face, doorPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
 
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
+                    ValidatePoints(face, tolerance, ref hPts);
 
-                            hPts[i] = offsetPt;
-                        }
-                    }
+                    var doorArea = GetWindowArea(insert);
+                    var hullArea = PolygonArea(hUvs);
+                    if (hullArea < doorArea * 0.5)
+                        continue;
 
-                    if (hPts.Count < 3) continue;
+                    if (hPts.Count < 3)
+                        continue;
 
                     var door = new Door(hPts.Select(x => new Point3D(x)).ToList());
                     hbFace.Doors.Add(door);
+                }
+            }
+        }
+
+        private static void ValidatePoints(RVT.Face face, double tolerance, ref List<RVT.XYZ> hPts)
+        {
+            var outerEdges = face.GetEdgesAsCurveLoops().First();
+            foreach (var edge in outerEdges)
+            {
+                for (var i = 0; i < hPts.Count; i++)
+                {
+                    var pt = hPts[i];
+                    if (edge.Distance(pt) >= tolerance) continue;
+
+                    var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
+                    var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
+                    var offset = 0.1 * perpendicular;
+                    var offsetPt = pt + offset;
+
+                    hPts[i] = offsetPt;
                 }
             }
         }
@@ -722,24 +703,10 @@ namespace Honeybee.Revit.Schemas
             if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
                 return;
 
-            var outerEdges = face.GetEdgesAsCurveLoops().First();
-            foreach (var edge in outerEdges)
-            {
-                for (var i = 0; i < hPts.Count; i++)
-                {
-                    var pt = hPts[i];
-                    if (edge.Distance(pt) >= tolerance) continue;
+            ValidatePoints(face, tolerance, ref hPts);
 
-                    var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                    var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                    var offset = 0.1 * perpendicular;
-                    var offsetPt = pt + offset;
-
-                    hPts[i] = offsetPt;
-                }
-            }
-
-            if (hPts.Count < 3) return;
+            if (hPts.Count < 3)
+                return;
 
             glazingAreas.Add(PolygonArea(hUvs));
             glazingPts.Add(hPts);
@@ -823,22 +790,7 @@ namespace Honeybee.Revit.Schemas
                 if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace)) continue;
                 if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
 
-                var outerEdges = face.GetEdgesAsCurveLoops().First();
-                foreach (var edge in outerEdges)
-                {
-                    for (var i = 0; i < hPts.Count; i++)
-                    {
-                        var pt = hPts[i];
-                        if (edge.Distance(pt) >= tolerance) continue;
-
-                        var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                        var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                        var offset = 0.1 * perpendicular;
-                        var offsetPt = pt + offset;
-
-                        hPts[i] = offsetPt;
-                    }
-                }
+                ValidatePoints(face, tolerance, ref hPts);
 
                 if (hPts.Count < 3) continue;
 
