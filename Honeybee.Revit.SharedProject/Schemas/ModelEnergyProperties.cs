@@ -30,7 +30,7 @@ namespace Honeybee.Revit.Schemas
             return new DF.ModelEnergyProperties(
                 GlobalConstructionSet,
                 ConstructionSets,
-                Constructions.ToHoneybee(),
+                Constructions.ToDragonfly(),
                 Materials.ToHoneybee(),
                 null, // hvacs
                 ProgramTypes,
@@ -42,14 +42,13 @@ namespace Honeybee.Revit.Schemas
         public HB.ModelEnergyProperties ToHoneybee()
         {
             return new HB.ModelEnergyProperties(
-                GlobalConstructionSet,
                 ConstructionSets,
                 Constructions.ToHoneybee(),
                 Materials.ToHoneybee(),
                 null, // hvacs
                 ProgramTypes,
                 null, // schedules
-                null
+                null // schedule type limits
             );
         }
     }
@@ -57,13 +56,57 @@ namespace Honeybee.Revit.Schemas
     public static class ModelEnergyPropertiesExtensions
     {
         public static List<HB.AnyOf<
-            HB.OpaqueConstructionAbridged,
-            HB.WindowConstructionAbridged,
-            HB.ShadeConstruction,
-            HB.AirBoundaryConstructionAbridged,
-            HB.OpaqueConstruction,
-            HB.WindowConstruction,
-            HB.AirBoundaryConstruction>> ToHoneybee(this List<ConstructionBase> cons)
+            HB.OpaqueConstructionAbridged, 
+            HB.WindowConstructionAbridged, 
+            HB.WindowConstructionShadeAbridged, 
+            HB.AirBoundaryConstructionAbridged, 
+            HB.OpaqueConstruction, 
+            HB.WindowConstruction, 
+            HB.WindowConstructionShade, 
+            HB.AirBoundaryConstruction, 
+            HB.ShadeConstruction>> ToHoneybee(this List<ConstructionBase> cons)
+        {
+            var constructions =
+                new List<HB.AnyOf<
+                    HB.OpaqueConstructionAbridged,
+                    HB.WindowConstructionAbridged,
+                    HB.WindowConstructionShadeAbridged,
+                    HB.AirBoundaryConstructionAbridged,
+                    HB.OpaqueConstruction,
+                    HB.WindowConstruction,
+                    HB.WindowConstructionShade,
+                    HB.AirBoundaryConstruction,
+                    HB.ShadeConstruction>>();
+            foreach (var cb in cons)
+            {
+                switch (cb)
+                {
+                    case OpaqueConstructionAbridged unused:
+                        constructions.Add(cb.ToDragonfly() as HB.OpaqueConstructionAbridged);
+                        break;
+                    case WindowConstructionAbridged unused:
+                        constructions.Add(cb.ToDragonfly() as HB.WindowConstructionAbridged);
+                        break;
+                    case ShadeConstruction unused:
+                        constructions.Add(cb.ToDragonfly() as HB.ShadeConstruction);
+                        break;
+                    default:
+                        constructions.Add(null);
+                        break;
+                }
+            }
+
+            return constructions;
+        }
+
+        public static List<HB.AnyOf<
+            HB.OpaqueConstructionAbridged, 
+            HB.WindowConstructionAbridged, 
+            HB.ShadeConstruction, 
+            HB.AirBoundaryConstructionAbridged, 
+            HB.OpaqueConstruction, 
+            HB.WindowConstruction, 
+            HB.AirBoundaryConstruction>> ToDragonfly(this List<ConstructionBase> cons)
         {
             var constructions =
                 new List<HB.AnyOf<

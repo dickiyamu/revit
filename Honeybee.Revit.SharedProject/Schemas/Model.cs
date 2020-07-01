@@ -88,6 +88,7 @@ namespace Honeybee.Revit.Schemas
                 Properties.ToHoneybee(),
                 DisplayName,
                 null, // user data
+                null, //version
                 Rooms,
                 null, // orphaned faces
                 ContextShades.Select(x => x.ToHoneybee()).ToList(),
