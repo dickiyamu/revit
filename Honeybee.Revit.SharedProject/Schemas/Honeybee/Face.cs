@@ -32,7 +32,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public List<Aperture> Apertures { get; set; } = new List<Aperture>();
 
         [JsonProperty("doors")]
-        public List<HB.Door> Doors { get; set; }
+        public List<Door> Doors { get; set; } = new List<Door>();
 
         [JsonProperty("indoor_shades")]
         public List<HB.Shade> IndoorShades { get; set; }
@@ -78,7 +78,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
                 DisplayName,
                 null, // user data
                 Apertures?.Select(x => x.ToHoneybee()).ToList(),
-                null, // doors
+                Doors.Select(x => x.ToHoneybee()).ToList(),
                 null, // indoor shades
                 null // outdoor shades
             );

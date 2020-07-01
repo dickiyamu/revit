@@ -143,7 +143,8 @@ namespace Honeybee.Revit.Schemas
                         if (face == null)
                             continue; // Couldn't find a matching face. Not good.
 
-                        GetGlazingInfo(face, doc, roomGeo, out var unused, out var glazingAreas);
+                        var hbFace = new Face();
+                        GetGlazingInfo(face, doc, roomGeo, out var unused, out var glazingAreas, ref hbFace);
 
                         var faceArea = boundaryCurve.Length * height;
                         var glazingArea = glazingAreas.Sum();
@@ -189,9 +190,11 @@ namespace Honeybee.Revit.Schemas
                 if (face is RVT.CylindricalFace) // round columns only
                 {
                     var planarFaces = PlanarizeCylindricalFace(face).ToList();
-                    foreach (var hbFace in planarFaces)
+                    Face hbFace;
+                    foreach (var f in planarFaces)
                     {
-                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, hbFace);
+                        hbFace = f;
+                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
 
                         var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
                         hbFace.Apertures = apertures.Any() ? apertures : null;
@@ -203,7 +206,7 @@ namespace Honeybee.Revit.Schemas
                 {
                     var hbFace = new Face(face);
 
-                    GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused);
+                    GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
 
                     var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList()))
                         .ToList();
@@ -397,7 +400,7 @@ namespace Honeybee.Revit.Schemas
             RVT.SpatialElementGeometryResults result,
             out List<List<RVT.XYZ>> glazingPoints, 
             out List<double> glazingAreas,
-            Face hbFace = null)
+            ref Face hbFace)
         {
             glazingPoints = new List<List<RVT.XYZ>>();
             glazingAreas = new List<double>();
@@ -449,7 +452,7 @@ namespace Honeybee.Revit.Schemas
                         }
                         else
                         {
-                            GetGlazingFromWindows(wall, face, ref glazingPoints, ref glazingAreas);
+                            GetGlazingFromWindows(wall, face, ref glazingPoints, ref glazingAreas, ref hbFace);
                         }
                     }
                 }
@@ -573,7 +576,8 @@ namespace Honeybee.Revit.Schemas
             object wallRoof, 
             RVT.Face face, 
             ref List<List<RVT.XYZ>> glazingPts, 
-            ref List<double> glazingAreas)
+            ref List<double> glazingAreas,
+            ref Face hbFace)
         {
             var shortCurveTolerance = 0d;
             var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
@@ -624,6 +628,34 @@ namespace Honeybee.Revit.Schemas
 
                     glazingAreas.Add(PolygonArea(hUvs));
                     glazingPts.Add(hPts);
+                }
+                else if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Doors.GetHashCode())
+                {
+                    var doorPts = GetGeometryPoints(insert);
+                    if (!GetPointsOnFace(face, doorPts, out var ptsOnFace, out var uvsOnFace)) continue;
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var unused)) continue;
+
+                    var outerEdges = face.GetEdgesAsCurveLoops().First();
+                    foreach (var edge in outerEdges)
+                    {
+                        for (var i = 0; i < hPts.Count; i++)
+                        {
+                            var pt = hPts[i];
+                            if (edge.Distance(pt) >= tolerance) continue;
+
+                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
+                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
+                            var offset = 0.1 * perpendicular;
+                            var offsetPt = pt + offset;
+
+                            hPts[i] = offsetPt;
+                        }
+                    }
+
+                    if (hPts.Count < 3) continue;
+
+                    var door = new Door(hPts.Select(x => new Point3D(x)).ToList());
+                    hbFace.Doors.Add(door);
                 }
             }
         }
