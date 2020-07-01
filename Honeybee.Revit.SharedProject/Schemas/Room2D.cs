@@ -188,7 +188,16 @@ namespace Honeybee.Revit.Schemas
             {
                 if (face is RVT.CylindricalFace) // round columns only
                 {
-                    hbFaces.AddRange(PlanarizeCylindricalFace(face));
+                    var planarFaces = PlanarizeCylindricalFace(face).ToList();
+                    foreach (var hbFace in planarFaces)
+                    {
+                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, hbFace);
+
+                        var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
+                        hbFace.Apertures = apertures.Any() ? apertures : null;
+
+                        hbFaces.Add(hbFace);
+                    }
                 }
                 else
                 {
@@ -387,15 +396,39 @@ namespace Honeybee.Revit.Schemas
             RVT.Document doc, 
             RVT.SpatialElementGeometryResults result,
             out List<List<RVT.XYZ>> glazingPoints, 
-            out List<double> glazingAreas)
+            out List<double> glazingAreas,
+            Face hbFace = null)
         {
             glazingPoints = new List<List<RVT.XYZ>>();
             glazingAreas = new List<double>();
 
-            if (!(face is RVT.PlanarFace))
-                return;
-
             var boundaryFaces = result.GetBoundaryFaceInfo(face);
+
+            if (!(face is RVT.PlanarFace) && hbFace != null)
+            {
+                // (Konrad) OK, we have a non-planar face, that was planarized. 
+                // The only condition that we are processing this for at the moment
+                // can be if the Wall is Glazed, which is simple face offset routine.
+                // We are NOT processing Windows for these Walls, as they require 
+                // a legit Revit Face to project points onto.
+                foreach (var bFace in boundaryFaces)
+                {
+                    var bElement = doc.GetElement(bFace.SpatialBoundaryElement.HostElementId);
+                    if (!(bElement is RVT.Wall wall) || wall.WallType.Kind == RVT.WallKind.Curtain)
+                        continue;
+
+                    var wallType = wall.WallType;
+                    if (AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
+                        x.UniqueId == wallType.UniqueId))
+                    {
+                        // (Konrad) Whole wall is considered glazed.
+                        GetGlazingByOffsetFace(hbFace, ref glazingPoints, ref glazingAreas);
+                    }
+                }
+
+                return;
+            }
+
             foreach (var bFace in boundaryFaces)
             {
                 var bElement = doc.GetElement(bFace.SpatialBoundaryElement.HostElementId);
@@ -407,7 +440,17 @@ namespace Honeybee.Revit.Schemas
                     }
                     else
                     {
-                        GetGlazingFromWindows(wall, face, ref glazingPoints, ref glazingAreas);
+                        var wallType = wall.WallType;
+                        if (AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
+                            x.UniqueId == wallType.UniqueId))
+                        {
+                            // (Konrad) Whole wall is considered glazed.
+                            GetGlazingFromWall(wall, face, ref glazingPoints, ref glazingAreas);
+                        }
+                        else
+                        {
+                            GetGlazingFromWindows(wall, face, ref glazingPoints, ref glazingAreas);
+                        }
                     }
                 }
                 else if (bElement is RVT.RoofBase roof)
@@ -583,6 +626,91 @@ namespace Honeybee.Revit.Schemas
                     glazingPts.Add(hPts);
                 }
             }
+        }
+
+        private static void GetGlazingByOffsetFace(
+            Face hbFace,
+            ref List<List<RVT.XYZ>> glazingPts,
+            ref List<double> glazingAreas)
+        {
+            var boundary = hbFace.Geometry.Boundary;
+            if (boundary.Count != 4)
+                return;
+
+            var pt1 = boundary[0].ToXyz();
+            var pt2 = boundary[1].ToXyz();
+            var pt3 = boundary[2].ToXyz();
+            var pt4 = boundary[3].ToXyz();
+
+            var pt1A = RVT.Line.CreateBound(pt1, pt2).Evaluate(0.1, false);
+            var pt1B = RVT.Line.CreateBound(pt4, pt3).Evaluate(0.1, false);
+            var point1 = RVT.Line.CreateBound(pt1A, pt1B).Evaluate(0.1, false);
+
+            var pt2A = RVT.Line.CreateBound(pt2, pt3).Evaluate(0.1, false);
+            var pt2B = RVT.Line.CreateBound(pt1, pt4).Evaluate(0.1, false);
+            var point2 = RVT.Line.CreateBound(pt2A, pt2B).Evaluate(0.1, false);
+
+            var pt3A = RVT.Line.CreateBound(pt3, pt4).Evaluate(0.1, false);
+            var pt3B = RVT.Line.CreateBound(pt2, pt1).Evaluate(0.1, false);
+            var point3 = RVT.Line.CreateBound(pt3A, pt3B).Evaluate(0.1, false);
+
+            var pt4A = RVT.Line.CreateBound(pt4, pt1).Evaluate(0.1, false);
+            var pt4B = RVT.Line.CreateBound(pt3, pt2).Evaluate(0.1, false);
+            var point4 = RVT.Line.CreateBound(pt4A, pt4B).Evaluate(0.1, false);
+
+
+            var pts = new List<RVT.XYZ>
+            {
+                point1,
+                point2,
+                point3,
+                point4
+            };
+
+            var area = point1.DistanceTo(point2) * point1.DistanceTo(point4);
+
+            glazingAreas.Add(area);
+            glazingPts.Add(pts);
+        }
+
+        private static void GetGlazingFromWall(
+            RVT.Wall wall, 
+            RVT.Face face, 
+            ref List<List<RVT.XYZ>> glazingPts, 
+            ref List<double> glazingAreas)
+        {
+            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
+            var doc = wall.Document;
+            var shortCurveTolerance = doc.Application.ShortCurveTolerance;
+            var winPts = GetGeometryPoints(wall);
+
+            if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                return;
+
+            if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                return;
+
+            var outerEdges = face.GetEdgesAsCurveLoops().First();
+            foreach (var edge in outerEdges)
+            {
+                for (var i = 0; i < hPts.Count; i++)
+                {
+                    var pt = hPts[i];
+                    if (edge.Distance(pt) >= tolerance) continue;
+
+                    var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
+                    var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
+                    var offset = 0.1 * perpendicular;
+                    var offsetPt = pt + offset;
+
+                    hPts[i] = offsetPt;
+                }
+            }
+
+            if (hPts.Count < 3) return;
+
+            glazingAreas.Add(PolygonArea(hUvs));
+            glazingPts.Add(hPts);
         }
 
         private static double GetWindowArea(RVT.Element insert)

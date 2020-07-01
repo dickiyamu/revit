@@ -20,7 +20,7 @@ namespace Honeybee.Revit.ModelSettings.Geometry
 
         private void GlazingTypesComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!((sender as ComboBox)?.SelectedItem is PanelTypeWrapper ptw)) return;
+            if (!((sender as ComboBox)?.SelectedItem is GlazingTypeWrapper ptw)) return;
             if (AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Contains(ptw)) return;
 
             AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Add(ptw);

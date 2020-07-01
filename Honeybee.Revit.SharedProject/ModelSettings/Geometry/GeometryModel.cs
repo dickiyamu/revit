@@ -19,9 +19,9 @@ namespace Honeybee.Revit.ModelSettings.Geometry
             UiDoc = uiDoc;
         }
 
-        public List<PanelTypeWrapper> CollectPanels()
+        public List<GlazingTypeWrapper> CollectPanels()
         {
-            var result = new List<PanelTypeWrapper>();
+            var result = new List<GlazingTypeWrapper>();
             var panels = new FilteredElementCollector(Doc)
                 .OfClass(typeof(PanelType))
                 .WhereElementIsElementType()
@@ -33,12 +33,22 @@ namespace Honeybee.Revit.ModelSettings.Geometry
                 var cwDoors = new FilteredElementCollector(Doc, panels.First().GetSimilarTypes())
                     .OfCategory(BuiltInCategory.OST_Doors)
                     .Cast<ElementType>()
-                    .Select(x => new PanelTypeWrapper(x));
+                    .Select(x => new GlazingTypeWrapper(x, "CW Door"));
 
                 result.AddRange(cwDoors);
             }
 
-            result.AddRange(panels.Select(x => new PanelTypeWrapper(x)));
+            result.AddRange(panels.Select(x => new GlazingTypeWrapper(x, "CW Panel")));
+
+            var wallTypes = new FilteredElementCollector(Doc)
+                .OfClass(typeof(WallType))
+                .WhereElementIsElementType()
+                .Cast<WallType>()
+                .Where(x => x.Kind != WallKind.Curtain)
+                .Select(x => new GlazingTypeWrapper(x, "Wall"))
+                .ToList();
+
+            result.AddRange(wallTypes);
 
             return result.Except(AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes).ToList();
         }

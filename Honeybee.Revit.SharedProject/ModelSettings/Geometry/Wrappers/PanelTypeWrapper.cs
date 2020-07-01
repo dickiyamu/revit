@@ -3,17 +3,18 @@ using Newtonsoft.Json;
 
 namespace Honeybee.Revit.ModelSettings.Geometry.Wrappers
 {
-    public class PanelTypeWrapper
+    public class GlazingTypeWrapper
     {
         public string UniqueId { get; set; }
         public string Name { get; set; }
+        public string GlazingType { get; set; }
 
         [JsonConstructor]
-        public PanelTypeWrapper()
+        public GlazingTypeWrapper()
         {
         }
 
-        public PanelTypeWrapper(ElementType pt)
+        public GlazingTypeWrapper(ElementType pt, string glazingType)
         {
             UniqueId = pt.UniqueId;
             Name = $"{pt.FamilyName} - {pt.Name}";
@@ -21,7 +22,7 @@ namespace Honeybee.Revit.ModelSettings.Geometry.Wrappers
 
         public override bool Equals(object obj)
         {
-            return obj is PanelTypeWrapper item && UniqueId.Equals(item.UniqueId);
+            return obj is GlazingTypeWrapper item && UniqueId.Equals(item.UniqueId);
         }
 
         public override int GetHashCode()

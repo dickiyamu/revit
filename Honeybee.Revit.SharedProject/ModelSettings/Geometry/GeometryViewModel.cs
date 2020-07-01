@@ -10,7 +10,7 @@ namespace Honeybee.Revit.ModelSettings.Geometry
     public class GeometryViewModel : ViewModelBase
     {
         public GeometryModel Model { get; set; }
-        public RelayCommand<PanelTypeWrapper> RemoveGlazingType { get; set; }
+        public RelayCommand<GlazingTypeWrapper> RemoveGlazingType { get; set; }
 
         private AppSettings _settings;
         public AppSettings Settings
@@ -19,11 +19,11 @@ namespace Honeybee.Revit.ModelSettings.Geometry
             set { _settings = value; RaisePropertyChanged(() => Settings); }
         }
 
-        private ObservableCollection<PanelTypeWrapper> _panelTypes;
-        public ObservableCollection<PanelTypeWrapper> GlazingTypes
+        private ObservableCollection<GlazingTypeWrapper> _glazingTypes;
+        public ObservableCollection<GlazingTypeWrapper> GlazingTypes
         {
-            get { return _panelTypes; }
-            set { _panelTypes = value; RaisePropertyChanged(() => GlazingTypes); }
+            get { return _glazingTypes; }
+            set { _glazingTypes = value; RaisePropertyChanged(() => GlazingTypes); }
         }
 
         public GeometryViewModel(GeometryModel model)
@@ -34,10 +34,10 @@ namespace Honeybee.Revit.ModelSettings.Geometry
             GlazingTypes = Model.CollectPanels().ToObservableCollection();
             GlazingTypes.CollectionChanged += PanelTypesOnCollectionChanged;
 
-            RemoveGlazingType = new RelayCommand<PanelTypeWrapper>(OnRemoveGlazingType);
+            RemoveGlazingType = new RelayCommand<GlazingTypeWrapper>(OnRemoveGlazingType);
         }
 
-        private void OnRemoveGlazingType(PanelTypeWrapper ptw)
+        private void OnRemoveGlazingType(GlazingTypeWrapper ptw)
         {
             if (!Settings.StoredSettings.GeometrySettings.GlazingTypes.Contains(ptw)) return;
 

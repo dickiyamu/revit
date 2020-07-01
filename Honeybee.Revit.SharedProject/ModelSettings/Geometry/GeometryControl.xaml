@@ -8,12 +8,13 @@
              d:DesignHeight="700"
              d:DesignWidth="800">
     <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="160"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Margin="10">
-            <StackPanel Orientation="Horizontal" ToolTipService.ShowDuration="5000">
-                <Label Content='"Pull up" Room Height'/>
-                <CheckBox VerticalAlignment="Center"
-                          Margin="5,0"
-                          IsChecked="{Binding Settings.StoredSettings.GeometrySettings.PullUpRoomHeight}"/>
+            <StackPanel Orientation="Horizontal" ToolTipService.ShowDuration="5000" Height="26" HorizontalAlignment="Right">
+                <Label Content='"Pull up" Room Height:' VerticalAlignment="Center" HorizontalAlignment="Right"/>
                 <StackPanel.ToolTip>
                     <StackPanel Orientation="Vertical">
                         <TextBlock FontWeight="Bold" 
@@ -31,9 +32,22 @@
                     </StackPanel>
                 </StackPanel.ToolTip>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Tolerance"/>
+            <StackPanel Orientation="Horizontal" Height="26" HorizontalAlignment="Right">
+                <Label Content="Tolerance:" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Height="26" HorizontalAlignment="Right">
+                <Label Content="Glazing:"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Margin="10" Grid.Column="1">
+            <StackPanel Orientation="Horizontal" Height="26">
+                <CheckBox VerticalAlignment="Center"
+                          Margin="5,0"
+                          IsChecked="{Binding Settings.StoredSettings.GeometrySettings.PullUpRoomHeight}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Height="26">
                 <TextBox VerticalAlignment="Center"
+                         HorizontalAlignment="Left"
                          VerticalContentAlignment="Center"
                          HorizontalContentAlignment="Center"
                          Margin="5,0"
@@ -42,41 +56,39 @@
                          Height="22"
                          Text="{Binding Settings.StoredSettings.GeometrySettings.Tolerance, FallbackValue=0.001}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Glazing"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="220" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ComboBox x:Name="GlazingTypesComboBox"
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="GlazingTypesComboBox"
                               ItemsSource="{Binding GlazingTypes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               SelectionChanged="GlazingTypesComboBox_OnSelectionChanged"
                               DisplayMemberPath="Name"
+                              SelectedIndex="0"
                               Width="200"
                               Height="22"
                               HorizontalAlignment="Left"
                               VerticalAlignment="Top"
                               HorizontalContentAlignment="Left"
                               VerticalContentAlignment="Center"
-                              Margin="5,0" />
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="1">
-                        <ItemsControl ItemsSource="{Binding Settings.StoredSettings.GeometrySettings.GlazingTypes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type controls:GlazingControl}">
-                                    <controls:GlazingControl Margin="0,2,0,0" 
+                              Margin="5,2,5,2" />
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="1">
+                    <ItemsControl ItemsSource="{Binding Settings.StoredSettings.GeometrySettings.GlazingTypes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type controls:GlazingControl}">
+                                <controls:GlazingControl Margin="0,2,0,0" 
                                                              ButtonCommand="{Binding DataContext.RemoveGlazingType, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>

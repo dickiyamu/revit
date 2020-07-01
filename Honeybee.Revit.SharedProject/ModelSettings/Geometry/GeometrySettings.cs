@@ -20,8 +20,8 @@ namespace Honeybee.Revit.ModelSettings.Geometry
             set { _tolerance = value; RaisePropertyChanged(nameof(Tolerance)); }
         }
 
-        private ObservableCollection<PanelTypeWrapper> _glazingTypes = new ObservableCollection<PanelTypeWrapper>();
-        public ObservableCollection<PanelTypeWrapper> GlazingTypes
+        private ObservableCollection<GlazingTypeWrapper> _glazingTypes = new ObservableCollection<GlazingTypeWrapper>();
+        public ObservableCollection<GlazingTypeWrapper> GlazingTypes
         {
             get { return _glazingTypes; }
             set { _glazingTypes = value; RaisePropertyChanged(nameof(GlazingTypes)); }
