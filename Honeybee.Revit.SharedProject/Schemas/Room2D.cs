@@ -187,13 +187,12 @@ namespace Honeybee.Revit.Schemas
             var hbFaces = new List<Face>();
             foreach (RVT.Face face in faces)
             {
-                if (face is RVT.CylindricalFace) // round columns only
+                if (face is RVT.CylindricalFace) // round columns/walls only
                 {
                     var planarFaces = PlanarizeCylindricalFace(face).ToList();
-                    Face hbFace;
                     foreach (var f in planarFaces)
                     {
-                        hbFace = f;
+                        var hbFace = f;
                         GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
 
                         var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
@@ -296,7 +295,10 @@ namespace Honeybee.Revit.Schemas
 
         #region Utilities
 
-        private static double GetFloorThickness(RVT.FaceArray faces, RVT.SpatialElementGeometryResults roomGeo, RVT.Document doc)
+        private static double GetFloorThickness(
+            RVT.FaceArray faces, 
+            RVT.SpatialElementGeometryResults roomGeo, 
+            RVT.Document doc)
         {
             var height = 0d;
             var foundFloor = false;
@@ -439,7 +441,7 @@ namespace Honeybee.Revit.Schemas
                 {
                     if (wall.WallType.Kind == RVT.WallKind.Curtain)
                     {
-                        GetGlazingFromCurtainWall(wall, face, ref glazingPoints, ref glazingAreas);
+                        GetGlazingFromCurtainWall(wall, face, ref glazingPoints, ref glazingAreas, ref hbFace);
                     }
                     else
                     {
@@ -488,7 +490,7 @@ namespace Honeybee.Revit.Schemas
                     if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
                         continue;
 
-                    var winArea = GetWindowArea(insert);
+                    var winArea = GetDoorWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
                     if (hullArea < winArea * 0.5)
                         continue;
@@ -583,7 +585,7 @@ namespace Honeybee.Revit.Schemas
                     if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
                         continue;
 
-                    var winArea = GetWindowArea(insert);
+                    var winArea = GetDoorWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
                     if (hullArea < winArea * 0.5)
                         continue;
@@ -607,7 +609,7 @@ namespace Honeybee.Revit.Schemas
 
                     ValidatePoints(face, tolerance, ref hPts);
 
-                    var doorArea = GetWindowArea(insert);
+                    var doorArea = GetDoorWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
                     if (hullArea < doorArea * 0.5)
                         continue;
@@ -712,7 +714,7 @@ namespace Honeybee.Revit.Schemas
             glazingPts.Add(hPts);
         }
 
-        private static double GetWindowArea(RVT.Element insert)
+        private static double GetDoorWindowArea(RVT.Element insert)
         {
             var winType = (RVT.FamilySymbol)insert.Document.GetElement(insert.GetTypeId());
 
@@ -745,7 +747,10 @@ namespace Honeybee.Revit.Schemas
             return winArea;
         }
 
-        private static RVT.Face FindFace(IEnumerable faces, RVT.SpatialElementGeometryResults result, RVT.Curve bCurve)
+        private static RVT.Face FindFace(
+            IEnumerable faces, 
+            RVT.SpatialElementGeometryResults result, 
+            RVT.Curve bCurve)
         {
             foreach (RVT.Face f in faces)
             {
@@ -774,28 +779,64 @@ namespace Honeybee.Revit.Schemas
             RVT.Wall wall, 
             RVT.Face face, 
             ref List<List<RVT.XYZ>> glazingPts, 
-            ref List<double> glazingAreas)
+            ref List<double> glazingAreas,
+            ref Face hbFace)
         {
             var doc = wall.Document;
             var shortCurveTolerance = doc.Application.ShortCurveTolerance;
             var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var cGrid = wall.CurtainGrid;
-            var panels = new List<RVT.Element>();
 
-            ExtractPanelsRecursively(doc, cGrid, ref panels);
+            var panels = new List<RVT.Element>();
+            var doors = new List<RVT.Element>();
+            ExtractPanelsRecursively(doc, cGrid, ref panels, ref doors);
 
             foreach (var panel in panels)
             {
                 var points = GetGeometryPoints(panel);
-                if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace)) continue;
-                if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace))
+                    continue;
+
+                if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                    continue;
 
                 ValidatePoints(face, tolerance, ref hPts);
 
-                if (hPts.Count < 3) continue;
+                if (hPts.Count < 3)
+                    continue;
 
                 glazingAreas.Add(PolygonArea(hUvs));
                 glazingPts.Add(hPts);
+            }
+
+            foreach (var d in doors)
+            {
+                var points = GetGeometryPoints(d);
+                if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace))
+                    continue;
+
+                if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                    continue;
+
+                ValidatePoints(face, tolerance, ref hPts);
+
+                var doorArea = GetDoorWindowArea(d);
+                var hullArea = PolygonArea(hUvs);
+                if (hullArea < doorArea * 0.5)
+                    continue;
+
+                if (hPts.Count < 3)
+                    continue;
+
+                var dType = doc.GetElement(d.GetTypeId());
+                var door = new Door(hPts.Select(x => new Point3D(x)).ToList());
+                if (AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
+                    x.UniqueId == dType.UniqueId))
+                {
+                    door.IsGlass = true;
+                }
+
+                hbFace.Doors.Add(door);
             }
         }
 
@@ -1012,18 +1053,22 @@ namespace Honeybee.Revit.Schemas
         /// <param name="doc">Document.</param>
         /// <param name="cGrid">Curtain Grid.</param>
         /// <param name="panels">Reference list of Elements to store Panels.</param>
-        private static void ExtractPanelsRecursively(RVT.Document doc, RVT.CurtainGrid cGrid, ref List<RVT.Element> panels)
+        /// <param name="doors"></param>
+        private static void ExtractPanelsRecursively(
+            RVT.Document doc, 
+            RVT.CurtainGrid cGrid, 
+            ref List<RVT.Element> panels, 
+            ref List<RVT.Element> doors)
         {
             foreach (var id in cGrid.GetPanelIds())
             {
                 if (!(doc.GetElement(id) is RVT.Panel panel))
                 {
                     // (Konrad) If Panel was replaced with a Door it will be a FamilyInstance.
-                    if (doc.GetElement(id) is RVT.FamilyInstance fi &&
-                        AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
-                            x.UniqueId == doc.GetElement(fi.GetTypeId()).UniqueId))
+                    if (doc.GetElement(id) is RVT.FamilyInstance fi && 
+                        fi.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Doors.GetHashCode())
                     {
-                        panels.Add(fi);
+                        doors.Add(fi);
                     }
 
                     continue;
@@ -1035,7 +1080,7 @@ namespace Honeybee.Revit.Schemas
                 {
                     if (doc.GetElement(hostId) is RVT.Wall wall && wall.WallType.Kind == RVT.WallKind.Curtain)
                     {
-                        ExtractPanelsRecursively(doc, wall.CurtainGrid, ref panels);
+                        ExtractPanelsRecursively(doc, wall.CurtainGrid, ref panels, ref doors);
 
                         continue;
                     }
@@ -1049,7 +1094,10 @@ namespace Honeybee.Revit.Schemas
             }
         }
 
-        private static void ExtractPtsRecursively(RVT.GeometryElement geo, ref List<RVT.XYZ> pts, bool includeLines = false)
+        private static void ExtractPtsRecursively(
+            RVT.GeometryElement geo, 
+            ref List<RVT.XYZ> pts, 
+            bool includeLines = false)
         {
             foreach (var g in geo)
             {

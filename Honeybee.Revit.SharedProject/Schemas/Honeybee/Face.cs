@@ -23,10 +23,10 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public HB.FaceType FaceType { get; set; }
 
         [JsonProperty("boundary_condition")]
-        public BoundaryConditionBase BoundaryCondition { get; set; }
+        public BoundaryConditionBase BoundaryCondition { get; set; } = new Outdoors();
 
         [JsonProperty("properties")]
-        public HB.FacePropertiesAbridged Properties { get; set; }
+        public HB.FacePropertiesAbridged Properties { get; set; } = new HB.FacePropertiesAbridged();
 
         [JsonProperty("apertures")]
         public List<Aperture> Apertures { get; set; } = new List<Aperture>();
@@ -51,15 +51,11 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public Face(List<Point3D> boundary, List<List<Point3D>> holes)
         {
             Geometry = new Face3D {Boundary = boundary, Holes = holes};
-            BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged();
         }
 
         public Face(Autodesk.Revit.DB.Face face)
         {
             Geometry = new Face3D(face);
-            BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged();
         }
 
         public object ToDragonfly()
