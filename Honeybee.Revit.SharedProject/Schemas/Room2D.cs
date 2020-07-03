@@ -87,7 +87,7 @@ namespace Honeybee.Revit.Schemas
         {
         }
 
-        public Room2D(RVT.SpatialElement e, out List<string> messages)
+        public Room2D(RVT.SpatialElement e, bool dragonfly, out List<string> messages)
         {
             messages = new List<string>();
             Identifier = $"Room_{e.UniqueId}";
@@ -102,146 +102,184 @@ namespace Honeybee.Revit.Schemas
             }
 
             var doc = e.Document;
+            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var bOptions = new RVT.SpatialElementBoundaryOptions
             {
                 SpatialElementBoundaryLocation = RVT.SpatialElementBoundaryLocation.Center
             };
             var segments = e.GetBoundarySegments(bOptions);
-            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var calculator = new RVT.SpatialElementGeometryCalculator(doc, bOptions);
             var roomGeo = calculator.CalculateSpatialElementGeometry(e);
-            var faces = roomGeo.GetGeometry().Faces;
-            var geo = roomGeo.GetGeometry();
-            var bb = geo.GetBoundingBox();
-
-            var height = bb.Max.Z - bb.Min.Z;
-            if (AppSettings.Instance.StoredSettings.GeometrySettings.PullUpRoomHeight)
+            //var faces = roomGeo.GetGeometry().Faces;
+            var faces = new List<RVT.Face>();
+            foreach (RVT.Face face in roomGeo.GetGeometry().Faces)
             {
-                var floorThickness = GetFloorThickness(faces, roomGeo, doc);
-                height += floorThickness;
+                faces.Add(face);
             }
 
-            var boundary = new List<Point2D>();
-            var holes = new List<List<Point2D>>();
-            var windows = new List<WindowParameterBase>();
-            for (var i = 0; i < segments.Count; i++)
+            if (dragonfly)
             {
-                if (i == 0) // outer boundary
+                var geo = roomGeo.GetGeometry();
+                var bb = geo.GetBoundingBox();
+                var height = bb.Max.Z - bb.Min.Z;
+
+                if (AppSettings.Instance.StoredSettings.GeometrySettings.PullUpRoomHeight)
                 {
-                    foreach (var bs in segments[i])
+                    var floorThickness = GetFloorThickness(faces, roomGeo, doc);
+                    height += floorThickness;
+                }
+
+                var boundary = new List<Point2D>();
+                var holes = new List<List<Point2D>>();
+                var windows = new List<WindowParameterBase>();
+                for (var i = 0; i < segments.Count; i++)
+                {
+                    if (i == 0) // outer boundary
                     {
-                        // (Konrad) Boundary curves have elevation of the level that room base is set to.
-                        // They don't account for base offset.
-                        var boundaryCurve = bs.GetCurve().Offset(offset);
-                        if (boundaryCurve.Length < tolerance)
+                        foreach (var bs in segments[i])
                         {
-                            messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
-                            continue; // Exclude tiny curves, they don't produce faces.
+                            // (Konrad) Boundary curves have elevation of the level that room base is set to.
+                            // They don't account for base offset.
+                            var boundaryCurve = bs.GetCurve().Offset(offset);
+                            if (boundaryCurve.Length < tolerance)
+                            {
+                                messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
+                                continue; // Exclude tiny curves, they don't produce faces.
+                            }
+
+                            var face = FindFace(faces, roomGeo, boundaryCurve);
+                            if (face == null)
+                                continue; // Couldn't find a matching face. Not good.
+
+                            faces.Remove(face);
+
+                            var hbFace = new Face();
+                            GetGlazingInfo(face, doc, roomGeo, out var unused, out var glazingAreas, ref hbFace);
+
+                            var faceArea = boundaryCurve.Length * height;
+                            var glazingArea = glazingAreas.Sum();
+                            var glazingRatio = glazingArea / faceArea;
+
+                            // (Konrad) Number of Boundary points in the list has to match number of Window Parameters.
+                            var boundaryPts = GeometryUtils.GetPoints(boundaryCurve);
+
+                            boundary.AddRange(boundaryPts);
+                            windows.AddRange(boundaryPts.Select(x =>
+                                Math.Abs(glazingRatio) < tolerance
+                                    ? (WindowParameterBase)null
+                                    : new SimpleWindowRatio { WindowRatio = glazingRatio }));
                         }
 
-                        var face = FindFace(faces, roomGeo, boundaryCurve);
-                        if (face == null)
-                            continue; // Couldn't find a matching face. Not good.
-
-                        var hbFace = new Face();
-                        GetGlazingInfo(face, doc, roomGeo, out var unused, out var glazingAreas, ref hbFace);
-
-                        var faceArea = boundaryCurve.Length * height;
-                        var glazingArea = glazingAreas.Sum();
-                        var glazingRatio = glazingArea / faceArea;
-
-                        // (Konrad) Number of Boundary points in the list has to match number of Window Parameters.
-                        var boundaryPts = GeometryUtils.GetPoints(boundaryCurve);
-
-                        boundary.AddRange(boundaryPts);
-                        windows.AddRange(boundaryPts.Select(x =>
-                            Math.Abs(glazingRatio) < tolerance
-                                ? (WindowParameterBase)null
-                                : new SimpleWindowRatio { WindowRatio = glazingRatio }));
+                        continue;
                     }
 
-                    continue;
+                    var hole = new List<Point2D>();
+                    foreach (var bs in segments[i])
+                    {
+                        //TODO: Floor Holes need Glazing info processed.
+                        var boundaryCurve = bs.GetCurve();
+                        var segmentPts = GeometryUtils.GetPoints(boundaryCurve);
+
+                        hole.AddRange(segmentPts);
+                        windows.AddRange(segmentPts.Select(segmentPt => (WindowParameterBase)null));
+                    }
+
+                    holes.Add(hole);
                 }
 
-                var hole = new List<Point2D>();
-                foreach (var bs in segments[i])
-                {
-                    //TODO: Floor Holes need Glazing info processed.
-                    var boundaryCurve = bs.GetCurve();
-                    var segmentPts = GeometryUtils.GetPoints(boundaryCurve);
-
-                    hole.AddRange(segmentPts);
-                    windows.AddRange(segmentPts.Select(segmentPt => (WindowParameterBase)null));
-                }
-
-                holes.Add(hole);
+                FloorToCeilingHeight = height;
+                FloorBoundary = boundary;
+                FloorHoles = holes;
+                BoundaryConditions = Enumerable.Range(0, FloorBoundary.Count + FloorHoles.SelectMany(x => x).Count())
+                    .Select(x => new Outdoors()).Cast<BoundaryConditionBase>().ToList();
+                WindowParameters = windows;
+                IsGroundContact = IsTouchingGround(e);
             }
-
-            FloorToCeilingHeight = height;
-            FloorBoundary = boundary;
-            FloorHoles = holes;
-            BoundaryConditions = Enumerable.Range(0, FloorBoundary.Count + FloorHoles.SelectMany(x => x).Count())
-                .Select(x => new Outdoors()).Cast<BoundaryConditionBase>().ToList();
-            WindowParameters = windows;
-
-            var hbFaces = new List<Face>();
-            foreach (RVT.Face face in faces)
+            else
             {
-                if (face is RVT.CylindricalFace) // round columns/walls only
+                //var boundary = new List<Point2D>();
+                //for (var i = 0; i < segments.Count; i++)
+                //{
+                //    if (i == 0) // outer boundary
+                //    {
+                //        foreach (var bs in segments[i])
+                //        {
+                //            // (Konrad) Boundary curves have elevation of the level that room base is set to.
+                //            // They don't account for base offset.
+                //            var boundaryCurve = bs.GetCurve().Offset(offset);
+                //            if (boundaryCurve.Length < tolerance)
+                //            {
+                //                messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
+                //                continue; // Exclude tiny curves, they don't produce faces.
+                //            }
+
+                //            // (Konrad) Number of Boundary points in the list has to match number of Window Parameters.
+                //            var boundaryPts = GeometryUtils.GetPoints(boundaryCurve);
+
+                //            boundary.AddRange(boundaryPts);
+                //        }
+                //    }
+                //}
+
+                var hbFaces = new List<Face>();
+                foreach (RVT.Face face in faces)
                 {
-                    var planarFaces = PlanarizeCylindricalFace(face).ToList();
-                    foreach (var f in planarFaces)
+                    if (face is RVT.CylindricalFace) // round columns/walls only
                     {
-                        var hbFace = f;
-                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
-
-                        var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
-                        hbFace.Apertures = apertures.Any() ? apertures : null;
-
-                        hbFaces.Add(hbFace);
-                    }
-                }
-                else
-                {
-                    var hbFace = new Face(face);
-
-                    GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
-
-                    var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList()))
-                        .ToList();
-                    hbFace.Apertures = apertures.Any() ? apertures : null;
-
-                    var boundaryFaces = roomGeo.GetBoundaryFaceInfo(face).FirstOrDefault();
-                    if (boundaryFaces != null)
-                    {
-                        switch (boundaryFaces.SubfaceType)
+                        var planarFaces = PlanarizeCylindricalFace(face).ToList();
+                        foreach (var f in planarFaces)
                         {
-                            case RVT.SubfaceType.Bottom:
-                                hbFace.FaceType = HB.FaceType.Floor;
-                                break;
-                            case RVT.SubfaceType.Top:
-                                hbFace.FaceType = HB.FaceType.RoofCeiling;
-                                break;
-                            case RVT.SubfaceType.Side:
-                                hbFace.FaceType = HB.FaceType.Wall;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
+                            var hbFace = f;
+                            GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
+
+                            var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
+                            hbFace.Apertures = apertures.Any() ? apertures : null;
+
+                            hbFaces.Add(hbFace);
                         }
                     }
                     else
                     {
-                        // (Konrad) We don't really know what type of face it is.
-                        // TODO: This is probably an Air Boundary/Room Separation Line.
-                        hbFace.FaceType = HB.FaceType.Wall;
+                        var hbFace = new Face(face, ref messages);
+
+                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
+
+                        var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList()))
+                            .ToList();
+                        hbFace.Apertures = apertures.Any() ? apertures : null;
+
+                        var boundaryFaces = roomGeo.GetBoundaryFaceInfo(face).FirstOrDefault();
+                        if (boundaryFaces != null)
+                        {
+                            switch (boundaryFaces.SubfaceType)
+                            {
+                                case RVT.SubfaceType.Bottom:
+                                    hbFace.FaceType = HB.FaceType.Floor;
+                                    break;
+                                case RVT.SubfaceType.Top:
+                                    hbFace.FaceType = HB.FaceType.RoofCeiling;
+                                    break;
+                                case RVT.SubfaceType.Side:
+                                    hbFace.FaceType = HB.FaceType.Wall;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                        else
+                        {
+                            // (Konrad) We don't really know what type of face it is.
+                            // TODO: This is probably an Air Boundary/Room Separation Line.
+                            hbFace.FaceType = HB.FaceType.Wall;
+                        }
+
+                        hbFaces.Add(hbFace);
                     }
-
-                    hbFaces.Add(hbFace);
                 }
-            }
 
-            Faces = hbFaces;
-            IsGroundContact = IsTouchingGround(e);
+                //FloorBoundary = boundary;
+                Faces = hbFaces;
+            }
         }
 
         #endregion
@@ -296,7 +334,7 @@ namespace Honeybee.Revit.Schemas
         #region Utilities
 
         private static double GetFloorThickness(
-            RVT.FaceArray faces, 
+            List<RVT.Face> faces, 
             RVT.SpatialElementGeometryResults roomGeo, 
             RVT.Document doc)
         {
@@ -766,10 +804,15 @@ namespace Honeybee.Revit.Schemas
                     continue; // face is either Top/Bottom so we can skip
 
                 var edges = f.GetEdgesAsCurveLoops().First(); // first loop is outer boundary
-                if (!edges.Any(x => x.OverlapsWithIn2D(bCurve))) // room's face might be off the floor/level above or offset. if XY matches, we are good.
-                    continue; // none of the edges of that face match our curve so we can skip
+                foreach (var edge in edges)
+                {
+                    if (edge.OverlapsWithIn2D(bCurve))
+                        return f;
+                }
+                //if (!edges.Any(x => x.OverlapsWithIn2D(bCurve))) // room's face might be off the floor/level above or offset. if XY matches, we are good.
+                //    continue; // none of the edges of that face match our curve so we can skip
 
-                return f;
+                //return f;
             }
 
             return null;

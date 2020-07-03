@@ -28,16 +28,20 @@ namespace Honeybee.Revit.Schemas.Honeybee
             Boundary = boundary;
         }
 
-        public Face3D(RVT.Face face)
+        public Face3D(RVT.Face face, ref List<string> messages)
         {
+            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var loops = new List<List<Point3D>>();
             var curveLoops = face.GetEdgesAsCurveLoops();
+
             foreach (var cLoop in curveLoops)
             {
-
                 var loop = new List<Point3D>();
                 foreach (var curve in cLoop)
                 {
+                    if (curve.Length < tolerance)
+                        messages.Add($"Face contains a curve that is shorter than specified tolerance of {tolerance}.");
+
                     var pts = GeometryUtils.GetPoints3D(curve);
                     loop.AddRange(pts);
                 }

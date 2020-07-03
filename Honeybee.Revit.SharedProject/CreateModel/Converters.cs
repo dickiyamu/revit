@@ -127,13 +127,12 @@ namespace Honeybee.Revit.CreateModel
 
     public class ListToStringConverter : IValueConverter
     {
-
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType != typeof(string))
-                throw new InvalidOperationException("The target must be a String");
+            if (!(value is List<string> src))
+                return null;
 
-            return string.Join(", ", ((List<string>)value)?.ToArray() ?? throw new InvalidOperationException());
+            return string.Join(Environment.NewLine, src);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

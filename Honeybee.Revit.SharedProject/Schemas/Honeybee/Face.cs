@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel.Channels;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Newtonsoft.Json;
@@ -53,9 +54,9 @@ namespace Honeybee.Revit.Schemas.Honeybee
             Geometry = new Face3D {Boundary = boundary, Holes = holes};
         }
 
-        public Face(Autodesk.Revit.DB.Face face)
+        public Face(Autodesk.Revit.DB.Face face, ref List<string> messages)
         {
-            Geometry = new Face3D(face);
+            Geometry = new Face3D(face, ref messages);
         }
 
         public object ToDragonfly()

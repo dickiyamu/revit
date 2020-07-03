@@ -616,6 +616,7 @@
                                                        FontWeight="Bold" />
                                             <TextBlock Grid.Row="5"
                                                        Grid.Column="1"
+                                                       TextWrapping="Wrap"
                                                        Text="{Binding Messages, Converter={StaticResource ListToStringConverter}}"/>
                                         </Grid>
                                     </DockPanel>
@@ -868,6 +869,7 @@
                                             <b:ImageButton
                                                 Command="{Binding DataContext.ShowBoundaryConditions, Mode=OneWay, ElementName=Win}"
                                                 CommandParameter="{Binding }"
+                                                Visibility="{Binding DataContext.Dragonfly, Mode=OneWay, ElementName=Win, Converter={StaticResource BoolToVisibilityConverter}}"
                                                 MainImage="/Honeybee.Core;Component/Resources/24x24/showNested.png"
                                                 HoverImage="/Honeybee.Core;Component/Resources/24x24/showNestedHover.png"
                                                 VerticalAlignment="Center"
