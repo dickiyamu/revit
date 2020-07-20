@@ -390,7 +390,7 @@ namespace Honeybee.Revit.CreateModel
 
         private void OnPickSpatialObjects()
         {
-            var selected = Model.SelectRoomsSpaces();
+            var selected = Model.SelectRoomsSpaces(Dragonfly);
             if (!selected.Any())
                 return;
 

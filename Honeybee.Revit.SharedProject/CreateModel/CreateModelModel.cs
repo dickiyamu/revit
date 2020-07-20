@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -46,35 +47,36 @@ namespace Honeybee.Revit.CreateModel
                 .OfClass(typeof(SpatialElement))
                 .WhereElementIsNotElementType()
                 .Cast<SpatialElement>()
-                //.Where(x => (x is Room || x is Space) && x.Area > 0 && (x.Name.Contains("00_025") || x.Name.Contains("01_028")))
-                //.Where(x => (x is Room || x is Space) && x.Area > 0 && x.Name.Contains("00_025"))
+                //.Where(x => (x is Room || x is Space) && x.Area > 0 && (x.Name.Contains("2-180")))
+                //.Where(x => (x is Room || x is Space) && x.Area > 0 && (x.Name.Contains("2-180") || x.Name.Contains("2-178")))
                 .Where(x => (x is Room || x is Space) && x.Area > 0)
                 .OrderBy(x => x.Level.Elevation)
                 .ToList();
 
             var modelName = dragonfly ? "Dragonfly" : "Honeybee";
-            StatusBarManager.InitializeProgress($"Exporting {modelName} Model...", spatialObjects.Count);
+            StatusBarManager.InitializeProgress($"Exporting {modelName} Model.", spatialObjects.Count);
 
             var result = new List<SpatialObjectWrapper>();
             foreach(var se in spatialObjects)
             {
-                StatusBarManager.StepForward($"Processing Room: {se.Name}...");
+                var timer = Stopwatch.StartNew();
+                StatusBarManager.StepForward($"Processing Room: {se.Name}.");
 
                 if (!storedObjects.Any())
                 {
-                    result.Add(new SpatialObjectWrapper(se));
+                    result.Add(new SpatialObjectWrapper(se, dragonfly));
                     continue;
                 }
 
                 var index = storedObjects.FindIndex(y => y.Room2D?.Identifier == $"Room_{se.UniqueId}");
                 if (index == -1)
                 {
-                    result.Add(new SpatialObjectWrapper(se));
+                    result.Add(new SpatialObjectWrapper(se, dragonfly));
                     continue;
                 }
 
                 var storedSo = storedObjects[index];
-                var so = new SpatialObjectWrapper(se);
+                var so = new SpatialObjectWrapper(se, dragonfly);
                 so.IsConstructionSetOverriden = storedSo.IsConstructionSetOverriden;
                 so.IsProgramTypeOverriden = storedSo.IsProgramTypeOverriden;
                 so.Room2D.FloorToCeilingHeight = storedSo.Room2D.FloorToCeilingHeight;
@@ -84,12 +86,19 @@ namespace Honeybee.Revit.CreateModel
                 so.Room2D.Properties.Energy.ProgramType = storedSo.Room2D.Properties.Energy.ProgramType;
 
                 allLevels.Add(so.Level);
-
                 result.Add(so);
+
+                _logger.Info($"Processed {so.Name} in {timer.Elapsed.TotalSeconds}s.");
             }
 
-            DF_AssignBoundaryConditions(result);
-            HB_AssignBoundaryConditions(result);
+            if (dragonfly)
+            {
+                DF_AssignBoundaryConditions(result);
+            }
+            else
+            {
+                HB_AssignBoundaryConditions(result);
+            }
 
             StatusBarManager.FinalizeProgress(true);
 
@@ -139,52 +148,52 @@ namespace Honeybee.Revit.CreateModel
             return result;
         }
 
-        public string RunHoneybeeEnergyCommand2(string command, IEnumerable<string> args)
-        {
-            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-            if (path == null)
-                return string.Empty;
+        //public string RunHoneybeeEnergyCommand2(string command, IEnumerable<string> args)
+        //{
+        //    var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+        //    if (path == null)
+        //        return string.Empty;
 
-            string pyPath = null;
-            foreach (var p in path.Split(';'))
-            {
-                var fullPath = Path.Combine(p, "python.exe");
-                if (!File.Exists(fullPath))
-                    continue;
+        //    string pyPath = null;
+        //    foreach (var p in path.Split(';'))
+        //    {
+        //        var fullPath = Path.Combine(p, "python.exe");
+        //        if (!File.Exists(fullPath))
+        //            continue;
 
-                pyPath = fullPath;
-                break;
-            }
+        //        pyPath = fullPath;
+        //        break;
+        //    }
 
-            if (string.IsNullOrWhiteSpace(pyPath))
-                return string.Empty;
+        //    if (string.IsNullOrWhiteSpace(pyPath))
+        //        return string.Empty;
 
-            var pyDir = Path.GetDirectoryName(pyPath);
-            if (pyDir == null)
-                return string.Empty;
+        //    var pyDir = Path.GetDirectoryName(pyPath);
+        //    if (pyDir == null)
+        //        return string.Empty;
 
-            var dfPath = Path.Combine(pyDir, "Scripts", "honeybee-energy.exe");
-            if (!File.Exists(dfPath))
-                return string.Empty;
+        //    var dfPath = Path.Combine(pyDir, "Scripts", "honeybee-energy.exe");
+        //    if (!File.Exists(dfPath))
+        //        return string.Empty;
 
-            var ps = PowerShell.Create();
-            ps.AddCommand(pyPath)
-                .AddParameter("-m")
-                .AddCommand(dfPath)
-                .AddArgument("lib")
-                .AddArgument(command);
+        //    var ps = PowerShell.Create();
+        //    ps.AddCommand(pyPath)
+        //        .AddParameter("-m")
+        //        .AddCommand(dfPath)
+        //        .AddArgument("lib")
+        //        .AddArgument(command);
 
-            foreach (var arg in args)
-            {
-                ps.AddArgument(arg);
-            }
+        //    foreach (var arg in args)
+        //    {
+        //        ps.AddArgument(arg);
+        //    }
 
-            var psObject = ps.Invoke();
-            var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
-            ps.Commands.Clear();
+        //    var psObject = ps.Invoke();
+        //    var result = psObject.FirstOrDefault()?.ImmediateBaseObject as string;
+        //    ps.Commands.Clear();
 
-            return result;
-        }
+        //    return result;
+        //}
 
         public void ShowBoundaryConditions(SpatialObjectWrapper so)
         {
@@ -408,13 +417,13 @@ namespace Honeybee.Revit.CreateModel
                 simulationSettings.EpwFilePath, simulationParamPath, oswFilePath);
         }
 
-        public List<SpatialObjectWrapper> SelectRoomsSpaces()
+        public List<SpatialObjectWrapper> SelectRoomsSpaces(bool dragonfly)
         {
             var result = new List<SpatialObjectWrapper>();
             try
             {
                 var selection = UiDoc.Selection.PickObjects(ObjectType.Element, new FilterRoomsSpaces(), "Please select Rooms/Spaces.");
-                return selection.Select(x => new SpatialObjectWrapper(Doc.GetElement(x.ElementId))).ToList();
+                return selection.Select(x => new SpatialObjectWrapper(Doc.GetElement(x.ElementId), dragonfly)).ToList();
             }
             catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             {
@@ -430,6 +439,7 @@ namespace Honeybee.Revit.CreateModel
 
         public List<Shade> SelectFaces(out List<string> faceIds)
         {
+            var messages = new List<string>();
             faceIds = new List<string>();
             var result = new List<Shade>();
             try
@@ -440,7 +450,7 @@ namespace Honeybee.Revit.CreateModel
                 {
                     var e = Doc.GetElement(reference);
                     var geometry = e.GetGeometryObjectFromReference(reference) as PlanarFace;
-                    shades.Add(new Shade(new Face3D(geometry)));
+                    shades.Add(new Shade(new Face3D(geometry, ref messages)));
 
                     var faceId = reference.ConvertToStableRepresentation(Doc);
                     faceIds.Add(faceId);
@@ -491,6 +501,7 @@ namespace Honeybee.Revit.CreateModel
 
         public List<Shade> GetContextShades()
         {
+            var messages = new List<string>();
             var shades = new List<Shade>();
             var trees = new List<Element>();
             var shadeIds = AppSettings.Instance.StoredSettings.EnergyModelSettings.Shades;
@@ -508,7 +519,7 @@ namespace Honeybee.Revit.CreateModel
                             var indexRef = Reference.ParseFromStableRepresentation(Doc, shadeId);
                             var e = Doc.GetElement(shadeId.Split(':').First());
                             var geometry = e.GetGeometryObjectFromReference(indexRef) as PlanarFace;
-                            shades.Add(new Shade(new Face3D(geometry)));
+                            shades.Add(new Shade(new Face3D(geometry, ref messages)));
                         }
                         catch (Exception)
                         {
@@ -583,17 +594,17 @@ namespace Honeybee.Revit.CreateModel
             return JsonConvert.DeserializeObject<List<HB.ProgramType>>(jsonProgramTypes, converters);
         }
 
-        private HB.ConstructionSet GetDefaultConstructionSet()
-        {
-            var args = new List<string> { "Default Generic Construction Set", "--none-defaults", "False" };
-            var jsonConstructionSets = RunHoneybeeEnergyCommand2("construction-set-by-id", args);
-            JsonConverter[] converters =
-            {
-                new HB.AnyOfJsonConverter()
-            };
+        //private HB.ConstructionSet GetDefaultConstructionSet()
+        //{
+        //    var args = new List<string> { "Default Generic Construction Set", "--none-defaults", "False" };
+        //    var jsonConstructionSets = RunHoneybeeEnergyCommand2("construction-set-by-id", args);
+        //    JsonConverter[] converters =
+        //    {
+        //        new HB.AnyOfJsonConverter()
+        //    };
 
-            return JsonConvert.DeserializeObject<HB.ConstructionSet>(jsonConstructionSets, converters);
-        }
+        //    return JsonConvert.DeserializeObject<HB.ConstructionSet>(jsonConstructionSets, converters);
+        //}
 
         private List<HB.ConstructionSet> GetConstructionSets(IEnumerable<Room2D> rooms, ConstructionSet bConstructionSet)
         {

@@ -72,7 +72,7 @@ namespace Honeybee.Revit.CreateModel.Wrappers
         {
         }
 
-        public SpatialObjectWrapper(Element e)
+        public SpatialObjectWrapper(Element e, bool dragonfly)
         {
             Self = e;
             Name = e.Name;
@@ -85,12 +85,12 @@ namespace Honeybee.Revit.CreateModel.Wrappers
 
             if (ObjectType == SpatialObjectType.Room)
             {
-                Room2D = new Room2D(e as Room, out var roomMsg);
+                Room2D = new Room2D(e as Room, dragonfly, out var roomMsg);
                 Messages = roomMsg;
             }
             else
             {
-                Room2D = new Room2D(e as Space, out var spaceMsg);
+                Room2D = new Room2D(e as Space, dragonfly, out var spaceMsg);
                 Messages = spaceMsg;
             }
         }

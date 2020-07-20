@@ -87,7 +87,7 @@ namespace Honeybee.Revit.Schemas
         {
         }
 
-        public Room2D(RVT.SpatialElement e, out List<string> messages)
+        public Room2D(RVT.SpatialElement e, bool dragonfly, out List<string> messages)
         {
             messages = new List<string>();
             Identifier = $"Room_{e.UniqueId}";
@@ -102,144 +102,184 @@ namespace Honeybee.Revit.Schemas
             }
 
             var doc = e.Document;
+            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var bOptions = new RVT.SpatialElementBoundaryOptions
             {
                 SpatialElementBoundaryLocation = RVT.SpatialElementBoundaryLocation.Center
             };
             var segments = e.GetBoundarySegments(bOptions);
-            var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var calculator = new RVT.SpatialElementGeometryCalculator(doc, bOptions);
             var roomGeo = calculator.CalculateSpatialElementGeometry(e);
-            var faces = roomGeo.GetGeometry().Faces;
-            var geo = roomGeo.GetGeometry();
-            var bb = geo.GetBoundingBox();
-
-            var height = bb.Max.Z - bb.Min.Z;
-            if (AppSettings.Instance.StoredSettings.GeometrySettings.PullUpRoomHeight)
+            //var faces = roomGeo.GetGeometry().Faces;
+            var faces = new List<RVT.Face>();
+            foreach (RVT.Face face in roomGeo.GetGeometry().Faces)
             {
-                var floorThickness = GetFloorThickness(faces, roomGeo, doc);
-                height += floorThickness;
+                faces.Add(face);
             }
 
-            var boundary = new List<Point2D>();
-            var holes = new List<List<Point2D>>();
-            var windows = new List<WindowParameterBase>();
-            for (var i = 0; i < segments.Count; i++)
+            if (dragonfly)
             {
-                if (i == 0) // outer boundary
+                var geo = roomGeo.GetGeometry();
+                var bb = geo.GetBoundingBox();
+                var height = bb.Max.Z - bb.Min.Z;
+
+                if (AppSettings.Instance.StoredSettings.GeometrySettings.PullUpRoomHeight)
                 {
-                    foreach (var bs in segments[i])
+                    var floorThickness = GetFloorThickness(faces, roomGeo, doc);
+                    height += floorThickness;
+                }
+
+                var boundary = new List<Point2D>();
+                var holes = new List<List<Point2D>>();
+                var windows = new List<WindowParameterBase>();
+                for (var i = 0; i < segments.Count; i++)
+                {
+                    if (i == 0) // outer boundary
                     {
-                        // (Konrad) Boundary curves have elevation of the level that room base is set to.
-                        // They don't account for base offset.
-                        var boundaryCurve = bs.GetCurve().Offset(offset);
-                        if (boundaryCurve.Length < tolerance)
+                        foreach (var bs in segments[i])
                         {
-                            messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
-                            continue; // Exclude tiny curves, they don't produce faces.
+                            // (Konrad) Boundary curves have elevation of the level that room base is set to.
+                            // They don't account for base offset.
+                            var boundaryCurve = bs.GetCurve().Offset(offset);
+                            if (boundaryCurve.Length < tolerance)
+                            {
+                                messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
+                                continue; // Exclude tiny curves, they don't produce faces.
+                            }
+
+                            var face = FindFace(faces, roomGeo, boundaryCurve);
+                            if (face == null)
+                                continue; // Couldn't find a matching face. Not good.
+
+                            faces.Remove(face);
+
+                            var hbFace = new Face();
+                            GetGlazingInfo(face, doc, roomGeo, out var unused, out var glazingAreas, ref hbFace);
+
+                            var faceArea = boundaryCurve.Length * height;
+                            var glazingArea = glazingAreas.Sum();
+                            var glazingRatio = glazingArea / faceArea;
+
+                            // (Konrad) Number of Boundary points in the list has to match number of Window Parameters.
+                            var boundaryPts = GeometryUtils.GetPoints(boundaryCurve);
+
+                            boundary.AddRange(boundaryPts);
+                            windows.AddRange(boundaryPts.Select(x =>
+                                Math.Abs(glazingRatio) < tolerance
+                                    ? (WindowParameterBase)null
+                                    : new SimpleWindowRatio { WindowRatio = glazingRatio }));
                         }
 
-                        var face = FindFace(faces, roomGeo, boundaryCurve);
-                        if (face == null)
-                            continue; // Couldn't find a matching face. Not good.
-
-                        GetGlazingInfo(face, doc, roomGeo, out var unused, out var glazingAreas);
-
-                        var faceArea = boundaryCurve.Length * height;
-                        var glazingArea = glazingAreas.Sum();
-                        var glazingRatio = glazingArea / faceArea;
-
-                        // (Konrad) Number of Boundary points in the list has to match number of Window Parameters.
-                        var boundaryPts = GeometryUtils.GetPoints(boundaryCurve);
-
-                        boundary.AddRange(boundaryPts);
-                        windows.AddRange(boundaryPts.Select(x =>
-                            Math.Abs(glazingRatio) < tolerance
-                                ? (WindowParameterBase)null
-                                : new SimpleWindowRatio { WindowRatio = glazingRatio }));
+                        continue;
                     }
 
-                    continue;
+                    var hole = new List<Point2D>();
+                    foreach (var bs in segments[i])
+                    {
+                        //TODO: Floor Holes need Glazing info processed.
+                        var boundaryCurve = bs.GetCurve();
+                        var segmentPts = GeometryUtils.GetPoints(boundaryCurve);
+
+                        hole.AddRange(segmentPts);
+                        windows.AddRange(segmentPts.Select(segmentPt => (WindowParameterBase)null));
+                    }
+
+                    holes.Add(hole);
                 }
 
-                var hole = new List<Point2D>();
-                foreach (var bs in segments[i])
-                {
-                    //TODO: Floor Holes need Glazing info processed.
-                    var boundaryCurve = bs.GetCurve();
-                    var segmentPts = GeometryUtils.GetPoints(boundaryCurve);
-
-                    hole.AddRange(segmentPts);
-                    windows.AddRange(segmentPts.Select(segmentPt => (WindowParameterBase)null));
-                }
-
-                holes.Add(hole);
+                FloorToCeilingHeight = height;
+                FloorBoundary = boundary;
+                FloorHoles = holes;
+                BoundaryConditions = Enumerable.Range(0, FloorBoundary.Count + FloorHoles.SelectMany(x => x).Count())
+                    .Select(x => new Outdoors()).Cast<BoundaryConditionBase>().ToList();
+                WindowParameters = windows;
+                IsGroundContact = IsTouchingGround(e);
             }
-
-            FloorToCeilingHeight = height;
-            FloorBoundary = boundary;
-            FloorHoles = holes;
-            BoundaryConditions = Enumerable.Range(0, FloorBoundary.Count + FloorHoles.SelectMany(x => x).Count())
-                .Select(x => new Outdoors()).Cast<BoundaryConditionBase>().ToList();
-            WindowParameters = windows;
-
-            var hbFaces = new List<Face>();
-            foreach (RVT.Face face in faces)
+            else
             {
-                if (face is RVT.CylindricalFace) // round columns only
+                //var boundary = new List<Point2D>();
+                //for (var i = 0; i < segments.Count; i++)
+                //{
+                //    if (i == 0) // outer boundary
+                //    {
+                //        foreach (var bs in segments[i])
+                //        {
+                //            // (Konrad) Boundary curves have elevation of the level that room base is set to.
+                //            // They don't account for base offset.
+                //            var boundaryCurve = bs.GetCurve().Offset(offset);
+                //            if (boundaryCurve.Length < tolerance)
+                //            {
+                //                messages.Add($"Boundary Curve [{i}] is shorter than specified tolerance.");
+                //                continue; // Exclude tiny curves, they don't produce faces.
+                //            }
+
+                //            // (Konrad) Number of Boundary points in the list has to match number of Window Parameters.
+                //            var boundaryPts = GeometryUtils.GetPoints(boundaryCurve);
+
+                //            boundary.AddRange(boundaryPts);
+                //        }
+                //    }
+                //}
+
+                var hbFaces = new List<Face>();
+                foreach (RVT.Face face in faces)
                 {
-                    var planarFaces = PlanarizeCylindricalFace(face).ToList();
-                    foreach (var hbFace in planarFaces)
+                    if (face is RVT.CylindricalFace) // round columns/walls only
                     {
-                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, hbFace);
-
-                        var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
-                        hbFace.Apertures = apertures.Any() ? apertures : null;
-
-                        hbFaces.Add(hbFace);
-                    }
-                }
-                else
-                {
-                    var hbFace = new Face(face);
-
-                    GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused);
-
-                    var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList()))
-                        .ToList();
-                    hbFace.Apertures = apertures.Any() ? apertures : null;
-
-                    var boundaryFaces = roomGeo.GetBoundaryFaceInfo(face).FirstOrDefault();
-                    if (boundaryFaces != null)
-                    {
-                        switch (boundaryFaces.SubfaceType)
+                        var planarFaces = PlanarizeCylindricalFace(face).ToList();
+                        foreach (var f in planarFaces)
                         {
-                            case RVT.SubfaceType.Bottom:
-                                hbFace.FaceType = HB.FaceType.Floor;
-                                break;
-                            case RVT.SubfaceType.Top:
-                                hbFace.FaceType = HB.FaceType.RoofCeiling;
-                                break;
-                            case RVT.SubfaceType.Side:
-                                hbFace.FaceType = HB.FaceType.Wall;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
+                            var hbFace = f;
+                            GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
+
+                            var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList())).ToList();
+                            hbFace.Apertures = apertures.Any() ? apertures : null;
+
+                            hbFaces.Add(hbFace);
                         }
                     }
                     else
                     {
-                        // (Konrad) We don't really know what type of face it is.
-                        // TODO: This is probably an Air Boundary/Room Separation Line.
-                        hbFace.FaceType = HB.FaceType.Wall;
+                        var hbFace = new Face(face, ref messages);
+
+                        GetGlazingInfo(face, doc, roomGeo, out var glazingPts, out var unused, ref hbFace);
+
+                        var apertures = glazingPts.Select(x => new Aperture(x.Select(y => new Point3D(y)).ToList()))
+                            .ToList();
+                        hbFace.Apertures = apertures.Any() ? apertures : null;
+
+                        var boundaryFaces = roomGeo.GetBoundaryFaceInfo(face).FirstOrDefault();
+                        if (boundaryFaces != null)
+                        {
+                            switch (boundaryFaces.SubfaceType)
+                            {
+                                case RVT.SubfaceType.Bottom:
+                                    hbFace.FaceType = HB.FaceType.Floor;
+                                    break;
+                                case RVT.SubfaceType.Top:
+                                    hbFace.FaceType = HB.FaceType.RoofCeiling;
+                                    break;
+                                case RVT.SubfaceType.Side:
+                                    hbFace.FaceType = HB.FaceType.Wall;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                        else
+                        {
+                            // (Konrad) We don't really know what type of face it is.
+                            // TODO: This is probably an Air Boundary/Room Separation Line.
+                            hbFace.FaceType = HB.FaceType.Wall;
+                        }
+
+                        hbFaces.Add(hbFace);
                     }
-
-                    hbFaces.Add(hbFace);
                 }
-            }
 
-            Faces = hbFaces;
-            IsGroundContact = IsTouchingGround(e);
+                //FloorBoundary = boundary;
+                Faces = hbFaces;
+            }
         }
 
         #endregion
@@ -293,7 +333,10 @@ namespace Honeybee.Revit.Schemas
 
         #region Utilities
 
-        private static double GetFloorThickness(RVT.FaceArray faces, RVT.SpatialElementGeometryResults roomGeo, RVT.Document doc)
+        private static double GetFloorThickness(
+            List<RVT.Face> faces, 
+            RVT.SpatialElementGeometryResults roomGeo, 
+            RVT.Document doc)
         {
             var height = 0d;
             var foundFloor = false;
@@ -397,7 +440,7 @@ namespace Honeybee.Revit.Schemas
             RVT.SpatialElementGeometryResults result,
             out List<List<RVT.XYZ>> glazingPoints, 
             out List<double> glazingAreas,
-            Face hbFace = null)
+            ref Face hbFace)
         {
             glazingPoints = new List<List<RVT.XYZ>>();
             glazingAreas = new List<double>();
@@ -436,7 +479,7 @@ namespace Honeybee.Revit.Schemas
                 {
                     if (wall.WallType.Kind == RVT.WallKind.Curtain)
                     {
-                        GetGlazingFromCurtainWall(wall, face, ref glazingPoints, ref glazingAreas);
+                        GetGlazingFromCurtainWall(wall, face, ref glazingPoints, ref glazingAreas, ref hbFace);
                     }
                     else
                     {
@@ -449,7 +492,7 @@ namespace Honeybee.Revit.Schemas
                         }
                         else
                         {
-                            GetGlazingFromWindows(wall, face, ref glazingPoints, ref glazingAreas);
+                            GetGlazingFromWindows(wall, face, ref glazingPoints, ref glazingAreas, ref hbFace);
                         }
                     }
                 }
@@ -479,29 +522,18 @@ namespace Honeybee.Revit.Schemas
                 if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Windows.GetHashCode())
                 {
                     var winPts = GetGeometryPoints(insert);
-                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
 
-                    var winArea = GetWindowArea(insert);
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
+
+                    var winArea = GetDoorWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
-                    if (hullArea < winArea * 0.5) continue;
+                    if (hullArea < winArea * 0.5)
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
-
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
-
-                            hPts[i] = offsetPt;
-                        }
-                    }
+                    ValidatePoints(face, tolerance, ref hPts);
 
                     if (hPts.Count < 3) continue;
 
@@ -541,25 +573,13 @@ namespace Honeybee.Revit.Schemas
                         winPts.Add(curve.GetEndPoint(1));
                     }
 
-                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
 
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
-
-                            hPts[i] = offsetPt;
-                        }
-                    }
+                    ValidatePoints(face, tolerance, ref hPts);
 
                     if (hPts.Count < 3) continue;
 
@@ -573,7 +593,8 @@ namespace Honeybee.Revit.Schemas
             object wallRoof, 
             RVT.Face face, 
             ref List<List<RVT.XYZ>> glazingPts, 
-            ref List<double> glazingAreas)
+            ref List<double> glazingAreas,
+            ref Face hbFace)
         {
             var shortCurveTolerance = 0d;
             var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
@@ -596,34 +617,66 @@ namespace Honeybee.Revit.Schemas
                 if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Windows.GetHashCode())
                 {
                     var winPts = GetGeometryPoints(insert);
-                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace)) continue;
-                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                    if (!GetPointsOnFace(face, winPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
 
-                    var winArea = GetWindowArea(insert);
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
+
+                    var winArea = GetDoorWindowArea(insert);
                     var hullArea = PolygonArea(hUvs);
-                    if (hullArea < winArea * 0.5) continue;
+                    if (hullArea < winArea * 0.5)
+                        continue;
 
-                    var outerEdges = face.GetEdgesAsCurveLoops().First();
-                    foreach (var edge in outerEdges)
-                    {
-                        for (var i = 0; i < hPts.Count; i++)
-                        {
-                            var pt = hPts[i];
-                            if (edge.Distance(pt) >= tolerance) continue;
+                    ValidatePoints(face, tolerance, ref hPts);
 
-                            var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                            var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                            var offset = 0.1 * perpendicular;
-                            var offsetPt = pt + offset;
-
-                            hPts[i] = offsetPt;
-                        }
-                    }
-
-                    if (hPts.Count < 3) continue;
+                    if (hPts.Count < 3)
+                        continue;
 
                     glazingAreas.Add(PolygonArea(hUvs));
                     glazingPts.Add(hPts);
+                }
+                else if (insert.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Doors.GetHashCode())
+                {
+                    var doorPts = GetGeometryPoints(insert);
+                    if (!GetPointsOnFace(face, doorPts, out var ptsOnFace, out var uvsOnFace))
+                        continue;
+
+                    if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                        continue;
+
+                    ValidatePoints(face, tolerance, ref hPts);
+
+                    var doorArea = GetDoorWindowArea(insert);
+                    var hullArea = PolygonArea(hUvs);
+                    if (hullArea < doorArea * 0.5)
+                        continue;
+
+                    if (hPts.Count < 3)
+                        continue;
+
+                    var door = new Door(hPts.Select(x => new Point3D(x)).ToList());
+                    hbFace.Doors.Add(door);
+                }
+            }
+        }
+
+        private static void ValidatePoints(RVT.Face face, double tolerance, ref List<RVT.XYZ> hPts)
+        {
+            var outerEdges = face.GetEdgesAsCurveLoops().First();
+            foreach (var edge in outerEdges)
+            {
+                for (var i = 0; i < hPts.Count; i++)
+                {
+                    var pt = hPts[i];
+                    if (edge.Distance(pt) >= tolerance) continue;
+
+                    var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
+                    var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
+                    var offset = 0.1 * perpendicular;
+                    var offsetPt = pt + offset;
+
+                    hPts[i] = offsetPt;
                 }
             }
         }
@@ -690,30 +743,16 @@ namespace Honeybee.Revit.Schemas
             if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
                 return;
 
-            var outerEdges = face.GetEdgesAsCurveLoops().First();
-            foreach (var edge in outerEdges)
-            {
-                for (var i = 0; i < hPts.Count; i++)
-                {
-                    var pt = hPts[i];
-                    if (edge.Distance(pt) >= tolerance) continue;
+            ValidatePoints(face, tolerance, ref hPts);
 
-                    var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                    var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                    var offset = 0.1 * perpendicular;
-                    var offsetPt = pt + offset;
-
-                    hPts[i] = offsetPt;
-                }
-            }
-
-            if (hPts.Count < 3) return;
+            if (hPts.Count < 3)
+                return;
 
             glazingAreas.Add(PolygonArea(hUvs));
             glazingPts.Add(hPts);
         }
 
-        private static double GetWindowArea(RVT.Element insert)
+        private static double GetDoorWindowArea(RVT.Element insert)
         {
             var winType = (RVT.FamilySymbol)insert.Document.GetElement(insert.GetTypeId());
 
@@ -746,7 +785,10 @@ namespace Honeybee.Revit.Schemas
             return winArea;
         }
 
-        private static RVT.Face FindFace(IEnumerable faces, RVT.SpatialElementGeometryResults result, RVT.Curve bCurve)
+        private static RVT.Face FindFace(
+            IEnumerable faces, 
+            RVT.SpatialElementGeometryResults result, 
+            RVT.Curve bCurve)
         {
             foreach (RVT.Face f in faces)
             {
@@ -762,10 +804,15 @@ namespace Honeybee.Revit.Schemas
                     continue; // face is either Top/Bottom so we can skip
 
                 var edges = f.GetEdgesAsCurveLoops().First(); // first loop is outer boundary
-                if (!edges.Any(x => x.OverlapsWithIn2D(bCurve))) // room's face might be off the floor/level above or offset. if XY matches, we are good.
-                    continue; // none of the edges of that face match our curve so we can skip
+                foreach (var edge in edges)
+                {
+                    if (edge.OverlapsWithIn2D(bCurve))
+                        return f;
+                }
+                //if (!edges.Any(x => x.OverlapsWithIn2D(bCurve))) // room's face might be off the floor/level above or offset. if XY matches, we are good.
+                //    continue; // none of the edges of that face match our curve so we can skip
 
-                return f;
+                //return f;
             }
 
             return null;
@@ -775,43 +822,64 @@ namespace Honeybee.Revit.Schemas
             RVT.Wall wall, 
             RVT.Face face, 
             ref List<List<RVT.XYZ>> glazingPts, 
-            ref List<double> glazingAreas)
+            ref List<double> glazingAreas,
+            ref Face hbFace)
         {
             var doc = wall.Document;
             var shortCurveTolerance = doc.Application.ShortCurveTolerance;
             var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
             var cGrid = wall.CurtainGrid;
-            var panels = new List<RVT.Element>();
 
-            ExtractPanelsRecursively(doc, cGrid, ref panels);
+            var panels = new List<RVT.Element>();
+            var doors = new List<RVT.Element>();
+            ExtractPanelsRecursively(doc, cGrid, ref panels, ref doors);
 
             foreach (var panel in panels)
             {
                 var points = GetGeometryPoints(panel);
-                if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace)) continue;
-                if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs)) continue;
+                if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace))
+                    continue;
 
-                var outerEdges = face.GetEdgesAsCurveLoops().First();
-                foreach (var edge in outerEdges)
-                {
-                    for (var i = 0; i < hPts.Count; i++)
-                    {
-                        var pt = hPts[i];
-                        if (edge.Distance(pt) >= tolerance) continue;
+                if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                    continue;
 
-                        var direction = (edge.GetEndPoint(1) - edge.GetEndPoint(0)).Normalize();
-                        var perpendicular = face.ComputeNormal(new RVT.UV(0.5, 0.5)).CrossProduct(direction);
-                        var offset = 0.1 * perpendicular;
-                        var offsetPt = pt + offset;
+                ValidatePoints(face, tolerance, ref hPts);
 
-                        hPts[i] = offsetPt;
-                    }
-                }
-
-                if (hPts.Count < 3) continue;
+                if (hPts.Count < 3)
+                    continue;
 
                 glazingAreas.Add(PolygonArea(hUvs));
                 glazingPts.Add(hPts);
+            }
+
+            foreach (var d in doors)
+            {
+                var points = GetGeometryPoints(d);
+                if (!GetPointsOnFace(face, points, out var ptsOnFace, out var uvsOnFace))
+                    continue;
+
+                if (!GetHull(ptsOnFace, uvsOnFace, shortCurveTolerance, out var hPts, out var hUvs))
+                    continue;
+
+                ValidatePoints(face, tolerance, ref hPts);
+
+                var doorArea = GetDoorWindowArea(d);
+                var hullArea = PolygonArea(hUvs);
+                if (hullArea < doorArea * 0.5)
+                    continue;
+
+                if (hPts.Count < 3)
+                    continue;
+
+                var dType = doc.GetElement(d.GetTypeId());
+                var door = new Door(hPts.Select(x => new Point3D(x)).ToList());
+                if (AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
+                    x.UniqueId == dType.UniqueId))
+                {
+                    door.IsGlass = true;
+                }
+
+                hbFace.Doors.Add(door);
             }
         }
 
@@ -1028,18 +1096,22 @@ namespace Honeybee.Revit.Schemas
         /// <param name="doc">Document.</param>
         /// <param name="cGrid">Curtain Grid.</param>
         /// <param name="panels">Reference list of Elements to store Panels.</param>
-        private static void ExtractPanelsRecursively(RVT.Document doc, RVT.CurtainGrid cGrid, ref List<RVT.Element> panels)
+        /// <param name="doors"></param>
+        private static void ExtractPanelsRecursively(
+            RVT.Document doc, 
+            RVT.CurtainGrid cGrid, 
+            ref List<RVT.Element> panels, 
+            ref List<RVT.Element> doors)
         {
             foreach (var id in cGrid.GetPanelIds())
             {
                 if (!(doc.GetElement(id) is RVT.Panel panel))
                 {
                     // (Konrad) If Panel was replaced with a Door it will be a FamilyInstance.
-                    if (doc.GetElement(id) is RVT.FamilyInstance fi &&
-                        AppSettings.Instance.StoredSettings.GeometrySettings.GlazingTypes.Any(x =>
-                            x.UniqueId == doc.GetElement(fi.GetTypeId()).UniqueId))
+                    if (doc.GetElement(id) is RVT.FamilyInstance fi && 
+                        fi.Category.Id.IntegerValue == RVT.BuiltInCategory.OST_Doors.GetHashCode())
                     {
-                        panels.Add(fi);
+                        doors.Add(fi);
                     }
 
                     continue;
@@ -1051,7 +1123,7 @@ namespace Honeybee.Revit.Schemas
                 {
                     if (doc.GetElement(hostId) is RVT.Wall wall && wall.WallType.Kind == RVT.WallKind.Curtain)
                     {
-                        ExtractPanelsRecursively(doc, wall.CurtainGrid, ref panels);
+                        ExtractPanelsRecursively(doc, wall.CurtainGrid, ref panels, ref doors);
 
                         continue;
                     }
@@ -1065,7 +1137,10 @@ namespace Honeybee.Revit.Schemas
             }
         }
 
-        private static void ExtractPtsRecursively(RVT.GeometryElement geo, ref List<RVT.XYZ> pts, bool includeLines = false)
+        private static void ExtractPtsRecursively(
+            RVT.GeometryElement geo, 
+            ref List<RVT.XYZ> pts, 
+            bool includeLines = false)
         {
             foreach (var g in geo)
             {

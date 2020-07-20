@@ -5,18 +5,32 @@ namespace Honeybee.Revit.Utilities
 {
     public static class CurveExtensions
     {
-        public static bool OverlapsWithIn2D(this Curve source, Curve compareTo)
+        public static bool OverlapsWithIn2D(this Curve source, Curve bCurve)
         {
             var tolerance = AppSettings.Instance.StoredSettings.GeometrySettings.Tolerance;
-            if (Math.Abs(source.Length - compareTo.Length) > tolerance) return false;
+            if (Math.Abs(source.Length - bCurve.Length) > tolerance)
+                return false;
 
-            var sourceStart = source.GetEndPoint(0).Flatten();
-            var sourceEnd = source.GetEndPoint(1).Flatten();
-            var compareToStart = compareTo.GetEndPoint(0).Flatten();
-            var compareToEnd = compareTo.GetEndPoint(1).Flatten();
+            var bCurveStart = bCurve.GetEndPoint(0).Flatten();
+            var bCurveEnd = bCurve.GetEndPoint(1).Flatten();
+            XYZ sourceStart;
+            XYZ sourceEnd;
 
-            return (sourceStart.IsAlmostEqualTo(compareToStart, tolerance) || sourceStart.IsAlmostEqualTo(compareToEnd, tolerance)) &&
-                   (sourceEnd.IsAlmostEqualTo(compareToStart, tolerance) || sourceEnd.IsAlmostEqualTo(compareToEnd, tolerance));
+            var bCurveDir = (bCurve.GetEndPoint(1) - bCurve.GetEndPoint(0)).Normalize();
+            var sourceDir = (source.GetEndPoint(1) - source.GetEndPoint(0)).Normalize();
+            if (bCurveDir.IsAlmostEqualTo(sourceDir, tolerance))
+            {
+                sourceStart = source.GetEndPoint(0).Flatten();
+                sourceEnd = source.GetEndPoint(1).Flatten();
+            }
+            else
+            {
+                sourceStart = source.GetEndPoint(1).Flatten();
+                sourceEnd = source.GetEndPoint(0).Flatten();
+            }
+
+            return bCurveStart.DistanceTo(sourceStart) < tolerance && 
+                   bCurveEnd.DistanceTo(sourceEnd) < tolerance;
         }
 
         public static Curve Offset(this Curve curve, double offset)

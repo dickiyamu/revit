@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel.Channels;
 using Honeybee.Core.Extensions;
 using Honeybee.Revit.CreateModel.Wrappers;
 using Newtonsoft.Json;
@@ -23,16 +24,16 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public HB.FaceType FaceType { get; set; }
 
         [JsonProperty("boundary_condition")]
-        public BoundaryConditionBase BoundaryCondition { get; set; }
+        public BoundaryConditionBase BoundaryCondition { get; set; } = new Outdoors();
 
         [JsonProperty("properties")]
-        public HB.FacePropertiesAbridged Properties { get; set; }
+        public HB.FacePropertiesAbridged Properties { get; set; } = new HB.FacePropertiesAbridged();
 
         [JsonProperty("apertures")]
         public List<Aperture> Apertures { get; set; } = new List<Aperture>();
 
         [JsonProperty("doors")]
-        public List<HB.Door> Doors { get; set; }
+        public List<Door> Doors { get; set; } = new List<Door>();
 
         [JsonProperty("indoor_shades")]
         public List<HB.Shade> IndoorShades { get; set; }
@@ -51,15 +52,11 @@ namespace Honeybee.Revit.Schemas.Honeybee
         public Face(List<Point3D> boundary, List<List<Point3D>> holes)
         {
             Geometry = new Face3D {Boundary = boundary, Holes = holes};
-            BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged();
         }
 
-        public Face(Autodesk.Revit.DB.Face face)
+        public Face(Autodesk.Revit.DB.Face face, ref List<string> messages)
         {
-            Geometry = new Face3D(face);
-            BoundaryCondition = new Outdoors();
-            Properties = new HB.FacePropertiesAbridged();
+            Geometry = new Face3D(face, ref messages);
         }
 
         public object ToDragonfly()
@@ -78,7 +75,7 @@ namespace Honeybee.Revit.Schemas.Honeybee
                 DisplayName,
                 null, // user data
                 Apertures?.Select(x => x.ToHoneybee()).ToList(),
-                null, // doors
+                Doors.Select(x => x.ToHoneybee()).ToList(),
                 null, // indoor shades
                 null // outdoor shades
             );

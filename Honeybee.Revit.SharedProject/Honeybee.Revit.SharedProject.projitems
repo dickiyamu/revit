@@ -78,6 +78,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Ground.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Aperture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Door.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Face.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Face3D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schemas\Honeybee\Shade.cs" />
