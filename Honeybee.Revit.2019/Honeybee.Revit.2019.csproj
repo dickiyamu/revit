@@ -135,4 +135,24 @@
   </ItemGroup>
   <Import Project="..\Honeybee.Revit.SharedProject\Honeybee.Revit.SharedProject.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>echo Copying results to 2019...
+if not exist "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee" mkdir "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetPath)" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)Honeybee.Core.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)Honeybee.Revit.addin" "%25AppData%25\Autodesk\Revit\Addins\2019"
+xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Platform.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)GalaSoft.MvvmLight.Extras.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)System.Windows.Interactivity.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)Newtonsoft.Json.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)NLog.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)RestSharp.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)System.Management.Automation.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)Microsoft.Management.Infrastructure.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)JsonSubTypes.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)HoneybeeSchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)DragonflySchema.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"
+xcopy /Q/Y "$(TargetDir)CommonServiceLocator.dll" "%25AppData%25\Autodesk\Revit\Addins\2019\Honeybee"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
